@@ -78,6 +78,20 @@ public class AppointmentService {
         return mapToResponseDto(appointment);
     }
 
+    public List<AppointmentResponseDto> getAllAppointments() {
+        return appointmentRepository.findAll().stream()
+                .map(this::mapToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteAppointment(Long id) {
+        if (!appointmentRepository.existsById(id)) {
+            throw new RuntimeException("Appointment not found with id: " + id);
+        }
+        appointmentRepository.deleteById(id);
+    }
+
     public List<AppointmentResponseDto> getAppointmentsByPatient(Long patientId) {
         return appointmentRepository.findByPatientId(patientId).stream()
                 .map(this::mapToResponseDto)
