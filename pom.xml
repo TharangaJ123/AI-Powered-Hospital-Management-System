@@ -23,8 +23,8 @@
     <modules>
         <module>infrastructure/discovery-service</module>
         <module>infrastructure/api-gateway</module>
-        <module>services/ai-symptom-service</module>
-        <module>services/TelemedicineService</module>
+        <module>services/user-management</module>
+        <module>services/appointment-service</module>
     </modules>
 
     <dependencyManagement>

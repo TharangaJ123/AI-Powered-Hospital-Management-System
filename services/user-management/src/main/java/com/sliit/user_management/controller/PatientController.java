@@ -1,0 +1,89 @@
+package com.sliit.user_management.controller;
+
+import com.sliit.user_management.dto.*;
+import com.sliit.user_management.service.PatientService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * REST controller for managing patient-related operations.
+ * Provides endpoints for patient registration, profile management, and document handling.
+ */
+@RestController
+@RequestMapping("/api/patients")
+@RequiredArgsConstructor
+public class PatientController {
+
+    private final PatientService patientService;
+
+    /**
+     * Registers a new patient in the system.
+     * 
+     * @param req the user registration details
+     * @return a ResponseEntity containing the created UserResponseDto
+     */
+    @PostMapping("/register")
+    public ResponseEntity<UserResponseDto> registerPatient(@RequestBody UserRegistrationDto req) {
+        return ResponseEntity.ok(patientService.registerPatient(req));
+    }
+
+    /**
+     * Retrieves the profile details of a specific patient.
+     * 
+     * @param userId the user ID of the patient
+     * @return a ResponseEntity containing the PatientProfileDto
+     */
+    @GetMapping("/{userId}/profile")
+    public ResponseEntity<PatientProfileDto> getProfile(@PathVariable Long userId) {
+        return ResponseEntity.ok(patientService.getProfile(userId));
+    }
+
+    /**
+     * Updates the profile details for a specific patient.
+     * 
+     * @param userId the user ID of the patient to update
+     * @param req the updated profile details
+     * @return a ResponseEntity containing the updated PatientProfileDto
+     */
+    @PutMapping("/{userId}/profile")
+    public ResponseEntity<PatientProfileDto> updateProfile(@PathVariable Long userId, @RequestBody PatientProfileDto req) {
+        return ResponseEntity.ok(patientService.updateProfile(userId, req));
+    }
+
+    /**
+     * Uploads a new medical document for a patient.
+     * 
+     * @param patientId the profile ID of the patient
+     * @param req the medical document details to upload
+     * @return a ResponseEntity containing the saved MedicalDocumentDto
+     */
+    @PostMapping("/{patientId}/documents")
+    public ResponseEntity<MedicalDocumentDto> uploadDocument(@PathVariable Long patientId, @RequestBody MedicalDocumentDto req) {
+        return ResponseEntity.ok(patientService.uploadDocument(patientId, req));
+    }
+
+    /**
+     * Retrieves all uploaded medical documents for a specific patient.
+     * 
+     * @param patientId the profile ID of the patient
+     * @return a ResponseEntity containing a list of MedicalDocumentDto objects
+     */
+    @GetMapping("/{patientId}/documents")
+    public ResponseEntity<List<MedicalDocumentDto>> getDocuments(@PathVariable Long patientId) {
+        return ResponseEntity.ok(patientService.getPatientDocuments(patientId));
+    }
+
+    /**
+     * Retrieves the medical history and past records of a specific patient.
+     * 
+     * @param patientId the profile ID of the patient
+     * @return a ResponseEntity containing a list of medical history records as strings
+     */
+    @GetMapping("/{patientId}/history")
+    public ResponseEntity<List<String>> getMedicalHistory(@PathVariable Long patientId) {
+        return ResponseEntity.ok(patientService.getMedicalHistory(patientId));
+    }
+}
