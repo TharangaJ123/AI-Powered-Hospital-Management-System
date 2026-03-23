@@ -6,6 +6,7 @@ import com.sliit.user_management.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ public class PatientService {
     private final UserRepository userRepository;
     private final PatientProfileRepository patientProfileRepository;
     private final MedicalDocumentRepository medicalDocumentRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Registers a new patient into the system by creating a user and a linked profile.
@@ -37,7 +39,7 @@ public class PatientService {
         
         User user = User.builder()
                 .email(request.getEmail())
-                .password(request.getPassword()) // Note: Should be hashed in production
+                .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.PATIENT)
                 .active(true)
                 .build();
