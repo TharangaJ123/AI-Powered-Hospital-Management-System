@@ -10,6 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service class handling the business logic for patient-related operations.
+ * This includes patient registration, profile updates, and document management.
+ */
 @Service
 @RequiredArgsConstructor
 public class PatientService {
@@ -18,6 +22,13 @@ public class PatientService {
     private final PatientProfileRepository patientProfileRepository;
     private final MedicalDocumentRepository medicalDocumentRepository;
 
+    /**
+     * Registers a new patient into the system by creating a user and a linked profile.
+     * 
+     * @param request the registration details provided by the patient
+     * @return the created UserResponseDto
+     * @throws RuntimeException if the provided email is already taken
+     */
     @Transactional
     public UserResponseDto registerPatient(UserRegistrationDto request) {
         if(userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -47,12 +58,27 @@ public class PatientService {
                 .build();
     }
 
+    /**
+     * Retrieves the profile details of a patient using their associated user ID.
+     * 
+     * @param userId the ID of the user linked to the patient profile
+     * @return the retrieved PatientProfileDto
+     * @throws RuntimeException if the profile cannot be found
+     */
     public PatientProfileDto getProfile(Long userId) {
         PatientProfile profile = patientProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
         return mapToDto(profile);
     }
 
+    /**
+     * Updates an existing patient profile with newly provided details.
+     * 
+     * @param userId the ID of the user linked to the patient profile
+     * @param request the updated profile details
+     * @return the updated PatientProfileDto
+     * @throws RuntimeException if the profile cannot be found
+     */
     @Transactional
     public PatientProfileDto updateProfile(Long userId, PatientProfileDto request) {
         PatientProfile profile = patientProfileRepository.findByUserId(userId)
@@ -67,6 +93,14 @@ public class PatientService {
         return mapToDto(patientProfileRepository.save(profile));
     }
 
+    /**
+     * Attaches and uploads a new medical document for a patient.
+     * 
+     * @param patientId the profile ID of the patient
+     * @param request the medical document information (name and URL)
+     * @return the saved MedicalDocumentDto
+     * @throws RuntimeException if the patient profile cannot be found
+     */
     @Transactional
     public MedicalDocumentDto uploadDocument(Long patientId, MedicalDocumentDto request) {
         PatientProfile profile = patientProfileRepository.findById(patientId)
@@ -89,6 +123,12 @@ public class PatientService {
                 .build();
     }
 
+    /**
+     * Retrieves all medical documents associated with a specific patient.
+     * 
+     * @param patientId the profile ID of the patient
+     * @return a list of MedicalDocumentDto records belonging to the patient
+     */
     public List<MedicalDocumentDto> getPatientDocuments(Long patientId) {
         return medicalDocumentRepository.findByPatientId(patientId).stream()
                 .map(doc -> MedicalDocumentDto.builder()
@@ -101,6 +141,12 @@ public class PatientService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves the medical history records for a specified patient.
+     * 
+     * @param patientId the profile ID of the patient
+     * @return a list of medical history log entries as strings
+     */
     public List<String> getMedicalHistory(Long patientId) {
         // Mock medical history for demo
         return List.of(
