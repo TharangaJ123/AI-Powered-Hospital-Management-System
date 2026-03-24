@@ -16,7 +16,7 @@ public class DoctorServiceClient {
     public List<DoctorDto> getDoctorsBySpecialty(String specialty) {
         return webClientBuilder.build()
                 .get()
-                .uri("http://doctor-service/api/doctors/search/specialty",
+                .uri("http://localhost:8081/api/doctors/search",
                         uriBuilder -> uriBuilder.queryParam("specialty", specialty).build())
                 .retrieve()
                 .bodyToFlux(DoctorDto.class)
