@@ -4,6 +4,7 @@ import com.sliit.user_management.dto.UserResponseDto;
 import com.sliit.user_management.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final AdminService adminService;
@@ -60,5 +62,16 @@ public class AdminController {
     @GetMapping("/operations")
     public ResponseEntity<Object> getPlatformOperations() {
         return ResponseEntity.ok(adminService.getPlatformOperations());
+    }
+
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        adminService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/transactions")
+    public ResponseEntity<List<com.sliit.user_management.model.FinancialTransaction>> getAllTransactions() {
+        return ResponseEntity.ok(adminService.getAllTransactions());
     }
 }

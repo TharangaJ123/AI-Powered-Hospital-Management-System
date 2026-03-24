@@ -4,6 +4,7 @@ import com.sliit.user_management.dto.*;
 import com.sliit.user_management.service.DoctorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,41 +17,49 @@ public class DoctorController {
     private final DoctorService doctorService;
 
     @GetMapping
+    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<List<DoctorProfileDto>> getAllDoctors() {
         return ResponseEntity.ok(doctorService.getAllDoctors());
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<List<DoctorProfileDto>> findBySpecialty(@RequestParam String specialty) {
         return ResponseEntity.ok(doctorService.findBySpecialty(specialty));
     }
 
     @GetMapping("/{userId}/profile")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN') or hasRole('PATIENT')")
     public ResponseEntity<DoctorProfileDto> getProfile(@PathVariable Long userId) {
         return ResponseEntity.ok(doctorService.getProfile(userId));
     }
 
     @PutMapping("/{userId}/profile")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<DoctorProfileDto> updateProfile(@PathVariable Long userId, @RequestBody DoctorProfileDto req) {
         return ResponseEntity.ok(doctorService.updateProfile(userId, req));
     }
 
     @PostMapping("/{doctorId}/availability")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<DoctorAvailabilityDto> addAvailability(@PathVariable Long doctorId, @RequestBody DoctorAvailabilityDto req) {
         return ResponseEntity.ok(doctorService.addAvailability(doctorId, req));
     }
 
     @GetMapping("/{doctorId}/availability")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<List<DoctorAvailabilityDto>> getAvailability(@PathVariable Long doctorId) {
         return ResponseEntity.ok(doctorService.getAvailability(doctorId));
     }
 
     @PostMapping("/{doctorId}/prescriptions")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<PrescriptionDto> issuePrescription(@PathVariable Long doctorId, @RequestBody PrescriptionDto req) {
         return ResponseEntity.ok(doctorService.issuePrescription(doctorId, req));
     }
 
     @GetMapping("/{doctorId}/patients/{patientId}/reports")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<List<MedicalDocumentDto>> viewPatientReports(@PathVariable Long doctorId, @PathVariable Long patientId) {
         // Here, doctorId could be used for authorization to ensure they can see this patient's records
         return ResponseEntity.ok(doctorService.viewPatientReports(patientId));

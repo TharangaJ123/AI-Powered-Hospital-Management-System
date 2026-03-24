@@ -4,6 +4,7 @@ import com.sliit.user_management.dto.*;
 import com.sliit.user_management.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,6 +38,7 @@ public class PatientController {
      * @return a ResponseEntity containing the PatientProfileDto
      */
     @GetMapping("/{userId}/profile")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
     public ResponseEntity<PatientProfileDto> getProfile(@PathVariable Long userId) {
         return ResponseEntity.ok(patientService.getProfile(userId));
     }
@@ -49,6 +51,7 @@ public class PatientController {
      * @return a ResponseEntity containing the updated PatientProfileDto
      */
     @PutMapping("/{userId}/profile")
+    @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<PatientProfileDto> updateProfile(@PathVariable Long userId, @RequestBody PatientProfileDto req) {
         return ResponseEntity.ok(patientService.updateProfile(userId, req));
     }
@@ -61,6 +64,7 @@ public class PatientController {
      * @return a ResponseEntity containing the saved MedicalDocumentDto
      */
     @PostMapping("/{patientId}/documents")
+    @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<MedicalDocumentDto> uploadDocument(@PathVariable Long patientId, @RequestBody MedicalDocumentDto req) {
         return ResponseEntity.ok(patientService.uploadDocument(patientId, req));
     }
@@ -72,6 +76,7 @@ public class PatientController {
      * @return a ResponseEntity containing a list of MedicalDocumentDto objects
      */
     @GetMapping("/{patientId}/documents")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR')")
     public ResponseEntity<List<MedicalDocumentDto>> getDocuments(@PathVariable Long patientId) {
         return ResponseEntity.ok(patientService.getPatientDocuments(patientId));
     }
@@ -83,6 +88,7 @@ public class PatientController {
      * @return a ResponseEntity containing a list of medical history records as strings
      */
     @GetMapping("/{patientId}/history")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR')")
     public ResponseEntity<List<PrescriptionDto>> getMedicalHistory(@PathVariable Long patientId) {
         return ResponseEntity.ok(patientService.getMedicalHistory(patientId));
     }

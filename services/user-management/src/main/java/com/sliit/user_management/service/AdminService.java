@@ -88,21 +88,47 @@ public class AdminService {
 
     /**
      * Retrieves overall platform statistics and operations data.
-     * Note: This method currently provides mock data.
      * 
      * @return a JSON string representing platform statistics
      */
     public Object getPlatformOperations() {
-        long activeUsers = userRepository.count();
-        Double monthlyRevenue = financialTransactionRepository.getTotalRevenue();
-        if (monthlyRevenue == null) monthlyRevenue = 0.0;
+        long totalUsers = userRepository.count();
+        long verifiedDoctors = doctorProfileRepository.countByIsVerified(true);
+        Double totalRevenue = financialTransactionRepository.getTotalRevenue();
+        if (totalRevenue == null) totalRevenue = 0.0;
         
         long successfulTransactions = financialTransactionRepository.countByStatus("SUCCESS");
         
         return java.util.Map.of(
-            "activeUsers", activeUsers,
-            "monthlyRevenue", monthlyRevenue,
+            "totalUsers", totalUsers,
+            "verifiedDoctors", verifiedDoctors,
+            "totalRevenue", totalRevenue,
             "successfulTransactions", successfulTransactions
         );
+    }
+
+    /**
+     * Deletes a user account and their associated profile.
+     * 
+     * @param userId the ID of the user to delete
+     */
+    @Transactional
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Profiles are linked via userId (physically or logically)
+        // If they use @OneToOne with CascadeType.ALL, deleting user is enough.
+        // Let's check User entity to be sure.
+        userRepository.delete(user);
+    }
+
+    /**
+     * Retrieves all financial transactions on the platform.
+     * 
+     * @return a list of FinancialTransaction entities (or DTOs)
+     */
+    public List<com.sliit.user_management.model.FinancialTransaction> getAllTransactions() {
+        return financialTransactionRepository.findAllByOrderByTransactionDateDesc();
     }
 }

@@ -15,4 +15,6 @@ public interface FinancialTransactionRepository extends JpaRepository<FinancialT
     Double getTotalRevenue();
     
     long countByStatus(String status);
+    
+    List<FinancialTransaction> findAllByOrderByTransactionDateDesc();
 }
