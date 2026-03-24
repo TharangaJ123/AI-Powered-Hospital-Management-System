@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 public class AdminService {
 
     private final UserRepository userRepository;
+    private final com.sliit.user_management.repository.DoctorProfileRepository doctorProfileRepository;
+    private final com.sliit.user_management.repository.FinancialTransactionRepository financialTransactionRepository;
 
     /**
      * Retrieves all registered users from the database.
@@ -66,8 +68,21 @@ public class AdminService {
      * @param doctorId the ID of the doctor to verify
      * @return a success message string upon verification
      */
+    @Transactional
     public String verifyDoctor(Long doctorId) {
-        // Mock logic for verifying doctor credentials
+        com.sliit.user_management.model.DoctorProfile doc = doctorProfileRepository.findByUserId(doctorId)
+                .orElseGet(() -> {
+                    // if doctor profile doesn't exist, create one since doctor might just be registered as user
+                    User user = userRepository.findById(doctorId)
+                            .orElseThrow(() -> new RuntimeException("Doctor user not found"));
+                    com.sliit.user_management.model.DoctorProfile newProfile = com.sliit.user_management.model.DoctorProfile.builder()
+                            .user(user)
+                            .isVerified(false)
+                            .build();
+                    return doctorProfileRepository.save(newProfile);
+                });
+        doc.setVerified(true);
+        doctorProfileRepository.save(doc);
         return "Doctor Registration #" + doctorId + " verified successfully.";
     }
 
@@ -77,8 +92,17 @@ public class AdminService {
      * 
      * @return a JSON string representing platform statistics
      */
-    public String getPlatformOperations() {
-        // Mock platform stats
-        return "{ \"activeUsers\": 150, \"monthlyRevenue\": \"$4500.50\", \"uptime\": \"99.9%\" }";
+    public Object getPlatformOperations() {
+        long activeUsers = userRepository.count();
+        Double monthlyRevenue = financialTransactionRepository.getTotalRevenue();
+        if (monthlyRevenue == null) monthlyRevenue = 0.0;
+        
+        long successfulTransactions = financialTransactionRepository.countByStatus("SUCCESS");
+        
+        return java.util.Map.of(
+            "activeUsers", activeUsers,
+            "monthlyRevenue", monthlyRevenue,
+            "successfulTransactions", successfulTransactions
+        );
     }
 }

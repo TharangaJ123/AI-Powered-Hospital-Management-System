@@ -72,4 +72,22 @@ public class AppointmentController {
     public ResponseEntity<List<AppointmentResponseDto>> getAppointmentsByPatient(@PathVariable Long patientId) {
         return ResponseEntity.ok(appointmentService.getAppointmentsByPatient(patientId));
     }
+
+    // Retrieve all appointments for a specific doctor
+    @GetMapping("/doctor/{doctorId}")
+    public ResponseEntity<List<AppointmentResponseDto>> getAppointmentsByDoctor(@PathVariable Long doctorId) {
+        return ResponseEntity.ok(appointmentService.getAppointmentsByDoctor(doctorId));
+    }
+
+    // Doctor accepting an appointment request
+    @PutMapping("/{id}/accept")
+    public ResponseEntity<AppointmentResponseDto> acceptAppointment(@PathVariable Long id) {
+        return ResponseEntity.ok(appointmentService.acceptAppointment(id));
+    }
+
+    // Doctor rejecting an appointment request
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<AppointmentResponseDto> rejectAppointment(@PathVariable Long id) {
+        return ResponseEntity.ok(appointmentService.rejectAppointment(id));
+    }
 }

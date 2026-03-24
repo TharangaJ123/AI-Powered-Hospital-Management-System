@@ -83,7 +83,7 @@ public class PatientController {
      * @return a ResponseEntity containing a list of medical history records as strings
      */
     @GetMapping("/{patientId}/history")
-    public ResponseEntity<List<String>> getMedicalHistory(@PathVariable Long patientId) {
+    public ResponseEntity<List<PrescriptionDto>> getMedicalHistory(@PathVariable Long patientId) {
         return ResponseEntity.ok(patientService.getMedicalHistory(patientId));
     }
 }

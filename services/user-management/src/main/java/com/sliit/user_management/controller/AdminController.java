@@ -58,7 +58,7 @@ public class AdminController {
      * @return a ResponseEntity containing platform operations data in JSON string format
      */
     @GetMapping("/operations")
-    public ResponseEntity<String> getPlatformOperations() {
+    public ResponseEntity<Object> getPlatformOperations() {
         return ResponseEntity.ok(adminService.getPlatformOperations());
     }
 }

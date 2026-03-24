@@ -22,6 +22,7 @@ public class PatientService {
     private final UserRepository userRepository;
     private final PatientProfileRepository patientProfileRepository;
     private final MedicalDocumentRepository medicalDocumentRepository;
+    private final PrescriptionRepository prescriptionRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -149,13 +150,19 @@ public class PatientService {
      * @param patientId the profile ID of the patient
      * @return a list of medical history log entries as strings
      */
-    public List<String> getMedicalHistory(Long patientId) {
-        // Mock medical history for demo
-        return List.of(
-            "2025-01-10: Diagnosed with mild fever.",
-            "2025-02-15: Prescribed Paracetamol 500mg.",
-            "2026-03-21: Routine checkup completed."
-        );
+    public List<PrescriptionDto> getMedicalHistory(Long patientId) {
+        return prescriptionRepository.findByPatientId(patientId).stream()
+            .map(p -> PrescriptionDto.builder()
+                .id(p.getId())
+                .patientId(p.getPatient().getId())
+                .doctorId(p.getDoctorId())
+                .doctorName(p.getDoctorName())
+                .medication(p.getMedication())
+                .dosage(p.getDosage())
+                .instructions(p.getInstructions())
+                .prescribedAt(p.getPrescribedAt())
+                .build())
+            .collect(Collectors.toList());
     }
 
     private PatientProfileDto mapToDto(PatientProfile p) {

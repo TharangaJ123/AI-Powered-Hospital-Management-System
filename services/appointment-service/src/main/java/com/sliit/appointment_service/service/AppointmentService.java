@@ -107,6 +107,31 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
 
+    /** Fetch all appointments assigned to a specific doctor */
+    public List<AppointmentResponseDto> getAppointmentsByDoctor(Long doctorId) {
+        return appointmentRepository.findByDoctorId(doctorId).stream()
+                .map(this::mapToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    /** Accept an appointment request */
+    @Transactional
+    public AppointmentResponseDto acceptAppointment(Long id) {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + id));
+        appointment.setStatus(AppointmentStatus.ACCEPTED);
+        return mapToResponseDto(appointmentRepository.save(appointment));
+    }
+
+    /** Reject an appointment request */
+    @Transactional
+    public AppointmentResponseDto rejectAppointment(Long id) {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + id));
+        appointment.setStatus(AppointmentStatus.REJECTED);
+        return mapToResponseDto(appointmentRepository.save(appointment));
+    }
+
     private AppointmentResponseDto mapToResponseDto(Appointment appointment) {
         return AppointmentResponseDto.builder()
                 .id(appointment.getId())
