@@ -74,4 +74,10 @@ public class AdminController {
     public ResponseEntity<List<com.sliit.user_management.model.FinancialTransaction>> getAllTransactions() {
         return ResponseEntity.ok(adminService.getAllTransactions());
     }
+
+    @DeleteMapping("/reviews/{reviewId}")
+    public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
+        adminService.deleteReview(reviewId);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -20,6 +20,7 @@ public class DoctorService {
     private final PrescriptionRepository prescriptionRepository;
     private final MedicalDocumentRepository medicalDocumentRepository;
     private final PatientProfileRepository patientProfileRepository;
+    private final ReviewRepository reviewRepository;
 
     public List<DoctorProfileDto> getAllDoctors() {
         return doctorProfileRepository.findAll().stream()
@@ -118,6 +119,61 @@ public class DoctorService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Submits a new review for a doctor and updates their average rating.
+     * 
+     * @param reviewDto the review data
+     * @return the saved ReviewDto
+     */
+    @Transactional
+    public ReviewDto submitReview(ReviewDto reviewDto) {
+        Review review = Review.builder()
+                .doctorId(reviewDto.getDoctorId())
+                .patientId(reviewDto.getPatientId())
+                .rating(reviewDto.getRating())
+                .comment(reviewDto.getComment())
+                .createdAt(java.time.LocalDateTime.now())
+                .build();
+        
+        review = reviewRepository.save(review);
+        
+        // Update Doctor Profile Rating
+        DoctorProfile doc = doctorProfileRepository.findByUserId(reviewDto.getDoctorId())
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        
+        List<Review> reviews = reviewRepository.findByDoctorIdOrderByCreatedAtDesc(reviewDto.getDoctorId());
+        double avg = reviews.stream().mapToInt(Review::getRating).average().orElse(0.0);
+        
+        doc.setAverageRating(avg);
+        doc.setReviewCount(reviews.size());
+        doctorProfileRepository.save(doc);
+        
+        return mapToReviewDto(review);
+    }
+
+    /**
+     * Retrieves all reviews for a specific doctor.
+     * 
+     * @param doctorId the doctor's user ID
+     * @return a list of ReviewDto
+     */
+    public List<ReviewDto> getDoctorReviews(Long doctorId) {
+        return reviewRepository.findByDoctorIdOrderByCreatedAtDesc(doctorId).stream()
+                .map(this::mapToReviewDto)
+                .collect(Collectors.toList());
+    }
+
+    private ReviewDto mapToReviewDto(Review review) {
+        return ReviewDto.builder()
+                .id(review.getId())
+                .doctorId(review.getDoctorId())
+                .patientId(review.getPatientId())
+                .rating(review.getRating())
+                .comment(review.getComment())
+                .createdAt(review.getCreatedAt())
+                .build();
+    }
+
     private DoctorProfileDto mapToDto(DoctorProfile d) {
         return DoctorProfileDto.builder()
                 .id(d.getId())
@@ -131,6 +187,8 @@ public class DoctorService {
                 .experienceYears(d.getExperienceYears())
                 .isVerified(d.isVerified())
                 .consultationFee(d.getConsultationFee())
+                .averageRating(d.getAverageRating() != null ? d.getAverageRating() : 0.0)
+                .reviewCount(d.getReviewCount() != null ? d.getReviewCount() : 0)
                 .build();
     }
     

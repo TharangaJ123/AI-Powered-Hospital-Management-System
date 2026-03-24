@@ -21,4 +21,7 @@ public class DoctorProfileDto {
     private int experienceYears;
     private boolean isVerified;
     private Double consultationFee;
+
+    private Double averageRating;
+    private Integer reviewCount;
 }

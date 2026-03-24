@@ -64,4 +64,16 @@ public class DoctorController {
         // Here, doctorId could be used for authorization to ensure they can see this patient's records
         return ResponseEntity.ok(doctorService.viewPatientReports(patientId));
     }
+
+    @PostMapping("/{doctorId}/reviews")
+    @PreAuthorize("hasRole('PATIENT')")
+    public ResponseEntity<ReviewDto> submitReview(@PathVariable Long doctorId, @RequestBody ReviewDto req) {
+        req.setDoctorId(doctorId);
+        return ResponseEntity.ok(doctorService.submitReview(req));
+    }
+
+    @GetMapping("/{doctorId}/reviews")
+    public ResponseEntity<List<ReviewDto>> getReviews(@PathVariable Long doctorId) {
+        return ResponseEntity.ok(doctorService.getDoctorReviews(doctorId));
+    }
 }

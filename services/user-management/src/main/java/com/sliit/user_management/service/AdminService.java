@@ -2,6 +2,8 @@ package com.sliit.user_management.service;
 
 import com.sliit.user_management.dto.UserResponseDto;
 import com.sliit.user_management.model.User;
+import com.sliit.user_management.repository.FinancialTransactionRepository;
+import com.sliit.user_management.repository.ReviewRepository;
 import com.sliit.user_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class AdminService {
     private final UserRepository userRepository;
     private final com.sliit.user_management.repository.DoctorProfileRepository doctorProfileRepository;
     private final com.sliit.user_management.repository.FinancialTransactionRepository financialTransactionRepository;
+    private final ReviewRepository reviewRepository;
 
     /**
      * Retrieves all registered users from the database.
@@ -130,5 +133,15 @@ public class AdminService {
      */
     public List<com.sliit.user_management.model.FinancialTransaction> getAllTransactions() {
         return financialTransactionRepository.findAllByOrderByTransactionDateDesc();
+    }
+
+    /**
+     * Deletes a review by its ID.
+     * 
+     * @param reviewId the ID of the review to delete
+     */
+    @Transactional
+    public void deleteReview(Long reviewId) {
+        reviewRepository.deleteById(reviewId);
     }
 }

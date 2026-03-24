@@ -30,4 +30,7 @@ public class DoctorProfile {
     private boolean isVerified = false;
 
     private Double consultationFee;
+    
+    private Double averageRating;
+    private Integer reviewCount;
 }
