@@ -4,6 +4,8 @@ import com.sliit.user_management.dto.PatientProfileDto;
 import com.sliit.user_management.dto.UserRegistrationDto;
 import com.sliit.user_management.dto.UserResponseDto;
 import com.sliit.user_management.dto.MedicalDocumentDto;
+import com.sliit.user_management.dto.MedicalHistoryDto;
+import com.sliit.user_management.dto.PrescriptionDto;
 import com.sliit.user_management.model.*;
 import com.sliit.user_management.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,8 @@ public class PatientService {
     private final UserRepository userRepository;
     private final PatientProfileRepository patientProfileRepository;
     private final MedicalDocumentRepository medicalDocumentRepository;
+    private final MedicalHistoryRepository medicalHistoryRepository;
+    private final PrescriptionRepository prescriptionRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -142,6 +146,45 @@ public class PatientService {
                         .documentName(doc.getDocumentName())
                         .documentUrl(doc.getDocumentUrl())
                         .uploadedAt(doc.getUploadedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves all medical history records for a specific patient.
+     * 
+     * @param patientId the ID of the patient
+     * @return a list of MedicalHistoryDto records
+     */
+    public List<MedicalHistoryDto> getPatientMedicalHistory(Long patientId) {
+        return medicalHistoryRepository.findByPatientId(patientId).stream()
+                .map(history -> MedicalHistoryDto.builder()
+                        .id(history.getId())
+                        .patientId(patientId)
+                        .conditionName(history.getConditionName())
+                        .diagnosis(history.getDiagnosis())
+                        .treatment(history.getTreatment())
+                        .recordedDate(history.getRecordedDate())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves all prescriptions issued for a specific patient.
+     * 
+     * @param patientId the ID of the patient
+     * @return a list of PrescriptionDto records
+     */
+    public List<PrescriptionDto> getPatientPrescriptions(Long patientId) {
+        return prescriptionRepository.findByPatientId(patientId).stream()
+                .map(prescription -> PrescriptionDto.builder()
+                        .id(prescription.getId())
+                        .patientId(patientId)
+                        .doctorId(prescription.getDoctorId())
+                        .medication(prescription.getMedication())
+                        .dosage(prescription.getDosage())
+                        .instructions(prescription.getInstructions())
+                        .prescribedDate(prescription.getPrescribedDate())
                         .build())
                 .collect(Collectors.toList());
     }

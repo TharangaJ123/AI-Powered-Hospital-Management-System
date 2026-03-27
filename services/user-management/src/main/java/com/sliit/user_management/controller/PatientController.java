@@ -4,6 +4,8 @@ import com.sliit.user_management.dto.PatientProfileDto;
 import com.sliit.user_management.dto.UserRegistrationDto;
 import com.sliit.user_management.dto.UserResponseDto;
 import com.sliit.user_management.dto.MedicalDocumentDto;
+import com.sliit.user_management.dto.MedicalHistoryDto;
+import com.sliit.user_management.dto.PrescriptionDto;
 import com.sliit.user_management.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -82,6 +84,30 @@ public class PatientController {
     @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<List<MedicalDocumentDto>> getDocuments(@PathVariable Long patientId) {
         return ResponseEntity.ok(patientService.getPatientDocuments(patientId));
+    }
+
+    /**
+     * Retrieves the medical history for a specific patient.
+     * 
+     * @param patientId the profile ID of the patient
+     * @return a ResponseEntity containing a list of MedicalHistoryDto objects
+     */
+    @GetMapping("/{patientId}/history")
+    @PreAuthorize("hasRole('PATIENT')")
+    public ResponseEntity<List<MedicalHistoryDto>> getMedicalHistory(@PathVariable Long patientId) {
+        return ResponseEntity.ok(patientService.getPatientMedicalHistory(patientId));
+    }
+
+    /**
+     * Retrieves all prescriptions for a specific patient.
+     * 
+     * @param patientId the profile ID of the patient
+     * @return a ResponseEntity containing a list of PrescriptionDto objects
+     */
+    @GetMapping("/{patientId}/prescriptions")
+    @PreAuthorize("hasRole('PATIENT')")
+    public ResponseEntity<List<PrescriptionDto>> getPrescriptions(@PathVariable Long patientId) {
+        return ResponseEntity.ok(patientService.getPatientPrescriptions(patientId));
     }
 
 

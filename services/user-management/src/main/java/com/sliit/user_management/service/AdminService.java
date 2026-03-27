@@ -2,7 +2,6 @@ package com.sliit.user_management.service;
 
 import com.sliit.user_management.dto.UserResponseDto;
 import com.sliit.user_management.model.User;
-import com.sliit.user_management.repository.FinancialTransactionRepository;
 import com.sliit.user_management.repository.ReviewRepository;
 import com.sliit.user_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +52,32 @@ public class AdminService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setActive(isActive);
+        user = userRepository.save(user);
+        
+        return UserResponseDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .active(user.isActive())
+                .build();
+    }
+
+    /**
+     * Verifies a doctor user.
+     * 
+     * @param userId the ID of the user to verify
+     * @return the updated UserResponseDto
+     */
+    @Transactional
+    public UserResponseDto verifyDoctor(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (user.getRole() != com.sliit.user_management.model.Role.DOCTOR) {
+            throw new RuntimeException("User is not a doctor");
+        }
+        
+        user.setVerified(true);
         user = userRepository.save(user);
         
         return UserResponseDto.builder()

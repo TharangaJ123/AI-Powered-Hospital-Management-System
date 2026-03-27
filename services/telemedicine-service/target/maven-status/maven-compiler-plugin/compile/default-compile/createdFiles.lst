@@ -1,0 +1,9 @@
+com\sliit\telemedicine\TelemedicineServiceApplication.class
+com\sliit\telemedicine\config\SecurityConfig.class
+com\sliit\telemedicine\controller\TelemedicineController.class
+com\sliit\telemedicine\model\TelemedicineSession$SessionStatus.class
+com\sliit\telemedicine\security\JwtUtils.class
+com\sliit\telemedicine\model\TelemedicineSession.class
+com\sliit\telemedicine\security\AuthTokenFilter.class
+com\sliit\telemedicine\model\TelemedicineSession$TelemedicineSessionBuilder.class
+com\sliit\telemedicine\repository\TelemedicineSessionRepository.class

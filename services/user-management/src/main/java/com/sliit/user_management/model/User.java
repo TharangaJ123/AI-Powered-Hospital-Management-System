@@ -30,4 +30,7 @@ public class User {
 
     @Builder.Default
     private boolean active = true;
+
+    @Builder.Default
+    private boolean isVerified = false;
 }

@@ -25,6 +25,7 @@
         <module>infrastructure/api-gateway</module>
         <module>services/user-management</module>
         <module>services/appointment-service</module>
+        <module>services/telemedicine-service</module>
     </modules>
 
     <dependencyManagement>

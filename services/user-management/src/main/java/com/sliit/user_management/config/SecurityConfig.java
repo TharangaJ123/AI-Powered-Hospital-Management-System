@@ -2,7 +2,6 @@ package com.sliit.user_management.config;
 
 import com.sliit.user_management.security.AuthEntryPointJwt;
 import com.sliit.user_management.security.AuthTokenFilter;
-import com.sliit.user_management.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +20,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserDetailsServiceImpl userDetailsService;
     private final AuthEntryPointJwt unauthorizedHandler;
 
     @Bean

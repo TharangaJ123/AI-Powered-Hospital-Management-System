@@ -43,6 +43,17 @@ public class AdminController {
         return ResponseEntity.ok(adminService.toggleUserStatus(userId, active));
     }
 
+    /**
+     * Verifies a doctor's registration.
+     * 
+     * @param userId the ID of the doctor user to verify
+     * @return a ResponseEntity containing the updated UserResponseDto
+     */
+    @PutMapping("/doctors/{userId}/verify")
+    public ResponseEntity<UserResponseDto> verifyDoctor(@PathVariable Long userId) {
+        return ResponseEntity.ok(adminService.verifyDoctor(userId));
+    }
+
 
 
     /**
