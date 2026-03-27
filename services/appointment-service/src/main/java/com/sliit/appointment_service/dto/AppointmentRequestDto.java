@@ -14,6 +14,5 @@ import java.time.LocalDateTime;
 @Builder
 public class AppointmentRequestDto {
     private Long patientId;
-    private Long doctorId;
     private LocalDateTime appointmentDate;
 }

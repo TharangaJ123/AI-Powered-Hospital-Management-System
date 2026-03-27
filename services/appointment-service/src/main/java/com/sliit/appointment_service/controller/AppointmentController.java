@@ -2,7 +2,6 @@ package com.sliit.appointment_service.controller;
 
 import com.sliit.appointment_service.dto.AppointmentRequestDto;
 import com.sliit.appointment_service.dto.AppointmentResponseDto;
-import com.sliit.appointment_service.dto.DoctorDto;
 import com.sliit.appointment_service.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,11 +17,7 @@ public class AppointmentController {
 
     private final AppointmentService appointmentService;
 
-    // Search for doctors by their specialty (e.g., Cardiologist)
-    @GetMapping("/doctors/search")
-    public ResponseEntity<List<DoctorDto>> searchDoctorsBySpecialty(@RequestParam String specialty) {
-        return ResponseEntity.ok(appointmentService.searchDoctorsBySpecialty(specialty));
-    }
+
 
     // Book a new appointment for a patient with a specific doctor
     @PostMapping
@@ -30,7 +25,7 @@ public class AppointmentController {
         return new ResponseEntity<>(appointmentService.bookAppointment(request), HttpStatus.CREATED);
     }
 
-    // Update the details (date, doctor, etc.) of an existing appointment
+    // Update the details (date, patient, etc.) of an existing appointment
     @PutMapping("/{id}")
     public ResponseEntity<AppointmentResponseDto> updateAppointment(@PathVariable Long id, @RequestBody AppointmentRequestDto request) {
         return ResponseEntity.ok(appointmentService.updateAppointment(id, request));
@@ -73,21 +68,5 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getAppointmentsByPatient(patientId));
     }
 
-    // Retrieve all appointments for a specific doctor
-    @GetMapping("/doctor/{doctorId}")
-    public ResponseEntity<List<AppointmentResponseDto>> getAppointmentsByDoctor(@PathVariable Long doctorId) {
-        return ResponseEntity.ok(appointmentService.getAppointmentsByDoctor(doctorId));
-    }
 
-    // Doctor accepting an appointment request
-    @PutMapping("/{id}/accept")
-    public ResponseEntity<AppointmentResponseDto> acceptAppointment(@PathVariable Long id) {
-        return ResponseEntity.ok(appointmentService.acceptAppointment(id));
-    }
-
-    // Doctor rejecting an appointment request
-    @PutMapping("/{id}/reject")
-    public ResponseEntity<AppointmentResponseDto> rejectAppointment(@PathVariable Long id) {
-        return ResponseEntity.ok(appointmentService.rejectAppointment(id));
-    }
 }

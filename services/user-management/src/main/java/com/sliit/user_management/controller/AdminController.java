@@ -43,16 +43,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.toggleUserStatus(userId, active));
     }
 
-    /**
-     * Verifies the credentials and registration of a doctor.
-     * 
-     * @param doctorId the ID of the doctor to verify
-     * @return a ResponseEntity containing a success message string
-     */
-    @PutMapping("/doctors/{doctorId}/verify")
-    public ResponseEntity<String> verifyDoctor(@PathVariable Long doctorId) {
-        return ResponseEntity.ok(adminService.verifyDoctor(doctorId));
-    }
+
 
     /**
      * Retrieves aggregated platform operations and statistics.

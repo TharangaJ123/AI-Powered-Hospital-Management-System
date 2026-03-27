@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 public class AdminService {
 
     private final UserRepository userRepository;
-    private final com.sliit.user_management.repository.DoctorProfileRepository doctorProfileRepository;
     private final com.sliit.user_management.repository.FinancialTransactionRepository financialTransactionRepository;
     private final ReviewRepository reviewRepository;
 
@@ -64,30 +63,7 @@ public class AdminService {
                 .build();
     }
 
-    /**
-     * Verifies the credentials of a registered doctor.
-     * Note: This method currently provides mock verification logic.
-     * 
-     * @param doctorId the ID of the doctor to verify
-     * @return a success message string upon verification
-     */
-    @Transactional
-    public String verifyDoctor(Long doctorId) {
-        com.sliit.user_management.model.DoctorProfile doc = doctorProfileRepository.findByUserId(doctorId)
-                .orElseGet(() -> {
-                    // if doctor profile doesn't exist, create one since doctor might just be registered as user
-                    User user = userRepository.findById(doctorId)
-                            .orElseThrow(() -> new RuntimeException("Doctor user not found"));
-                    com.sliit.user_management.model.DoctorProfile newProfile = com.sliit.user_management.model.DoctorProfile.builder()
-                            .user(user)
-                            .isVerified(false)
-                            .build();
-                    return doctorProfileRepository.save(newProfile);
-                });
-        doc.setVerified(true);
-        doctorProfileRepository.save(doc);
-        return "Doctor Registration #" + doctorId + " verified successfully.";
-    }
+
 
     /**
      * Retrieves overall platform statistics and operations data.
@@ -96,7 +72,6 @@ public class AdminService {
      */
     public Object getPlatformOperations() {
         long totalUsers = userRepository.count();
-        long verifiedDoctors = doctorProfileRepository.countByIsVerified(true);
         Double totalRevenue = financialTransactionRepository.getTotalRevenue();
         if (totalRevenue == null) totalRevenue = 0.0;
         
@@ -104,7 +79,6 @@ public class AdminService {
         
         return java.util.Map.of(
             "totalUsers", totalUsers,
-            "verifiedDoctors", verifiedDoctors,
             "totalRevenue", totalRevenue,
             "successfulTransactions", successfulTransactions
         );

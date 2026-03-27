@@ -1,9 +1,7 @@
 package com.sliit.appointment_service.service;
 
-import com.sliit.appointment_service.client.DoctorServiceClient;
 import com.sliit.appointment_service.dto.AppointmentRequestDto;
 import com.sliit.appointment_service.dto.AppointmentResponseDto;
-import com.sliit.appointment_service.dto.DoctorDto;
 import com.sliit.appointment_service.model.Appointment;
 import com.sliit.appointment_service.model.AppointmentStatus;
 import com.sliit.appointment_service.repository.AppointmentRepository;
@@ -20,19 +18,12 @@ import java.util.stream.Collectors;
 public class AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
-    private final DoctorServiceClient doctorServiceClient;
-
-    /** Search for doctors using the external doctor-service */
-    public List<DoctorDto> searchDoctorsBySpecialty(String specialty) {
-        return doctorServiceClient.getDoctorsBySpecialty(specialty);
-    }
 
     /** Create and save a new appointment with BOOKED status */
     @Transactional
     public AppointmentResponseDto bookAppointment(AppointmentRequestDto request) {
         Appointment appointment = Appointment.builder()
                 .patientId(request.getPatientId())
-                .doctorId(request.getDoctorId())
                 .appointmentDate(request.getAppointmentDate())
                 .status(AppointmentStatus.BOOKED)
                 .build();
@@ -49,7 +40,6 @@ public class AppointmentService {
 
         appointment.setAppointmentDate(request.getAppointmentDate());
         appointment.setPatientId(request.getPatientId());
-        appointment.setDoctorId(request.getDoctorId());
 
         appointment = appointmentRepository.save(appointment);
         return mapToResponseDto(appointment);
@@ -107,36 +97,12 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
 
-    /** Fetch all appointments assigned to a specific doctor */
-    public List<AppointmentResponseDto> getAppointmentsByDoctor(Long doctorId) {
-        return appointmentRepository.findByDoctorId(doctorId).stream()
-                .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
-    }
 
-    /** Accept an appointment request */
-    @Transactional
-    public AppointmentResponseDto acceptAppointment(Long id) {
-        Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + id));
-        appointment.setStatus(AppointmentStatus.ACCEPTED);
-        return mapToResponseDto(appointmentRepository.save(appointment));
-    }
-
-    /** Reject an appointment request */
-    @Transactional
-    public AppointmentResponseDto rejectAppointment(Long id) {
-        Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + id));
-        appointment.setStatus(AppointmentStatus.REJECTED);
-        return mapToResponseDto(appointmentRepository.save(appointment));
-    }
 
     private AppointmentResponseDto mapToResponseDto(Appointment appointment) {
         return AppointmentResponseDto.builder()
                 .id(appointment.getId())
                 .patientId(appointment.getPatientId())
-                .doctorId(appointment.getDoctorId())
                 .appointmentDate(appointment.getAppointmentDate())
                 .status(appointment.getStatus())
                 .build();

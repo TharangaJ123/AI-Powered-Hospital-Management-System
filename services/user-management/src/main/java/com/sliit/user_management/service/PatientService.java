@@ -1,6 +1,9 @@
 package com.sliit.user_management.service;
 
-import com.sliit.user_management.dto.*;
+import com.sliit.user_management.dto.PatientProfileDto;
+import com.sliit.user_management.dto.UserRegistrationDto;
+import com.sliit.user_management.dto.UserResponseDto;
+import com.sliit.user_management.dto.MedicalDocumentDto;
 import com.sliit.user_management.model.*;
 import com.sliit.user_management.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +25,6 @@ public class PatientService {
     private final UserRepository userRepository;
     private final PatientProfileRepository patientProfileRepository;
     private final MedicalDocumentRepository medicalDocumentRepository;
-    private final PrescriptionRepository prescriptionRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -144,26 +146,7 @@ public class PatientService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Retrieves the medical history records for a specified patient.
-     * 
-     * @param patientId the profile ID of the patient
-     * @return a list of medical history log entries as strings
-     */
-    public List<PrescriptionDto> getMedicalHistory(Long patientId) {
-        return prescriptionRepository.findByPatientId(patientId).stream()
-            .map(p -> PrescriptionDto.builder()
-                .id(p.getId())
-                .patientId(p.getPatient().getId())
-                .doctorId(p.getDoctorId())
-                .doctorName(p.getDoctorName())
-                .medication(p.getMedication())
-                .dosage(p.getDosage())
-                .instructions(p.getInstructions())
-                .prescribedAt(p.getPrescribedAt())
-                .build())
-            .collect(Collectors.toList());
-    }
+
 
     private PatientProfileDto mapToDto(PatientProfile p) {
         return PatientProfileDto.builder()

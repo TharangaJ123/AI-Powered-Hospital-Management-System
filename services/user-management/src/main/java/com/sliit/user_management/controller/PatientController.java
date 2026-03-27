@@ -1,6 +1,9 @@
 package com.sliit.user_management.controller;
 
-import com.sliit.user_management.dto.*;
+import com.sliit.user_management.dto.PatientProfileDto;
+import com.sliit.user_management.dto.UserRegistrationDto;
+import com.sliit.user_management.dto.UserResponseDto;
+import com.sliit.user_management.dto.MedicalDocumentDto;
 import com.sliit.user_management.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -76,20 +79,10 @@ public class PatientController {
      * @return a ResponseEntity containing a list of MedicalDocumentDto objects
      */
     @GetMapping("/{patientId}/documents")
-    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR')")
+    @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<List<MedicalDocumentDto>> getDocuments(@PathVariable Long patientId) {
         return ResponseEntity.ok(patientService.getPatientDocuments(patientId));
     }
 
-    /**
-     * Retrieves the medical history and past records of a specific patient.
-     * 
-     * @param patientId the profile ID of the patient
-     * @return a ResponseEntity containing a list of medical history records as strings
-     */
-    @GetMapping("/{patientId}/history")
-    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR')")
-    public ResponseEntity<List<PrescriptionDto>> getMedicalHistory(@PathVariable Long patientId) {
-        return ResponseEntity.ok(patientService.getMedicalHistory(patientId));
-    }
+
 }

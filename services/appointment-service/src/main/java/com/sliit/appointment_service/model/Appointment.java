@@ -23,8 +23,6 @@ public class Appointment {
     @Column(name = "patient_id", nullable = false)
     private Long patientId;
 
-    @Column(name = "doctor_id", nullable = false)
-    private Long doctorId;
 
     @Column(name = "appointment_date", nullable = false)
     private LocalDateTime appointmentDate;
