@@ -8,11 +8,13 @@
         <outputRelativeToContentRoot value="true" />
         <module name="api-gateway" />
         <module name="discovery-service" />
+        <module name="ai-symptom-service" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="ai-symptom-service" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
       <module name="discovery-service" options="-parameters" />
     </option>
