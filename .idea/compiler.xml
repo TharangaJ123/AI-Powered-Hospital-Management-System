@@ -2,13 +2,26 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="api-gateway" />
+        <module name="telemedicine-service" />
         <module name="discovery-service" />
         <module name="ai-symptom-service" />
+      </profile>
+      <profile name="Annotation profile for hospital-management-system" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="appointment-service" />
+        <module name="doctor-management" />
+        <module name="user-management" />
       </profile>
     </annotationProcessing>
   </component>
@@ -16,7 +29,11 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="ai-symptom-service" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
+      <module name="appointment-service" options="-parameters" />
       <module name="discovery-service" options="-parameters" />
+      <module name="doctor-management" options="-parameters" />
+      <module name="telemedicine-service" options="-parameters" />
+      <module name="user-management" options="-parameters" />
     </option>
   </component>
 </project>

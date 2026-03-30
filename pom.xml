@@ -26,6 +26,7 @@
         <module>services/user-management</module>
         <module>services/appointment-service</module>
         <module>services/telemedicine-service</module>
+        <module>services/doctor-management</module>
     </modules>
 
     <dependencyManagement>
