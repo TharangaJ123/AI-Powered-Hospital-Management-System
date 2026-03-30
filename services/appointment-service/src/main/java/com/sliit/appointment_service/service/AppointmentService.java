@@ -24,6 +24,7 @@ public class AppointmentService {
     public AppointmentResponseDto bookAppointment(AppointmentRequestDto request) {
         Appointment appointment = Appointment.builder()
                 .patientId(request.getPatientId())
+                .doctorId(request.getDoctorId())
                 .appointmentDate(request.getAppointmentDate())
                 .status(AppointmentStatus.BOOKED)
                 .build();
@@ -40,6 +41,7 @@ public class AppointmentService {
 
         appointment.setAppointmentDate(request.getAppointmentDate());
         appointment.setPatientId(request.getPatientId());
+        appointment.setDoctorId(request.getDoctorId());
 
         appointment = appointmentRepository.save(appointment);
         return mapToResponseDto(appointment);
@@ -97,12 +99,18 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
 
+    /** Verify if a completed appointment exists between a patient and a doctor */
+    public boolean verifyCompletedAppointment(Long patientId, Long doctorId) {
+        return appointmentRepository.existsByPatientIdAndDoctorIdAndStatus(patientId, doctorId, AppointmentStatus.COMPLETED);
+    }
+
 
 
     private AppointmentResponseDto mapToResponseDto(Appointment appointment) {
         return AppointmentResponseDto.builder()
                 .id(appointment.getId())
                 .patientId(appointment.getPatientId())
+                .doctorId(appointment.getDoctorId())
                 .appointmentDate(appointment.getAppointmentDate())
                 .status(appointment.getStatus())
                 .build();

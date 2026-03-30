@@ -68,5 +68,11 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getAppointmentsByPatient(patientId));
     }
 
+    // Verify if a completed appointment exists between a patient and a doctor
+    @GetMapping("/verify-completed")
+    public ResponseEntity<Boolean> verifyCompletedAppointment(@RequestParam Long patientId, @RequestParam Long doctorId) {
+        return ResponseEntity.ok(appointmentService.verifyCompletedAppointment(patientId, doctorId));
+    }
+
 
 }
