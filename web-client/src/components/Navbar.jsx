@@ -1,7 +1,7 @@
 import { Phone, Search, Menu, User, MapPin, Clock, BrainCircuit } from 'lucide-react'
 import { useState } from 'react'
 
-const Navbar = () => {
+const Navbar = ({ onBookAppointment }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
@@ -79,7 +79,7 @@ const Navbar = () => {
             <button className="p-2 hover:bg-slate-100 rounded-full transition-colors hidden sm:block">
               <Search className="w-5 h-5 text-slate-600" />
             </button>
-            <button className="btn-primary flex items-center space-x-2 text-sm px-6 py-2.5">
+            <button onClick={onBookAppointment} className="btn-primary flex items-center space-x-2 text-sm px-6 py-2.5">
               <span>Book Appointment</span>
             </button>
             <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-[#0066cc] hover:text-white transition-all cursor-pointer shadow-inner">

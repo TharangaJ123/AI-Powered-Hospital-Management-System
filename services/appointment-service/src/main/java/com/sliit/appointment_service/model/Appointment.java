@@ -23,6 +23,15 @@ public class Appointment {
     @Column(name = "patient_id", nullable = false)
     private Long patientId;
 
+    @Column(name = "doctor_id", nullable = false)
+    private Long doctorId;
+
+    @Column(name = "full_name", nullable = false, length = 120)
+    private String fullName;
+
+    @Column(name = "phone_number", nullable = false, length = 20)
+    private String phoneNumber;
+
 
     @Column(name = "appointment_date", nullable = false)
     private LocalDateTime appointmentDate;

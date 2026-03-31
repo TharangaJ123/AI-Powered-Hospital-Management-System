@@ -29,7 +29,16 @@ const specialties = [
   { name: 'Orthopaedics', icon: Activity, desc: 'Leading-edge bone, joint, and muscle care.' }
 ]
 
-const HeroSlide = ({ image, title, subtitle, ctaText }) => (
+const specialtyToDoctorId = {
+  Cardiology: 1,
+  Neurology: 2,
+  Paediatrics: 3,
+  Laboratory: 4,
+  Radiology: 5,
+  Orthopaedics: 6
+}
+
+const HeroSlide = ({ image, title, subtitle, ctaText, onPrimaryClick }) => (
   <div className="relative h-[85vh] w-full flex items-center overflow-hidden">
     <div className="absolute inset-0 z-0">
       <img src={image} className="w-full h-full object-cover brightness-50" alt="Hospital" />
@@ -52,7 +61,7 @@ const HeroSlide = ({ image, title, subtitle, ctaText }) => (
           {subtitle}
         </p>
         <div className="flex flex-col sm:flex-row gap-8 pt-8">
-          <button className="btn-primary flex items-center justify-center space-x-2 px-8">
+          <button onClick={onPrimaryClick} className="btn-primary flex items-center justify-center space-x-2 px-8">
             <span>{ctaText}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -65,8 +74,19 @@ const HeroSlide = ({ image, title, subtitle, ctaText }) => (
   </div>
 )
 
-const Home = () => {
+const Home = ({ onBookAppointment }) => {
   const [activeSlide, setActiveSlide] = useState(0)
+  const [bookingForm, setBookingForm] = useState({
+    fullName: '',
+    phone: '',
+    specialty: '',
+    date: '',
+    time: ''
+  })
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [bookingReference, setBookingReference] = useState(null)
 
   const slides = [
     {
@@ -90,11 +110,71 @@ const Home = () => {
     return () => clearInterval(timer)
   }, [])
 
+  const handleQuickAccessClick = (label) => {
+    if (label === 'Book Appointment' && onBookAppointment) {
+      onBookAppointment()
+    }
+  }
+
+  const handleBookingInputChange = (event) => {
+    const { name, value } = event.target
+    setBookingForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleBookingSubmit = async (event) => {
+    event.preventDefault()
+    setIsSubmitted(false)
+    setSubmitError('')
+    setBookingReference(null)
+    setIsSubmitting(true)
+
+    try {
+      const patientId = Number(localStorage.getItem('patientId') || 1)
+      const doctorId = specialtyToDoctorId[bookingForm.specialty] || 1
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          patientId,
+          doctorId,
+          fullName: bookingForm.fullName,
+          phoneNumber: bookingForm.phone,
+          appointmentDate: `${bookingForm.date}T${bookingForm.time}:00`
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Booking failed with status ${response.status}`)
+      }
+
+      const savedAppointment = await response.json()
+      setBookingReference(savedAppointment?.id ?? null)
+      setIsSubmitted(true)
+      setBookingForm({
+        fullName: '',
+        phone: '',
+        specialty: '',
+        date: '',
+        time: ''
+      })
+    } catch (error) {
+      setSubmitError('Could not save appointment to server. Please check backend services and try again.')
+      setIsSubmitted(false)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="relative">
       {/* Hero Section */}
       <section className="pt-28 md:pt-32">
-        <HeroSlide {...slides[activeSlide]} />
+        <HeroSlide
+          {...slides[activeSlide]}
+          onPrimaryClick={slides[activeSlide].ctaText === 'Book an Appointment' ? onBookAppointment : undefined}
+        />
       </section>
 
       {/* Quick Access Tiles */}
@@ -107,7 +187,11 @@ const Home = () => {
             { icon: CreditCard, label: 'Pay Online', bg: 'bg-white hover:bg-slate-50' },
             { icon: PhoneCall, label: 'Emergency Help', bg: 'bg-[#e53e3e] text-white hover:bg-red-700' }
           ].map((item, idx) => (
-            <button key={idx} className={`${item.bg} flex flex-col items-center justify-center py-10 px-4 border-r border-slate-100 last:border-0 transition-all group`}>
+            <button
+              key={idx}
+              onClick={() => handleQuickAccessClick(item.label)}
+              className={`${item.bg} flex flex-col items-center justify-center py-10 px-4 border-r border-slate-100 last:border-0 transition-all group`}
+            >
               <div className={`p-4 rounded-full mb-3 group-hover:scale-110 transition-transform ${item.label === 'Emergency Help' ? 'bg-white/20' : 'bg-[#0066cc]/10'}`}>
                 <item.icon className={`w-8 h-8 ${item.label === 'Emergency Help' ? 'text-white' : 'text-[#0066cc]'}`} />
               </div>
@@ -227,6 +311,114 @@ const Home = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Appointment Booking Section */}
+      <section id="appointment-section" className="section-padding bg-slate-50 scroll-mt-32">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 items-start">
+          <div className="space-y-5">
+            <span className="text-[#00a69c] font-bold tracking-widest text-sm uppercase block">Appointment Desk</span>
+            <h2 className="text-4xl font-extrabold text-[#002d5a] leading-tight">Book an Appointment in Seconds</h2>
+            <p className="text-slate-600 text-lg leading-relaxed">
+              Reserve your visit with your preferred specialty. A member of our team will confirm your appointment shortly.
+            </p>
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+              <p className="text-sm text-slate-500 font-semibold">Need urgent help?</p>
+              <p className="text-2xl text-[#e53e3e] font-extrabold tracking-tight mt-1">Call 1344 now</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleBookingSubmit} className="bg-white rounded-3xl border border-slate-100 shadow-lg p-8 space-y-5">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label htmlFor="fullName" className="text-sm font-bold text-slate-700">Full Name</label>
+                <input
+                  id="fullName"
+                  name="fullName"
+                  value={bookingForm.fullName}
+                  onChange={handleBookingInputChange}
+                  required
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0066cc]"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="text-sm font-bold text-slate-700">Phone Number</label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={bookingForm.phone}
+                  onChange={handleBookingInputChange}
+                  required
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0066cc]"
+                  placeholder="07x xxx xxxx"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="specialty" className="text-sm font-bold text-slate-700">Specialty</label>
+                <select
+                  id="specialty"
+                  name="specialty"
+                  value={bookingForm.specialty}
+                  onChange={handleBookingInputChange}
+                  required
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0066cc]"
+                >
+                  <option value="">Select specialty</option>
+                  {specialties.map((specialty) => (
+                    <option key={specialty.name} value={specialty.name}>{specialty.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="date" className="text-sm font-bold text-slate-700">Date</label>
+                <input
+                  id="date"
+                  name="date"
+                  type="date"
+                  value={bookingForm.date}
+                  onChange={handleBookingInputChange}
+                  required
+                  min={new Date().toISOString().split('T')[0]}
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0066cc]"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="time" className="text-sm font-bold text-slate-700">Preferred Time</label>
+                <input
+                  id="time"
+                  name="time"
+                  type="time"
+                  value={bookingForm.time}
+                  onChange={handleBookingInputChange}
+                  required
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0066cc]"
+                />
+              </div>
+            </div>
+
+            <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-3.5 text-center disabled:opacity-70 disabled:cursor-not-allowed">
+              {isSubmitting ? 'Saving Appointment...' : 'Confirm Appointment'}
+            </button>
+
+            {isSubmitted && (
+              <p className="text-sm font-semibold text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                Appointment request saved successfully{bookingReference ? ` (Ref #${bookingReference})` : ''}. Our team will contact you soon.
+              </p>
+            )}
+
+            {submitError && (
+              <p className="text-sm font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                {submitError}
+              </p>
+            )}
+          </form>
         </div>
       </section>
 
