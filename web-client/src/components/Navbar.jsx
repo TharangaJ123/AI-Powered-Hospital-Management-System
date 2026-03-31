@@ -1,9 +1,8 @@
 import { Phone, Search, Menu, User, MapPin, Clock, BrainCircuit, LogOut } from 'lucide-react'
 import { useState } from 'react'
 
-const Navbar = ({ user, onLoginClick, onSignupClick, onLogout }) => {
+const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
   const displayName = user?.name || user?.fullName || user?.username || user?.email || 'User'
 
@@ -86,36 +85,24 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout }) => {
               <span>Book Appointment</span>
             </button>
             {user ? (
-              <div className="relative hidden sm:block">
+              <div className="hidden sm:flex items-center gap-2">
                 <button
                   type="button"
                   className="w-10 h-10 rounded-full bg-[#0066cc]/10 border border-[#0066cc]/20 flex items-center justify-center text-[#0066cc] hover:bg-[#0066cc] hover:text-white transition-all shadow-inner"
-                  onClick={() => setIsUserMenuOpen((prev) => !prev)}
-                  aria-label="Open user menu"
+                  onClick={onProfileClick}
+                  aria-label="Go to profile"
+                  title={`${displayName} (${(user?.role || 'PATIENT').toUpperCase()})`}
                 >
                   <User className="w-5 h-5" />
                 </button>
-
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl p-4">
-                    <p className="text-sm font-bold text-slate-900 truncate">{displayName}</p>
-                    <p className="text-xs text-slate-500 truncate mt-1">{user?.email || 'Authenticated user'}</p>
-                    <p className="mt-2 inline-flex rounded-full border border-[#0066cc]/20 bg-[#0066cc]/10 px-2 py-0.5 text-[11px] font-bold text-[#0066cc]">
-                      {(user?.role || 'PATIENT').toUpperCase()}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsUserMenuOpen(false)
-                        onLogout()
-                      }}
-                      className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 transition-colors font-semibold text-sm"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Logout
-                    </button>
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-slate-200 text-sm font-semibold text-slate-700 hover:text-red-600 hover:border-red-200 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
               </div>
             ) : (
               <div className="hidden sm:flex items-center gap-2">
@@ -154,16 +141,28 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout }) => {
           <a href="#" className="block font-bold text-slate-800">Services</a>
           <a href="#" className="block font-bold text-slate-800">Contact</a>
           {user ? (
-            <button
-              type="button"
-              onClick={() => {
-                setIsMenuOpen(false)
-                onLogout()
-              }}
-              className="w-full text-left font-bold text-red-600"
-            >
-              Logout
-            </button>
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false)
+                  onProfileClick()
+                }}
+                className="w-full text-left font-bold text-[#0066cc]"
+              >
+                My Profile
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false)
+                  onLogout()
+                }}
+                className="w-full text-left font-bold text-red-600"
+              >
+                Logout
+              </button>
+            </div>
           ) : (
             <div className="flex items-center gap-3 pt-2">
               <button

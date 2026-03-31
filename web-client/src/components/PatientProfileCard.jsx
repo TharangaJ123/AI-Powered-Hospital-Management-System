@@ -9,7 +9,7 @@ const EMPTY_PROFILE = {
   dateOfBirth: '',
 }
 
-const PatientProfileCard = ({ profile, onSave, isSaving, error }) => {
+const PatientProfileCard = ({ profile, onSave, isSaving, error, sectionId }) => {
   const [formData, setFormData] = useState(EMPTY_PROFILE)
 
   useEffect(() => {
@@ -34,7 +34,7 @@ const PatientProfileCard = ({ profile, onSave, isSaving, error }) => {
   }
 
   return (
-    <section className="max-w-7xl mx-auto px-4 mt-28 mb-8 w-full">
+    <section id={sectionId} className="max-w-7xl mx-auto px-4 mt-8 mb-8 w-full">
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 rounded-xl bg-[#0066cc]/10 text-[#0066cc] flex items-center justify-center">

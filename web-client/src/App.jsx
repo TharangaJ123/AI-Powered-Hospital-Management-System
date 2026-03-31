@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import AuthModal from './components/AuthModal'
-import PatientProfileCard from './components/PatientProfileCard'
 import Home from './pages/Home'
+import Profile from './pages/Profile'
 import {
   clearSession,
   getPatientProfile,
@@ -15,6 +16,7 @@ import {
 } from './services/auth'
 
 function App() {
+  const navigate = useNavigate()
   const [authMode, setAuthMode] = useState(null)
   const [session, setSession] = useState(null)
   const [patientProfile, setPatientProfile] = useState(null)
@@ -77,6 +79,7 @@ function App() {
     persistSession(nextSession)
     setSession(nextSession)
     handleCloseAuth()
+    navigate('/profile')
   }
 
   const handleSignup = async (data) => {
@@ -89,6 +92,7 @@ function App() {
     persistSession(nextSession)
     setSession(nextSession)
     handleCloseAuth()
+    navigate('/profile')
   }
 
   const handleLogout = () => {
@@ -96,6 +100,16 @@ function App() {
     setSession(null)
     setPatientProfile(null)
     setProfileError('')
+    navigate('/')
+  }
+
+  const handleProfileClick = () => {
+    if (!session?.user) {
+      handleOpenAuth('login')
+      return
+    }
+
+    navigate('/profile')
   }
 
   const handlePatientProfileSave = async (profileData) => {
@@ -127,16 +141,26 @@ function App() {
         onLoginClick={() => handleOpenAuth('login')}
         onSignupClick={() => handleOpenAuth('signup')}
         onLogout={handleLogout}
+        onProfileClick={handleProfileClick}
       />
-      {session?.user?.role === 'PATIENT' && (
-        <PatientProfileCard
-          profile={patientProfile}
-          onSave={handlePatientProfileSave}
-          isSaving={isSavingProfile}
-          error={profileError}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route
+          path="/profile"
+          element={(
+            <Profile
+              user={session?.user || null}
+              patientProfile={patientProfile}
+              profileError={profileError}
+              isSavingProfile={isSavingProfile}
+              onSavePatientProfile={handlePatientProfileSave}
+              onLoginClick={() => handleOpenAuth('login')}
+              onSignupClick={() => handleOpenAuth('signup')}
+            />
+          )}
         />
-      )}
-      <Home />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
       <Footer />
       {authMode && (
         <AuthModal
