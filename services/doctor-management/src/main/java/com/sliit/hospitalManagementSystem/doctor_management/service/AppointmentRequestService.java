@@ -5,7 +5,7 @@ import com.sliit.hospitalManagementSystem.doctor_management.model.AppointmentReq
 import com.sliit.hospitalManagementSystem.doctor_management.model.AppointmentRequestStatus;
 import com.sliit.hospitalManagementSystem.doctor_management.model.ConsultationType;
 import com.sliit.hospitalManagementSystem.doctor_management.repository.AppointmentRequestRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,16 +20,16 @@ public class AppointmentRequestService {
         this.appointmentRequestRepository = appointmentRequestRepository;
     }
 
+    @SuppressWarnings("null")
     public AppointmentRequestDTO createRequest(AppointmentRequestDTO dto) {
         AppointmentRequest request = mapToEntity(dto);
-        AppointmentRequest saved = appointmentRequestRepository.save(request);
-        return mapToDTO(saved);
+        return mapToDTO(appointmentRequestRepository.save(request));
     }
 
-    public AppointmentRequestDTO getRequestById(Long id) {
-        AppointmentRequest request = appointmentRequestRepository.findById(id)
+    public AppointmentRequestDTO getRequestById(@NonNull Long id) {
+        return appointmentRequestRepository.findById(id)
+                .map(this::mapToDTO)
                 .orElseThrow(() -> new RuntimeException("Appointment request not found with id: " + id));
-        return mapToDTO(request);
     }
 
     public List<AppointmentRequestDTO> getRequestsByDoctorId(Long doctorId) {
@@ -44,41 +44,38 @@ public class AppointmentRequestService {
                 .collect(Collectors.toList());
     }
 
-    public AppointmentRequestDTO acceptRequest(Long id, String doctorNotes) {
-        AppointmentRequest request = appointmentRequestRepository.findById(id)
+    public AppointmentRequestDTO acceptRequest(@NonNull Long id, String doctorNotes) {
+        return appointmentRequestRepository.findById(id)
+                .map(request -> {
+                    request.setStatus(AppointmentRequestStatus.ACCEPTED);
+                    request.setDoctorNotes(doctorNotes);
+                    return mapToDTO(appointmentRequestRepository.save(request));
+                })
                 .orElseThrow(() -> new RuntimeException("Appointment request not found with id: " + id));
-
-        request.setStatus(AppointmentRequestStatus.ACCEPTED);
-        request.setDoctorNotes(doctorNotes);
-
-        AppointmentRequest updated = appointmentRequestRepository.save(request);
-        return mapToDTO(updated);
     }
 
-    public AppointmentRequestDTO rejectRequest(Long id, String doctorNotes) {
-        AppointmentRequest request = appointmentRequestRepository.findById(id)
+    public AppointmentRequestDTO rejectRequest(@NonNull Long id, String doctorNotes) {
+        return appointmentRequestRepository.findById(id)
+                .map(request -> {
+                    request.setStatus(AppointmentRequestStatus.REJECTED);
+                    request.setDoctorNotes(doctorNotes);
+                    return mapToDTO(appointmentRequestRepository.save(request));
+                })
                 .orElseThrow(() -> new RuntimeException("Appointment request not found with id: " + id));
-
-        request.setStatus(AppointmentRequestStatus.REJECTED);
-        request.setDoctorNotes(doctorNotes);
-
-        AppointmentRequest updated = appointmentRequestRepository.save(request);
-        return mapToDTO(updated);
     }
 
-    public AppointmentRequestDTO completeRequest(Long id) {
-        AppointmentRequest request = appointmentRequestRepository.findById(id)
+    public AppointmentRequestDTO completeRequest(@NonNull Long id) {
+        return appointmentRequestRepository.findById(id)
+                .map(request -> {
+                    request.setStatus(AppointmentRequestStatus.COMPLETED);
+                    return mapToDTO(appointmentRequestRepository.save(request));
+                })
                 .orElseThrow(() -> new RuntimeException("Appointment request not found with id: " + id));
-
-        request.setStatus(AppointmentRequestStatus.COMPLETED);
-
-        AppointmentRequest updated = appointmentRequestRepository.save(request);
-        return mapToDTO(updated);
     }
 
     // --- Mapping helpers ---
 
-    private AppointmentRequestDTO mapToDTO(AppointmentRequest request) {
+    private AppointmentRequestDTO mapToDTO(@NonNull AppointmentRequest request) {
         return AppointmentRequestDTO.builder()
                 .id(request.getId())
                 .doctorId(request.getDoctorId())

@@ -3,7 +3,6 @@ package com.sliit.hospitalManagementSystem.doctor_management.controller;
 import com.sliit.hospitalManagementSystem.doctor_management.dto.PrescriptionDTO;
 import com.sliit.hospitalManagementSystem.doctor_management.service.PrescriptionService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/doctors/prescriptions")
 @CrossOrigin(origins = "*")
+@SuppressWarnings("null")
 public class PrescriptionController {
 
     private final PrescriptionService prescriptionService;

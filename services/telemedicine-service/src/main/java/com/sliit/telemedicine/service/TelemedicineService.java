@@ -4,6 +4,7 @@ import com.sliit.telemedicine.dto.TelemedicineSessionResponse;
 import com.sliit.telemedicine.model.TelemedicineSession;
 import com.sliit.telemedicine.repository.TelemedicineSessionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -15,7 +16,8 @@ public class TelemedicineService {
     private final TelemedicineSessionRepository sessionRepository;
     private static final String JITSI_BASE_URL = "https://meet.jit.si/";
 
-    public TelemedicineSession createOrGetSession(Long appointmentId) {
+    @SuppressWarnings("null")
+    public TelemedicineSession createOrGetSession(@NonNull Long appointmentId) {
         return sessionRepository.findByAppointmentId(appointmentId)
                 .orElseGet(() -> {
                     String roomName = "hospital-mgmt-" + appointmentId + "-" + UUID.randomUUID().toString().substring(0, 8);
@@ -28,7 +30,7 @@ public class TelemedicineService {
                 });
     }
 
-    public TelemedicineSessionResponse getJoinSessionDetails(Long appointmentId) {
+    public TelemedicineSessionResponse getJoinSessionDetails(@NonNull Long appointmentId) {
         TelemedicineSession session = sessionRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Session not found for appointment " + appointmentId));
 
@@ -38,11 +40,12 @@ public class TelemedicineService {
                 .build();
     }
 
-    public TelemedicineSession completeSession(Long appointmentId) {
-        TelemedicineSession session = sessionRepository.findByAppointmentId(appointmentId)
+    public TelemedicineSession completeSession(@NonNull Long appointmentId) {
+        return sessionRepository.findByAppointmentId(appointmentId)
+                .map(session -> {
+                    session.setStatus(TelemedicineSession.SessionStatus.COMPLETED);
+                    return sessionRepository.save(session);
+                })
                 .orElseThrow(() -> new RuntimeException("Session not found"));
-
-        session.setStatus(TelemedicineSession.SessionStatus.COMPLETED);
-        return sessionRepository.save(session);
     }
 }

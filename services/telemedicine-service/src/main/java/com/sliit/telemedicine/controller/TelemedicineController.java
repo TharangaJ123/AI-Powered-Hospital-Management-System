@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/telemedicine/sessions")
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class TelemedicineController {
 
     private final TelemedicineService telemedicineService;

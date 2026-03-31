@@ -4,7 +4,7 @@ import com.sliit.hospitalManagementSystem.doctor_management.dto.DoctorProfileDTO
 import com.sliit.hospitalManagementSystem.doctor_management.model.DoctorProfile;
 import com.sliit.hospitalManagementSystem.doctor_management.model.DoctorStatus;
 import com.sliit.hospitalManagementSystem.doctor_management.repository.DoctorProfileRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,18 +19,19 @@ public class DoctorProfileService {
         this.doctorProfileRepository = doctorProfileRepository;
     }
 
+    @SuppressWarnings("null")
     public DoctorProfileDTO createProfile(DoctorProfileDTO dto) {
         DoctorProfile profile = mapToEntity(dto);
-        DoctorProfile saved = doctorProfileRepository.save(profile);
-        return mapToDTO(saved);
+        return mapToDTO(doctorProfileRepository.save(profile));
     }
 
-    public DoctorProfileDTO getProfileById(Long id) {
-        DoctorProfile profile = doctorProfileRepository.findById(id)
+    public DoctorProfileDTO getProfileById(@NonNull Long id) {
+        return doctorProfileRepository.findById(id)
+                .map(this::mapToDTO)
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found with id: " + id));
-        return mapToDTO(profile);
     }
 
+    @SuppressWarnings("null")
     public DoctorProfileDTO getProfileByUserId(Long userId) {
         DoctorProfile profile = doctorProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found for user id: " + userId));
@@ -56,13 +57,13 @@ public class DoctorProfileService {
                 .collect(Collectors.toList());
     }
 
-    public DoctorProfileDTO approveDoctor(Long id) {
-        DoctorProfile existing = doctorProfileRepository.findById(id)
+    public DoctorProfileDTO approveDoctor(@NonNull Long id) {
+        return doctorProfileRepository.findById(id)
+                .map(existing -> {
+                    existing.setStatus(DoctorStatus.ACTIVE);
+                    return mapToDTO(doctorProfileRepository.save(existing));
+                })
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found with id: " + id));
-
-        existing.setStatus(DoctorStatus.ACTIVE);
-        DoctorProfile updated = doctorProfileRepository.save(existing);
-        return mapToDTO(updated);
     }
 
     public List<DoctorProfileDTO> getTelemedicineDoctors() {
@@ -71,32 +72,32 @@ public class DoctorProfileService {
                 .collect(Collectors.toList());
     }
 
-    public DoctorProfileDTO updateProfile(Long id, DoctorProfileDTO dto) {
-        DoctorProfile existing = doctorProfileRepository.findById(id)
+    public DoctorProfileDTO updateProfile(@NonNull Long id, DoctorProfileDTO dto) {
+        return doctorProfileRepository.findById(id)
+                .map(existing -> {
+                    existing.setFirstName(dto.getFirstName());
+                    existing.setLastName(dto.getLastName());
+                    existing.setEmail(dto.getEmail());
+                    existing.setPhone(dto.getPhone());
+                    existing.setSpecialization(dto.getSpecialization());
+                    existing.setQualification(dto.getQualification());
+                    existing.setExperienceYears(dto.getExperienceYears());
+                    existing.setLicenseNumber(dto.getLicenseNumber());
+                    existing.setBio(dto.getBio());
+                    existing.setProfilePhotoUrl(dto.getProfilePhotoUrl());
+                    existing.setConsultationFee(dto.getConsultationFee());
+                    existing.setIsAvailableForTelemedicine(dto.getIsAvailableForTelemedicine());
+
+                    if (dto.getStatus() != null) {
+                        existing.setStatus(DoctorStatus.valueOf(dto.getStatus().toUpperCase()));
+                    }
+
+                    return mapToDTO(doctorProfileRepository.save(existing));
+                })
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found with id: " + id));
-
-        existing.setFirstName(dto.getFirstName());
-        existing.setLastName(dto.getLastName());
-        existing.setEmail(dto.getEmail());
-        existing.setPhone(dto.getPhone());
-        existing.setSpecialization(dto.getSpecialization());
-        existing.setQualification(dto.getQualification());
-        existing.setExperienceYears(dto.getExperienceYears());
-        existing.setLicenseNumber(dto.getLicenseNumber());
-        existing.setBio(dto.getBio());
-        existing.setProfilePhotoUrl(dto.getProfilePhotoUrl());
-        existing.setConsultationFee(dto.getConsultationFee());
-        existing.setIsAvailableForTelemedicine(dto.getIsAvailableForTelemedicine());
-
-        if (dto.getStatus() != null) {
-            existing.setStatus(DoctorStatus.valueOf(dto.getStatus().toUpperCase()));
-        }
-
-        DoctorProfile updated = doctorProfileRepository.save(existing);
-        return mapToDTO(updated);
     }
 
-    public void deleteProfile(Long id) {
+    public void deleteProfile(@NonNull Long id) {
         if (!doctorProfileRepository.existsById(id)) {
             throw new RuntimeException("Doctor profile not found with id: " + id);
         }
@@ -105,7 +106,7 @@ public class DoctorProfileService {
 
     // --- Mapping helpers ---
 
-    private DoctorProfileDTO mapToDTO(DoctorProfile profile) {
+    private DoctorProfileDTO mapToDTO(@NonNull DoctorProfile profile) {
         return DoctorProfileDTO.builder()
                 .id(profile.getId())
                 .userId(profile.getUserId())

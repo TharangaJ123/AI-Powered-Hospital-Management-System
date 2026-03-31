@@ -3,7 +3,6 @@ package com.sliit.hospitalManagementSystem.doctor_management.controller;
 import com.sliit.hospitalManagementSystem.doctor_management.dto.TelemedicineSessionDTO;
 import com.sliit.hospitalManagementSystem.doctor_management.service.TelemedicineSessionService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +13,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/doctors/telemedicine")
 @CrossOrigin(origins = "*")
+@SuppressWarnings("null")
 public class TelemedicineSessionController {
 
     private final TelemedicineSessionService telemedicineSessionService;

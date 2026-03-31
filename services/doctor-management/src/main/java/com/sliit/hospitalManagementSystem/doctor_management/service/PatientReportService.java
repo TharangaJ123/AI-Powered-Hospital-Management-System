@@ -3,7 +3,7 @@ package com.sliit.hospitalManagementSystem.doctor_management.service;
 import com.sliit.hospitalManagementSystem.doctor_management.dto.PatientReportDTO;
 import com.sliit.hospitalManagementSystem.doctor_management.model.PatientReport;
 import com.sliit.hospitalManagementSystem.doctor_management.repository.PatientReportRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,16 +18,16 @@ public class PatientReportService {
         this.patientReportRepository = patientReportRepository;
     }
 
+    @SuppressWarnings("null")
     public PatientReportDTO createReport(PatientReportDTO dto) {
         PatientReport report = mapToEntity(dto);
-        PatientReport saved = patientReportRepository.save(report);
-        return mapToDTO(saved);
+        return mapToDTO(patientReportRepository.save(report));
     }
 
-    public PatientReportDTO getReportById(Long id) {
-        PatientReport report = patientReportRepository.findById(id)
+    public PatientReportDTO getReportById(@NonNull Long id) {
+        return patientReportRepository.findById(id)
+                .map(this::mapToDTO)
                 .orElseThrow(() -> new RuntimeException("Patient report not found with id: " + id));
-        return mapToDTO(report);
     }
 
     public List<PatientReportDTO> getReportsByDoctorId(Long doctorId) {
@@ -48,19 +48,18 @@ public class PatientReportService {
                 .collect(Collectors.toList());
     }
 
-    public PatientReportDTO addDoctorRemarks(Long id, String remarks) {
-        PatientReport report = patientReportRepository.findById(id)
+    public PatientReportDTO addDoctorRemarks(@NonNull Long id, String remarks) {
+        return patientReportRepository.findById(id)
+                .map(report -> {
+                    report.setDoctorRemarks(remarks);
+                    return mapToDTO(patientReportRepository.save(report));
+                })
                 .orElseThrow(() -> new RuntimeException("Patient report not found with id: " + id));
-
-        report.setDoctorRemarks(remarks);
-
-        PatientReport updated = patientReportRepository.save(report);
-        return mapToDTO(updated);
     }
 
     // --- Mapping helpers ---
 
-    private PatientReportDTO mapToDTO(PatientReport report) {
+    private PatientReportDTO mapToDTO(@NonNull PatientReport report) {
         return PatientReportDTO.builder()
                 .id(report.getId())
                 .doctorId(report.getDoctorId())

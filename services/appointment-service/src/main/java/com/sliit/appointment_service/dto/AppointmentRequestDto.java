@@ -1,6 +1,5 @@
 package com.sliit.appointment_service.dto;
 
-import com.sliit.appointment_service.model.AppointmentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

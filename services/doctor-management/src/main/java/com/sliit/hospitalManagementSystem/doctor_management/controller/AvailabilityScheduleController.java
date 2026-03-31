@@ -3,7 +3,6 @@ package com.sliit.hospitalManagementSystem.doctor_management.controller;
 import com.sliit.hospitalManagementSystem.doctor_management.dto.AvailabilityScheduleDTO;
 import com.sliit.hospitalManagementSystem.doctor_management.service.AvailabilityScheduleService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/doctors/availability")
 @CrossOrigin(origins = "*")
+@SuppressWarnings("null")
 public class AvailabilityScheduleController {
 
     private final AvailabilityScheduleService availabilityScheduleService;
