@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-blue: #0066cc;
+  --secondary-teal: #00a69c;
+  --text-dark: #1a202c;
+  --text-muted: #4a5568;
+  --bg-light: #f7fafc;
+  --emergency-red: #e53e3e;
+
+  font-family: 'Outfit', 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  color: var(--text-dark);
+  background-color: white;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.gradient-text {
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-[#0066cc] to-[#00a69c];
+}
+
+.btn-primary {
+  @apply bg-[#0066cc] text-white px-6 py-3 rounded-full font-semibold transition-all hover:bg-[#0052a3] shadow-md hover:shadow-lg active:scale-95;
+}
+
+.btn-secondary {
+  @apply bg-[#00a69c] text-white px-6 py-3 rounded-full font-semibold transition-all hover:bg-[#008c84] shadow-md hover:shadow-lg active:scale-95;
+}
+
+.glass-card {
+  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+}
+
+.section-padding {
+  @apply py-16 md:py-24 px-4 md:px-8;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0066cc;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #004d99;
+}
+
