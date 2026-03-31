@@ -18,7 +18,7 @@ import {
   History
 } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const specialties = [
   { name: 'Cardiology', icon: Heart, desc: 'Advanced heart care services and specialized treatments.' },
@@ -87,6 +87,7 @@ const Home = ({ onBookAppointment }) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [bookingReference, setBookingReference] = useState(null)
+  const isSubmittingRef = useRef(false)
 
   const slides = [
     {
@@ -123,6 +124,11 @@ const Home = ({ onBookAppointment }) => {
 
   const handleBookingSubmit = async (event) => {
     event.preventDefault()
+    if (isSubmittingRef.current) {
+      return
+    }
+
+    isSubmittingRef.current = true
     setIsSubmitted(false)
     setSubmitError('')
     setBookingReference(null)
@@ -146,6 +152,9 @@ const Home = ({ onBookAppointment }) => {
       })
 
       if (!response.ok) {
+        if (response.status === 409) {
+          throw new Error('DUPLICATE_APPOINTMENT')
+        }
         throw new Error(`Booking failed with status ${response.status}`)
       }
 
@@ -160,9 +169,14 @@ const Home = ({ onBookAppointment }) => {
         time: ''
       })
     } catch (error) {
-      setSubmitError('Could not save appointment to server. Please check backend services and try again.')
+      if (error.message === 'DUPLICATE_APPOINTMENT') {
+        setSubmitError('This appointment already exists for the selected date and time. Please choose a different slot.')
+      } else {
+        setSubmitError('Could not save appointment to server. Please check backend services and try again.')
+      }
       setIsSubmitted(false)
     } finally {
+      isSubmittingRef.current = false
       setIsSubmitting(false)
     }
   }
