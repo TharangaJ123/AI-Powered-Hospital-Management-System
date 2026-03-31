@@ -1,7 +1,7 @@
 import { Phone, Search, Menu, User, MapPin, Clock, BrainCircuit, LogOut } from 'lucide-react'
 import { useState } from 'react'
 
-const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick }) => {
+const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, onBookAppointmentClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const displayName = user?.name || user?.fullName || user?.username || user?.email || 'User'
@@ -81,7 +81,11 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick })
             <button className="p-2 hover:bg-slate-100 rounded-full transition-colors hidden sm:block">
               <Search className="w-5 h-5 text-slate-600" />
             </button>
-            <button className="btn-primary flex items-center space-x-2 text-sm px-6 py-2.5">
+            <button 
+              onClick={onBookAppointmentClick}
+              className="btn-primary flex items-center space-x-2 text-sm px-6 py-2.5 hover:opacity-90 transition-opacity"
+              title={user ? "Book an appointment" : "Login to book an appointment"}
+            >
               <span>Book Appointment</span>
             </button>
             {user ? (

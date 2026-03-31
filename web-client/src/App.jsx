@@ -5,6 +5,7 @@ import Footer from './components/Footer'
 import AuthModal from './components/AuthModal'
 import Home from './pages/Home'
 import Profile from './pages/Profile'
+import Appointments from './pages/Appointments'
 import {
   clearSession,
   getPatientProfile,
@@ -112,6 +113,11 @@ function App() {
     navigate('/profile')
   }
 
+  const handleBookAppointmentClick = () => {
+    // Navigate to appointments page (allow guest access)
+    navigate('/appointments')
+  }
+
   const handlePatientProfileSave = async (profileData) => {
     if (!session?.token || !session?.user?.id) {
       return
@@ -142,6 +148,7 @@ function App() {
         onSignupClick={() => handleOpenAuth('signup')}
         onLogout={handleLogout}
         onProfileClick={handleProfileClick}
+        onBookAppointmentClick={handleBookAppointmentClick}
       />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -156,6 +163,15 @@ function App() {
               onSavePatientProfile={handlePatientProfileSave}
               onLoginClick={() => handleOpenAuth('login')}
               onSignupClick={() => handleOpenAuth('signup')}
+            />
+          )}
+        />
+        <Route
+          path="/appointments"
+          element={(
+            <Appointments
+              user={session?.user || null}
+              onLoginClick={() => handleOpenAuth('login')}
             />
           )}
         />

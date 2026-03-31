@@ -25,15 +25,17 @@ public class AppointmentService {
     @Transactional
     public AppointmentResponseDto bookAppointment(AppointmentRequestDto request) {
         Long resolvedDoctorId = resolveDoctorId(request.getDoctorId());
-        boolean duplicateExists = appointmentRepository.existsByPatientIdAndDoctorIdAndAppointmentDateAndStatus(
-            request.getPatientId(),
-            resolvedDoctorId,
-            request.getAppointmentDate(),
-            AppointmentStatus.BOOKED
-        );
+        if (request.getPatientId() != null) {
+            boolean duplicateExists = appointmentRepository.existsByPatientIdAndDoctorIdAndAppointmentDateAndStatus(
+                request.getPatientId(),
+                resolvedDoctorId,
+                request.getAppointmentDate(),
+                AppointmentStatus.BOOKED
+            );
 
-        if (duplicateExists) {
-            throw new ResponseStatusException(CONFLICT, "An appointment already exists for the selected date and time.");
+            if (duplicateExists) {
+                throw new ResponseStatusException(CONFLICT, "An appointment already exists for the selected date and time.");
+            }
         }
 
         Appointment appointment = Appointment.builder()
