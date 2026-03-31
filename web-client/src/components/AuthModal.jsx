@@ -4,14 +4,21 @@ import { CircleAlert, LoaderCircle, ShieldCheck, X } from 'lucide-react'
 const EMPTY_LOGIN = {
   email: '',
   password: '',
+  role: 'PATIENT',
 }
 
 const EMPTY_SIGNUP = {
+  role: 'PATIENT',
   name: '',
   email: '',
   password: '',
   confirmPassword: '',
+  phoneNumber: '',
+  address: '',
+  dateOfBirth: '',
 }
+
+const ROLE_OPTIONS = ['PATIENT', 'DOCTOR', 'ADMIN']
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -32,6 +39,10 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
   }, [activeMode])
 
   const validateLogin = () => {
+    if (!ROLE_OPTIONS.includes(loginData.role)) {
+      return 'Please select a valid role.'
+    }
+
     if (!emailRegex.test(loginData.email.trim())) {
       return 'Please enter a valid email address.'
     }
@@ -44,6 +55,10 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
   }
 
   const validateSignup = () => {
+    if (!ROLE_OPTIONS.includes(signupData.role)) {
+      return 'Please select a valid role.'
+    }
+
     if (signupData.name.trim().length < 2) {
       return 'Please enter your full name.'
     }
@@ -58,6 +73,10 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
 
     if (signupData.password !== signupData.confirmPassword) {
       return 'Passwords do not match.'
+    }
+
+    if (signupData.role === 'PATIENT' && signupData.phoneNumber.trim().length < 10) {
+      return 'Please enter a valid patient phone number.'
     }
 
     return ''
@@ -79,6 +98,7 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
       await onLogin({
         email: loginData.email.trim(),
         password: loginData.password,
+        selectedRole: loginData.role,
       })
       setLoginData(EMPTY_LOGIN)
     } catch (submitError) {
@@ -102,9 +122,13 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
 
     try {
       await onSignup({
+        role: signupData.role,
         name: signupData.name.trim(),
         email: signupData.email.trim(),
         password: signupData.password,
+        phoneNumber: signupData.phoneNumber.trim(),
+        address: signupData.address.trim(),
+        dateOfBirth: signupData.dateOfBirth,
       })
       setSignupData(EMPTY_SIGNUP)
     } catch (submitError) {
@@ -172,6 +196,20 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
           {activeMode === 'login' ? (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
+                <label htmlFor="login-role" className="auth-label">Role</label>
+                <select
+                  id="login-role"
+                  value={loginData.role}
+                  onChange={(event) => setLoginData((prev) => ({ ...prev, role: event.target.value }))}
+                  className="auth-input"
+                  required
+                >
+                  {ROLE_OPTIONS.map((role) => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label htmlFor="login-email" className="auth-label">Email</label>
                 <input
                   id="login-email"
@@ -210,6 +248,20 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
             </form>
           ) : (
             <form onSubmit={handleSignupSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="signup-role" className="auth-label">Role</label>
+                <select
+                  id="signup-role"
+                  value={signupData.role}
+                  onChange={(event) => setSignupData((prev) => ({ ...prev, role: event.target.value }))}
+                  className="auth-input"
+                  required
+                >
+                  {ROLE_OPTIONS.map((role) => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
+              </div>
               <div>
                 <label htmlFor="signup-name" className="auth-label">Full Name</label>
                 <input
@@ -262,6 +314,47 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
                   required
                 />
               </div>
+              {signupData.role === 'PATIENT' && (
+                <>
+                  <div>
+                    <label htmlFor="signup-phone" className="auth-label">Phone Number</label>
+                    <input
+                      id="signup-phone"
+                      type="text"
+                      value={signupData.phoneNumber}
+                      onChange={(event) => setSignupData((prev) => ({ ...prev, phoneNumber: event.target.value }))}
+                      className="auth-input"
+                      placeholder="07xxxxxxxx"
+                      autoComplete="tel"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="signup-dob" className="auth-label">Date of Birth</label>
+                    <input
+                      id="signup-dob"
+                      type="date"
+                      value={signupData.dateOfBirth}
+                      onChange={(event) => setSignupData((prev) => ({ ...prev, dateOfBirth: event.target.value }))}
+                      className="auth-input"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="signup-address" className="auth-label">Address</label>
+                    <input
+                      id="signup-address"
+                      type="text"
+                      value={signupData.address}
+                      onChange={(event) => setSignupData((prev) => ({ ...prev, address: event.target.value }))}
+                      className="auth-input"
+                      placeholder="Street, City"
+                      autoComplete="street-address"
+                      required
+                    />
+                  </div>
+                </>
+              )}
               <button type="submit" className="btn-secondary w-full justify-center" disabled={isLoading}>
                 {isLoading ? (
                   <span className="inline-flex items-center gap-2">

@@ -100,6 +100,9 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout }) => {
                   <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl p-4">
                     <p className="text-sm font-bold text-slate-900 truncate">{displayName}</p>
                     <p className="text-xs text-slate-500 truncate mt-1">{user?.email || 'Authenticated user'}</p>
+                    <p className="mt-2 inline-flex rounded-full border border-[#0066cc]/20 bg-[#0066cc]/10 px-2 py-0.5 text-[11px] font-bold text-[#0066cc]">
+                      {(user?.role || 'PATIENT').toUpperCase()}
+                    </p>
                     <button
                       type="button"
                       onClick={() => {

@@ -2,6 +2,14 @@ const API_BASE = import.meta.env.VITE_AUTH_API_URL || '/api'
 
 const SESSION_STORAGE_KEY = 'omnihealth_auth'
 
+const normalizeRole = (role) => {
+  if (!role || typeof role !== 'string') {
+    return 'PATIENT'
+  }
+
+  return role.replace('ROLE_', '').toUpperCase()
+}
+
 const normalizeAuthResponse = async (response) => {
   let payload = null
 
@@ -17,10 +25,12 @@ const normalizeAuthResponse = async (response) => {
   }
 
   const token = payload?.token || payload?.accessToken || payload?.jwt || null
-  const user = payload?.user || payload?.data || {
-    name: payload?.name,
-    email: payload?.email,
-    role: payload?.role,
+  const sourceUser = payload?.user || payload?.data || payload
+  const user = {
+    id: sourceUser?.id,
+    name: sourceUser?.name,
+    email: sourceUser?.email,
+    role: normalizeRole(sourceUser?.role),
   }
 
   return {
@@ -54,18 +64,58 @@ export const loginUser = async ({ email, password }) => {
   return postAuth('/auth/login', { email, password })
 }
 
-export const registerUser = async ({ name, email, password }) => {
+export const registerUser = async ({ role, name, email, password, phoneNumber, address, dateOfBirth }) => {
   const [firstName, ...rest] = name.trim().split(/\s+/)
   const lastName = rest.join(' ')
 
-  await postAuth('/patients/register', {
+  await postAuth('/auth/register', {
     email,
     password,
+    role,
     firstName,
     lastName,
+    phoneNumber,
+    address,
+    dateOfBirth,
   })
 
   return loginUser({ email, password })
+}
+
+export const getPatientProfile = async ({ userId, token }) => {
+  const response = await fetch(`${API_BASE}/patients/${userId}/profile`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null)
+    const message = payload?.message || 'Unable to load patient profile.'
+    throw new Error(message)
+  }
+
+  return response.json()
+}
+
+export const updatePatientProfile = async ({ userId, token, profile }) => {
+  const response = await fetch(`${API_BASE}/patients/${userId}/profile`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(profile),
+  })
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null)
+    const message = payload?.message || 'Unable to update patient profile.'
+    throw new Error(message)
+  }
+
+  return response.json()
 }
 
 export const persistSession = (session) => {

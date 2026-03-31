@@ -2,18 +2,24 @@ import { useEffect, useState } from 'react'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import AuthModal from './components/AuthModal'
+import PatientProfileCard from './components/PatientProfileCard'
 import Home from './pages/Home'
 import {
   clearSession,
+  getPatientProfile,
   loginUser,
   persistSession,
   readSession,
   registerUser,
+  updatePatientProfile,
 } from './services/auth'
 
 function App() {
   const [authMode, setAuthMode] = useState(null)
   const [session, setSession] = useState(null)
+  const [patientProfile, setPatientProfile] = useState(null)
+  const [profileError, setProfileError] = useState('')
+  const [isSavingProfile, setIsSavingProfile] = useState(false)
 
   useEffect(() => {
     const existing = readSession()
@@ -21,6 +27,29 @@ function App() {
       setSession(existing)
     }
   }, [])
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!session?.token || session?.user?.role !== 'PATIENT' || !session?.user?.id) {
+        setPatientProfile(null)
+        setProfileError('')
+        return
+      }
+
+      try {
+        const profile = await getPatientProfile({
+          userId: session.user.id,
+          token: session.token,
+        })
+        setPatientProfile(profile)
+        setProfileError('')
+      } catch (error) {
+        setProfileError(error.message || 'Unable to load patient profile.')
+      }
+    }
+
+    loadProfile()
+  }, [session])
 
   const handleOpenAuth = (mode) => {
     setAuthMode(mode)
@@ -31,7 +60,15 @@ function App() {
   }
 
   const handleLogin = async (credentials) => {
-    const authResult = await loginUser(credentials)
+    const authResult = await loginUser({
+      email: credentials.email,
+      password: credentials.password,
+    })
+
+    if (credentials.selectedRole && authResult?.user?.role !== credentials.selectedRole) {
+      throw new Error(`This account is registered as ${authResult?.user?.role || 'UNKNOWN'}, not ${credentials.selectedRole}.`)
+    }
+
     const nextSession = {
       token: authResult.token,
       user: authResult.user,
@@ -57,6 +94,30 @@ function App() {
   const handleLogout = () => {
     clearSession()
     setSession(null)
+    setPatientProfile(null)
+    setProfileError('')
+  }
+
+  const handlePatientProfileSave = async (profileData) => {
+    if (!session?.token || !session?.user?.id) {
+      return
+    }
+
+    setIsSavingProfile(true)
+    setProfileError('')
+
+    try {
+      const updated = await updatePatientProfile({
+        userId: session.user.id,
+        token: session.token,
+        profile: profileData,
+      })
+      setPatientProfile(updated)
+    } catch (error) {
+      setProfileError(error.message || 'Unable to update patient profile.')
+    } finally {
+      setIsSavingProfile(false)
+    }
   }
 
   return (
@@ -67,6 +128,14 @@ function App() {
         onSignupClick={() => handleOpenAuth('signup')}
         onLogout={handleLogout}
       />
+      {session?.user?.role === 'PATIENT' && (
+        <PatientProfileCard
+          profile={patientProfile}
+          onSave={handlePatientProfileSave}
+          isSaving={isSavingProfile}
+          error={profileError}
+        />
+      )}
       <Home />
       <Footer />
       {authMode && (
