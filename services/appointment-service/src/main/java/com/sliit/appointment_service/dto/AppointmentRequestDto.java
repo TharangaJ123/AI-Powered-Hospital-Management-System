@@ -13,5 +13,8 @@ import java.time.LocalDateTime;
 @Builder
 public class AppointmentRequestDto {
     private Long patientId;
+    private Long doctorId;
+    private String fullName;
+    private String phoneNumber;
     private LocalDateTime appointmentDate;
 }
