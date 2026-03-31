@@ -1,6 +1,5 @@
 package com.sliit.appointment_service.dto;
 
-import com.sliit.appointment_service.model.AppointmentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,5 +13,8 @@ import java.time.LocalDateTime;
 @Builder
 public class AppointmentRequestDto {
     private Long patientId;
+    private Long doctorId;
+    private String fullName;
+    private String phoneNumber;
     private LocalDateTime appointmentDate;
 }

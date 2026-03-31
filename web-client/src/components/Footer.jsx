@@ -1,6 +1,6 @@
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, BrainCircuit } from 'lucide-react'
 
-const Footer = () => {
+const Footer = ({ onBookAppointment }) => {
     return (
       <footer className="bg-slate-900 text-slate-300 pt-20 pb-10 px-4 mt-auto">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
@@ -38,7 +38,20 @@ const Footer = () => {
             <h4 className="text-white font-bold mb-6 border-l-4 border-[#00a69c] pl-4">Quick Links</h4>
             <ul className="space-y-4 text-sm">
               <li><a href="#" className="hover:text-[#00a69c] transition-colors">Find a Doctor</a></li>
-              <li><a href="#" className="hover:text-[#00a69c] transition-colors">Book an Appointment</a></li>
+              <li>
+                <a
+                  href="#"
+                  onClick={(event) => {
+                    event.preventDefault()
+                    if (onBookAppointment) {
+                      onBookAppointment()
+                    }
+                  }}
+                  className="hover:text-[#00a69c] transition-colors"
+                >
+                  Book an Appointment
+                </a>
+              </li>
               <li><a href="#" className="hover:text-[#00a69c] transition-colors">Health Check Packages</a></li>
               <li><a href="#" className="hover:text-[#00a69c] transition-colors">Laboratory Services</a></li>
               <li><a href="#" className="hover:text-[#00a69c] transition-colors">Telemedicine Call</a></li>
