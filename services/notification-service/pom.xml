@@ -40,8 +40,6 @@
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 
-
-
 		<!-- Eureka Client -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>

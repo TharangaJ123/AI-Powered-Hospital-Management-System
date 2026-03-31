@@ -13,6 +13,8 @@ public class NotificationResponse {
 
     private boolean emailSent;
     private String emailError;
+    private boolean smsSent;
+    private String smsError;
     private String message;
 }
 

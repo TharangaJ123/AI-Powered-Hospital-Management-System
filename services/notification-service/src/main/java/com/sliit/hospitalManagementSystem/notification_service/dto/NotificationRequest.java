@@ -28,6 +28,8 @@ public class NotificationRequest {
     @Email(message = "Invalid email format")
     private String recipientEmail;
 
+    private String recipientPhone;
+
     private String appointmentId;
     private String doctorName;
     private String patientName;
