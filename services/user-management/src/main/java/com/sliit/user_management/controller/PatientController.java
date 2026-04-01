@@ -43,7 +43,7 @@ public class PatientController {
      * @return a ResponseEntity containing the PatientProfileDto
      */
     @GetMapping("/{userId}/profile")
-    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN') or hasRole('DOCTOR')")
     public ResponseEntity<PatientProfileDto> getProfile(@PathVariable Long userId) {
         return ResponseEntity.ok(patientService.getProfile(userId));
     }
@@ -81,7 +81,7 @@ public class PatientController {
      * @return a ResponseEntity containing a list of MedicalDocumentDto objects
      */
     @GetMapping("/{patientId}/documents")
-    @PreAuthorize("hasRole('PATIENT')")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<List<MedicalDocumentDto>> getDocuments(@PathVariable Long patientId) {
         return ResponseEntity.ok(patientService.getPatientDocuments(patientId));
     }
@@ -93,7 +93,7 @@ public class PatientController {
      * @return a ResponseEntity containing a list of MedicalHistoryDto objects
      */
     @GetMapping("/{patientId}/history")
-    @PreAuthorize("hasRole('PATIENT')")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<List<MedicalHistoryDto>> getMedicalHistory(@PathVariable Long patientId) {
         return ResponseEntity.ok(patientService.getPatientMedicalHistory(patientId));
     }
@@ -105,7 +105,7 @@ public class PatientController {
      * @return a ResponseEntity containing a list of PrescriptionDto objects
      */
     @GetMapping("/{patientId}/prescriptions")
-    @PreAuthorize("hasRole('PATIENT')")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<List<PrescriptionDto>> getPrescriptions(@PathVariable Long patientId) {
         return ResponseEntity.ok(patientService.getPatientPrescriptions(patientId));
     }

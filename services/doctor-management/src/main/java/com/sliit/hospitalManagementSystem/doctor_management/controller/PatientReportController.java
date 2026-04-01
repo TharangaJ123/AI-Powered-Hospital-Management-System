@@ -4,6 +4,7 @@ import com.sliit.hospitalManagementSystem.doctor_management.dto.PatientReportDTO
 import com.sliit.hospitalManagementSystem.doctor_management.service.PatientReportService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,7 @@ public class PatientReportController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<PatientReportDTO> createReport(@RequestBody PatientReportDTO dto) {
         PatientReportDTO created = patientReportService.createReport(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
@@ -53,6 +55,7 @@ public class PatientReportController {
     }
 
     @PutMapping("/{id}/remarks")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<PatientReportDTO> addDoctorRemarks(
             @PathVariable @NonNull Long id, @RequestBody Map<String, String> body) {
         String remarks = body.get("doctorRemarks");

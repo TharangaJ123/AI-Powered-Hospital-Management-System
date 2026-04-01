@@ -5,6 +5,7 @@ import com.sliit.hospitalManagementSystem.doctor_management.service.DoctorProfil
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class DoctorProfileController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<DoctorProfileDTO> createProfile(@Valid @RequestBody DoctorProfileDTO dto) {
         DoctorProfileDTO created = doctorProfileService.createProfile(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
@@ -58,6 +60,7 @@ public class DoctorProfileController {
     }
 
     @PutMapping("/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DoctorProfileDTO> approveDoctor(@PathVariable Long id) {
         DoctorProfileDTO updated = doctorProfileService.approveDoctor(id);
         return ResponseEntity.ok(updated);
@@ -70,12 +73,14 @@ public class DoctorProfileController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<DoctorProfileDTO> updateProfile(@PathVariable Long id, @Valid @RequestBody DoctorProfileDTO dto) {
         DoctorProfileDTO updated = doctorProfileService.updateProfile(id, dto);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteProfile(@PathVariable Long id) {
         doctorProfileService.deleteProfile(id);
         return ResponseEntity.noContent().build();
