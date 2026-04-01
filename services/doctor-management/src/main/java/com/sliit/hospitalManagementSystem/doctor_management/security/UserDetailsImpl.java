@@ -7,14 +7,16 @@ import java.util.Collection;
 
 public class UserDetailsImpl implements UserDetails {
     private String email;
+    private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(String email) {
+    public UserDetailsImpl(String email, Collection<? extends GrantedAuthority> authorities) {
         this.email = email;
+        this.authorities = authorities;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return authorities;
     }
 
     @Override

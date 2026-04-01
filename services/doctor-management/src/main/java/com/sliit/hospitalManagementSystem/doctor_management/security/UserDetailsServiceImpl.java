@@ -5,6 +5,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
@@ -12,6 +14,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         // In this internal service, we trust the JWT subject if the token is valid.
         // We could also check if the doctor profile exists in the local database.
-        return new UserDetailsImpl(email);
+        return new UserDetailsImpl(email, Collections.emptyList());
     }
 }
