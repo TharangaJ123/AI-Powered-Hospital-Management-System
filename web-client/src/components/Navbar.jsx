@@ -1,5 +1,6 @@
 import { Phone, Search, Menu, User, MapPin, Clock, BrainCircuit, LogOut } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, onBookAppointmentClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -54,26 +55,26 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, o
 
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center space-x-8 text-[14px] font-semibold text-slate-700">
-            <a href="#" className="hover:text-[#0066cc] transition-colors relative group">
+            <Link to="/" className="hover:text-[#0066cc] transition-colors relative group">
               About Us
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
-            </a>
-            <a href="#" className="hover:text-[#0066cc] transition-colors relative group">
+            </Link>
+            <Link to="/" className="hover:text-[#0066cc] transition-colors relative group">
               Specialties
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
-            </a>
-            <a href="#" className="hover:text-[#0066cc] transition-colors relative group">
+            </Link>
+            <Link to="/doctors" className="hover:text-[#0066cc] transition-colors relative group">
               Doctors
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
-            </a>
-            <a href="#" className="hover:text-[#0066cc] transition-colors relative group">
+            </Link>
+            <Link to="/" className="hover:text-[#0066cc] transition-colors relative group">
               Services
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
-            </a>
-            <a href="#" className="hover:text-[#0066cc] transition-colors relative group">
+            </Link>
+            <Link to="/" className="hover:text-[#0066cc] transition-colors relative group">
               Contact
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
-            </a>
+            </Link>
           </div>
 
           {/* Action Buttons */}

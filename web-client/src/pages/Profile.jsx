@@ -1,4 +1,5 @@
 import PatientProfileCard from '../components/PatientProfileCard'
+import DoctorProfileCard from '../components/DoctorProfileCard'
 
 const Profile = ({
   user,
@@ -8,6 +9,8 @@ const Profile = ({
   onSavePatientProfile,
   onLoginClick,
   onSignupClick,
+  doctorProfile,
+  onSaveDoctorProfile,
 }) => {
   if (!user) {
     return (
@@ -68,6 +71,14 @@ const Profile = ({
           isSaving={isSavingProfile}
           error={profileError}
           sectionId="patient-profile-form"
+        />
+      )}
+      {user?.role === 'DOCTOR' && (
+        <DoctorProfileCard
+          profile={doctorProfile}
+          onSave={onSaveDoctorProfile}
+          isSaving={isSavingProfile}
+          error={profileError}
         />
       )}
     </main>

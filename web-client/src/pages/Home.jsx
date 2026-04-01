@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const specialties = [
   { name: 'Cardiology', icon: Heart, desc: 'Advanced heart care services and specialized treatments.' },
@@ -75,6 +76,7 @@ const HeroSlide = ({ image, title, subtitle, ctaText, onPrimaryClick }) => (
 )
 
 const Home = ({ onBookAppointment }) => {
+  const navigate = useNavigate()
   const [activeSlide, setActiveSlide] = useState(0)
   const [bookingForm, setBookingForm] = useState({
     fullName: '',
@@ -114,6 +116,8 @@ const Home = ({ onBookAppointment }) => {
   const handleQuickAccessClick = (label) => {
     if (label === 'Book Appointment' && onBookAppointment) {
       onBookAppointment()
+    } else if (label === 'Find a Doctor') {
+      navigate('/doctors')
     }
   }
 
@@ -187,7 +191,11 @@ const Home = ({ onBookAppointment }) => {
       <section className="pt-28 md:pt-32">
         <HeroSlide
           {...slides[activeSlide]}
-          onPrimaryClick={slides[activeSlide].ctaText === 'Book an Appointment' ? onBookAppointment : undefined}
+          onPrimaryClick={
+            slides[activeSlide].ctaText === 'Book an Appointment' 
+              ? onBookAppointment 
+              : () => navigate('/doctors')
+          }
         />
       </section>
 

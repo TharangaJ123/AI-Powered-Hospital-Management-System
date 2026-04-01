@@ -15,12 +15,20 @@ import {
   registerUser,
   updatePatientProfile,
 } from './services/auth'
+import { 
+  getDoctorByUserId, 
+  createDoctorProfile, 
+  updateDoctorProfile 
+} from './services/doctors'
+import Doctors from './pages/Doctors'
+import DoctorDetail from './pages/DoctorDetail'
 
 function App() {
   const navigate = useNavigate()
   const [authMode, setAuthMode] = useState(null)
   const [session, setSession] = useState(null)
   const [patientProfile, setPatientProfile] = useState(null)
+  const [doctorProfile, setDoctorProfile] = useState(null)
   const [profileError, setProfileError] = useState('')
   const [isSavingProfile, setIsSavingProfile] = useState(false)
 
@@ -52,6 +60,24 @@ function App() {
     }
 
     loadProfile()
+  }, [session])
+
+  useEffect(() => {
+    const loadDoctor = async () => {
+      if (!session?.token || session?.user?.role !== 'DOCTOR' || !session?.user?.id) {
+        setDoctorProfile(null)
+        return
+      }
+
+      try {
+        const profile = await getDoctorByUserId(session.user.id)
+        setDoctorProfile(profile)
+      } catch (error) {
+        console.error('Failed to load doctor profile:', error)
+      }
+    }
+
+    loadDoctor()
   }, [session])
 
   const handleOpenAuth = (mode) => {
@@ -140,6 +166,29 @@ function App() {
     }
   }
 
+  const handleDoctorProfileSave = async (profileData) => {
+    if (!session?.token || !session?.user?.id) {
+      return
+    }
+
+    setIsSavingProfile(true)
+    setProfileError('')
+
+    try {
+      let updated
+      if (doctorProfile?.id) {
+        updated = await updateDoctorProfile(doctorProfile.id, profileData, session.token)
+      } else {
+        updated = await createDoctorProfile({ ...profileData, userId: session.user.id }, session.token)
+      }
+      setDoctorProfile(updated)
+    } catch (error) {
+      setProfileError(error.message || 'Unable to update doctor profile.')
+    } finally {
+      setIsSavingProfile(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#fcfdfe] text-slate-900 flex flex-col">
       <Navbar
@@ -157,15 +206,19 @@ function App() {
           element={(
             <Profile
               user={session?.user || null}
-              patientProfile={patientProfile}
+               patientProfile={patientProfile}
+              doctorProfile={doctorProfile}
               profileError={profileError}
               isSavingProfile={isSavingProfile}
               onSavePatientProfile={handlePatientProfileSave}
+              onSaveDoctorProfile={handleDoctorProfileSave}
               onLoginClick={() => handleOpenAuth('login')}
               onSignupClick={() => handleOpenAuth('signup')}
             />
           )}
         />
+        <Route path="/doctors" element={<Doctors />} />
+        <Route path="/doctors/:id" element={<DoctorDetail />} />
         <Route
           path="/appointments"
           element={(
