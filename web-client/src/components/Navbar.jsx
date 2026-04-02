@@ -75,6 +75,12 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, o
               Contact
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
             </Link>
+            {user?.role === 'ADMIN' && (
+              <Link to="/admin" className="text-[#0066cc] font-bold relative group">
+                Dashboard
+                <span className="absolute bottom-[-4px] left-0 w-full h-0.5 bg-[#0066cc]"></span>
+              </Link>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -145,6 +151,9 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, o
           <a href="#" className="block font-bold text-slate-800">Doctors</a>
           <a href="#" className="block font-bold text-slate-800">Services</a>
           <Link to="/contact" className="block font-bold text-slate-800" onClick={() => setIsMenuOpen(false)}>Contact</Link>
+          {user?.role === 'ADMIN' && (
+            <Link to="/admin" className="block font-bold text-[#0066cc]" onClick={() => setIsMenuOpen(false)}>Admin Dashboard</Link>
+          )}
           {user ? (
             <div className="space-y-3">
               <button

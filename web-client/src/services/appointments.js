@@ -43,3 +43,61 @@ export const getAppointmentsByPatient = async (patientId, token) => {
     throw error
   }
 }
+
+export const getAllAppointments = async (token) => {
+  try {
+    const response = await fetch(`${API_BASE}/appointments`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || 'Failed to fetch all appointments')
+    }
+
+    return await response.json()
+  } catch (error) {
+    throw error
+  }
+}
+
+export const cancelAppointment = async (id, token) => {
+  const response = await fetch(`${API_BASE}/appointments/${id}/cancel`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) throw new Error('Failed to cancel appointment')
+  return response.json()
+}
+
+export const completeAppointment = async (id, token) => {
+  const response = await fetch(`${API_BASE}/appointments/${id}/complete`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) throw new Error('Failed to complete appointment')
+  return response.json()
+}
+
+export const deleteAppointment = async (id, token) => {
+  const response = await fetch(`${API_BASE}/appointments/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) throw new Error('Failed to delete appointment')
+}
+export const updateAppointment = async (id, appointmentData, token) => {
+  const response = await fetch(`${API_BASE}/appointments/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(appointmentData)
+  })
+  if (!response.ok) throw new Error('Failed to update appointment')
+  return response.json()
+}
