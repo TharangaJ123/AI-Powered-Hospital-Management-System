@@ -15,4 +15,5 @@ public class UserRegistrationDto {
     private String phoneNumber;
     private String address;
     private String dateOfBirth;
+    private String specialization;
 }

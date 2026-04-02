@@ -139,3 +139,49 @@ export const readSession = () => {
 export const clearSession = () => {
   localStorage.removeItem(SESSION_STORAGE_KEY)
 }
+
+export const getAllUsers = async (token) => {
+  try {
+    const response = await fetch(`${API_BASE}/admin/users`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || 'Failed to fetch users')
+    }
+
+    return await response.json()
+  } catch (error) {
+    throw error
+  }
+}
+
+export const verifyDoctor = async (id, token) => {
+  const response = await fetch(`${API_BASE}/admin/doctors/${id}/verify`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) throw new Error('Failed to verify doctor')
+  return response.json()
+}
+
+export const deleteUser = async (id, token) => {
+  const response = await fetch(`${API_BASE}/admin/users/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) throw new Error('Failed to delete user')
+}
+
+export const getPlatformOperations = async (token) => {
+  const response = await fetch(`${API_BASE}/admin/operations`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) throw new Error('Failed to fetch operations')
+  return response.json()
+}

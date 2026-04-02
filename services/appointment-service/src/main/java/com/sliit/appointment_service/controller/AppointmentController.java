@@ -22,7 +22,6 @@ public class AppointmentController {
 
     // Book a new appointment for a patient with a specific doctor
     @PostMapping
-    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
     public ResponseEntity<AppointmentResponseDto> bookAppointment(@RequestBody AppointmentRequestDto request) {
         return new ResponseEntity<>(appointmentService.bookAppointment(request), HttpStatus.CREATED);
     }
@@ -74,6 +73,13 @@ public class AppointmentController {
     @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<List<AppointmentResponseDto>> getAppointmentsByPatient(@PathVariable Long patientId) {
         return ResponseEntity.ok(appointmentService.getAppointmentsByPatient(patientId));
+    }
+
+    // Retrieve all appointments scheduled for a specific doctor
+    @GetMapping("/doctor/{doctorId}")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<List<AppointmentResponseDto>> getAppointmentsByDoctor(@PathVariable Long doctorId) {
+        return ResponseEntity.ok(appointmentService.getAppointmentsByDoctor(doctorId));
     }
 
 

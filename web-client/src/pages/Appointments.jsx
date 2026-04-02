@@ -1,18 +1,21 @@
-import { Calendar, Clock, User, MapPin, ArrowLeft, Phone, CheckCircle, BadgeCheck } from 'lucide-react'
+import { Calendar, Clock, User, MapPin, ArrowLeft, Phone, CheckCircle, BadgeCheck, Stethoscope } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { createAppointment } from '../services/appointments'
+import { getAllDoctors } from '../services/doctors'
 
-const Appointments = ({ user, onLoginClick }) => {
+const Appointments = ({ user, patientProfile, onLoginClick }) => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
     fullName: '',
     phoneNumber: '',
+    speciality: '',
     doctorId: '',
     date: '',
     timeSlot: '',
     reason: '',
   })
+  const [doctorsList, setDoctorsList] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
@@ -21,10 +24,28 @@ const Appointments = ({ user, onLoginClick }) => {
       setFormData(prev => ({
         ...prev,
         fullName: user.name || '',
-        phoneNumber: user.phoneNumber || '',
+        phoneNumber: patientProfile?.phoneNumber || '',
       }))
     }
-  }, [user])
+  }, [user, patientProfile])
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const data = await getAllDoctors()
+        setDoctorsList(data)
+      } catch (err) {
+        console.error('Failed to load doctors:', err)
+      }
+    }
+
+    fetchDoctors()
+  }, [])
+
+  const specialities = [...new Set(doctorsList.map(d => d.specialization))].filter(Boolean).sort()
+  const filteredDoctors = doctorsList.filter(d => 
+    !formData.speciality || d.specialization === formData.speciality
+  )
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -43,11 +64,12 @@ const Appointments = ({ user, onLoginClick }) => {
       const appointmentDate = new Date(`${formData.date}T${formData.timeSlot}:00`).toISOString()
       
       const payload = {
-        patientId: user?.id || null,
+        patientId: (user && patientProfile) ? patientProfile.id : (user ? user.id : null),
         doctorId: parseInt(formData.doctorId.replace('dr_', '')),
-        fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
         appointmentDate: appointmentDate,
+        // Store name/phone only for guest bookings
+        fullName: user ? null : formData.fullName,
+        phoneNumber: user ? null : formData.phoneNumber,
       }
 
       await createAppointment(payload)
@@ -58,7 +80,8 @@ const Appointments = ({ user, onLoginClick }) => {
         setIsSuccess(false)
         setFormData({
           fullName: user?.name || '',
-          phoneNumber: user?.phoneNumber || '',
+          phoneNumber: patientProfile?.phoneNumber || '',
+          speciality: '',
           doctorId: '',
           date: '',
           timeSlot: '',
@@ -160,25 +183,51 @@ const Appointments = ({ user, onLoginClick }) => {
               </div>
             </div>
 
-            {/* Doctor Selection */}
-            <div>
-              <label className="auth-label">
-                <BadgeCheck className="w-5 h-5" />
-                Select Doctor
-              </label>
-              <select
-                name="doctorId"
-                value={formData.doctorId}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/10 outline-none transition-all"
-              >
-                <option value="">Choose a doctor...</option>
-                <option value="dr_001">Dr. John Smith - Cardiology</option>
-                <option value="dr_002">Dr. Sarah Johnson - Neurology</option>
-                <option value="dr_003">Dr. Michael Chen - Orthopedics</option>
-                <option value="dr_004">Dr. Emily Davis - Pediatrics</option>
-              </select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Specialization Selection */}
+              <div>
+                <label className="auth-label">
+                  <Stethoscope className="w-5 h-5" />
+                  Select Speciality
+                </label>
+                <select
+                  name="speciality"
+                  value={formData.speciality}
+                  onChange={(e) => {
+                    handleInputChange(e)
+                    setFormData(prev => ({ ...prev, doctorId: '' }))
+                  }}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/10 outline-none transition-all"
+                >
+                  <option value="">Choose a speciality...</option>
+                  {specialities.map(spec => (
+                    <option key={spec} value={spec}>{spec}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Doctor Selection */}
+              <div>
+                <label className="auth-label">
+                  <BadgeCheck className="w-5 h-5" />
+                  Select Doctor
+                </label>
+                <select
+                  name="doctorId"
+                  value={formData.doctorId}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/10 outline-none transition-all"
+                >
+                  <option value="">{formData.speciality ? `Choose a ${formData.speciality} doctor...` : 'First select a speciality...'}</option>
+                  {filteredDoctors.map(doctor => (
+                    <option key={doctor.id} value={`dr_${doctor.id}`}>
+                      {doctor.firstName} {doctor.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

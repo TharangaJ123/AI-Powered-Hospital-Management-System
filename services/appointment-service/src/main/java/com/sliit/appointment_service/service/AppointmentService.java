@@ -119,6 +119,13 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
 
+    /** Fetch all appointments scheduled for a specific doctor */
+    public List<AppointmentResponseDto> getAppointmentsByDoctor(Long doctorId) {
+        return appointmentRepository.findByDoctorId(doctorId).stream()
+                .map(this::mapToResponseDto)
+                .collect(Collectors.toList());
+    }
+
 
 
     private AppointmentResponseDto mapToResponseDto(Appointment appointment) {

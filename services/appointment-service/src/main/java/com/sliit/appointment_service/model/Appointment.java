@@ -26,10 +26,10 @@ public class Appointment {
     @Column(name = "doctor_id", nullable = false)
     private Long doctorId;
 
-    @Column(name = "full_name", nullable = false, length = 120)
+    @Column(name = "full_name", nullable = true, length = 120)
     private String fullName;
 
-    @Column(name = "phone_number", nullable = false, length = 20)
+    @Column(name = "phone_number", nullable = true, length = 20)
     private String phoneNumber;
 
 
