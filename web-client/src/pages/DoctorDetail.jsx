@@ -16,7 +16,8 @@ import {
   TrendingUp,
   Activity,
   Heart,
-  PhoneCall
+  PhoneCall,
+  ArrowRight
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getDoctorById } from '../services/doctors'

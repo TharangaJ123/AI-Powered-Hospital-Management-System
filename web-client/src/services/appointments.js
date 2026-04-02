@@ -103,7 +103,7 @@ export const updateAppointment = async (id, appointmentData, token) => {
 }
 
 export const getAppointmentsByDoctor = async (doctorId, token) => {
-  const response = await fetch(`${API_BASE}/doctor/${doctorId}`, {
+  const response = await fetch(`${API_BASE}/appointments/doctor/${doctorId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

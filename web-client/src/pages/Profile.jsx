@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react'
 import PatientProfileCard from '../components/PatientProfileCard'
+import DoctorProfileCard from '../components/DoctorProfileCard'
 import { getAppointmentsByPatient, updateAppointment } from '../services/appointments'
 import { getAllDoctors } from '../services/doctors'
 
