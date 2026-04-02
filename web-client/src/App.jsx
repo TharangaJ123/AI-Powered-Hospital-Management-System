@@ -6,6 +6,8 @@ import AuthModal from './components/AuthModal'
 import Home from './pages/Home'
 import Profile from './pages/Profile'
 import Appointments from './pages/Appointments'
+import AboutUs from './pages/AboutUs'
+import Contact from './pages/Contact'
 import {
   clearSession,
   getPatientProfile,
@@ -93,7 +95,7 @@ function App() {
     persistSession(nextSession)
     setSession(nextSession)
     handleCloseAuth()
-    navigate('/profile')
+    navigate('/')
   }
 
   const handleLogout = () => {
@@ -152,11 +154,14 @@ function App() {
       />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/contact" element={<Contact />} />
         <Route
           path="/profile"
           element={(
             <Profile
               user={session?.user || null}
+              token={session?.token}
               patientProfile={patientProfile}
               profileError={profileError}
               isSavingProfile={isSavingProfile}
@@ -171,6 +176,7 @@ function App() {
           element={(
             <Appointments
               user={session?.user || null}
+              patientProfile={patientProfile}
               onLoginClick={() => handleOpenAuth('login')}
             />
           )}

@@ -1,5 +1,6 @@
 import { Phone, Search, Menu, User, MapPin, Clock, BrainCircuit, LogOut } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, onBookAppointmentClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -38,7 +39,7 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, o
       <nav className="bg-white/90 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-3 group cursor-pointer">
+          <Link to="/" className="flex items-center space-x-3 group cursor-pointer">
             <div className="bg-[#0066cc] p-2 rounded-xl shadow-[#0066cc]/20 shadow-lg transform group-hover:rotate-6 transition-transform">
               <BrainCircuit className="text-white w-7 h-7" />
             </div>
@@ -50,14 +51,14 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, o
                 Excellence in Care
               </span>
             </div>
-          </div>
+          </Link>
 
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center space-x-8 text-[14px] font-semibold text-slate-700">
-            <a href="#" className="hover:text-[#0066cc] transition-colors relative group">
+            <Link to="/about" className="hover:text-[#0066cc] transition-colors relative group">
               About Us
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
-            </a>
+            </Link>
             <a href="#" className="hover:text-[#0066cc] transition-colors relative group">
               Specialties
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
@@ -70,10 +71,10 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, o
               Services
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
             </a>
-            <a href="#" className="hover:text-[#0066cc] transition-colors relative group">
+            <Link to="/contact" className="hover:text-[#0066cc] transition-colors relative group">
               Contact
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
-            </a>
+            </Link>
           </div>
 
           {/* Action Buttons */}
@@ -139,11 +140,11 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, o
       {/* Mobile Menu (Optional expansion) */}
       {isMenuOpen && (
         <div className="lg:hidden bg-white border-b border-slate-200 px-4 py-6 space-y-4 animate-in slide-in-from-top duration-300">
-          <a href="#" className="block font-bold text-slate-800">About Us</a>
+          <Link to="/about" className="block font-bold text-slate-800" onClick={() => setIsMenuOpen(false)}>About Us</Link>
           <a href="#" className="block font-bold text-slate-800">Specialties</a>
           <a href="#" className="block font-bold text-slate-800">Doctors</a>
           <a href="#" className="block font-bold text-slate-800">Services</a>
-          <a href="#" className="block font-bold text-slate-800">Contact</a>
+          <Link to="/contact" className="block font-bold text-slate-800" onClick={() => setIsMenuOpen(false)}>Contact</Link>
           {user ? (
             <div className="space-y-3">
               <button

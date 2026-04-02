@@ -22,7 +22,6 @@ public class AppointmentController {
 
     // Book a new appointment for a patient with a specific doctor
     @PostMapping
-    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
     public ResponseEntity<AppointmentResponseDto> bookAppointment(@RequestBody AppointmentRequestDto request) {
         return new ResponseEntity<>(appointmentService.bookAppointment(request), HttpStatus.CREATED);
     }
