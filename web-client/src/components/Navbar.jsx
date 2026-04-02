@@ -59,18 +59,18 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, o
               About Us
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
             </Link>
-            <a href="#" className="hover:text-[#0066cc] transition-colors relative group">
+            <Link to="#" className="hover:text-[#0066cc] transition-colors relative group">
               Specialties
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
-            </a>
-            <a href="#" className="hover:text-[#0066cc] transition-colors relative group">
+            </Link>
+            <Link to="/doctors" className="hover:text-[#0066cc] transition-colors relative group">
               Doctors
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
-            </a>
-            <a href="#" className="hover:text-[#0066cc] transition-colors relative group">
+            </Link>
+            <Link to="/" className="hover:text-[#0066cc] transition-colors relative group">
               Services
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
-            </a>
+            </Link>
             <Link to="/contact" className="hover:text-[#0066cc] transition-colors relative group">
               Contact
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
@@ -88,7 +88,7 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, o
             <button className="p-2 hover:bg-slate-100 rounded-full transition-colors hidden sm:block">
               <Search className="w-5 h-5 text-slate-600" />
             </button>
-            <button 
+            <button
               onClick={onBookAppointmentClick}
               className="btn-primary flex items-center space-x-2 text-sm px-6 py-2.5 hover:opacity-90 transition-opacity"
               title={user ? "Book an appointment" : "Login to book an appointment"}
@@ -133,7 +133,7 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, o
                 </button>
               </div>
             )}
-            <button 
+            <button
               className="lg:hidden p-2 text-slate-600"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >

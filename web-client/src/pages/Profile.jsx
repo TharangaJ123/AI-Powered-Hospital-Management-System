@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react'
 import PatientProfileCard from '../components/PatientProfileCard'
+import DoctorProfileCard from '../components/DoctorProfileCard'
 import { getAppointmentsByPatient, updateAppointment } from '../services/appointments'
 import { getAllDoctors } from '../services/doctors'
 
@@ -13,6 +14,8 @@ const Profile = ({
   onSavePatientProfile,
   onLoginClick,
   onSignupClick,
+  doctorProfile,
+  onSaveDoctorProfile,
 }) => {
   const [appointments, setAppointments] = useState([])
   const [doctors, setDoctors] = useState([])
@@ -20,7 +23,7 @@ const Profile = ({
   const [appointmentError, setAppointmentError] = useState(null)
   const [rescheduleData, setRescheduleData] = useState({ id: null, date: '' })
   const [isUpdating, setIsUpdating] = useState(false)
-  
+
   // Calendar State
   const [viewDate, setViewDate] = useState(new Date())
   const [selectedCalendarDay, setSelectedCalendarDay] = useState(null)
@@ -67,7 +70,7 @@ const Profile = ({
       // Ensure we have a valid date object
       const appDate = new Date(appointmentDate)
       if (isNaN(appDate.getTime())) return false
-      
+
       const now = new Date()
       const diffTime = appDate.getTime() - now.getTime()
       const diffDays = diffTime / (1000 * 60 * 60 * 24)
@@ -99,13 +102,13 @@ const Profile = ({
   // Calendar Helpers
   const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate()
   const firstDayOfMonth = (year, month) => new Date(year, month, 1).getDay()
-  
+
   const generateCalendarDays = () => {
     const year = viewDate.getFullYear()
     const month = viewDate.getMonth()
     const totalDays = daysInMonth(year, month)
     const firstDay = firstDayOfMonth(year, month)
-    
+
     const days = []
     // Padding for previous month
     for (let i = 0; i < firstDay; i++) {
@@ -115,12 +118,12 @@ const Profile = ({
     for (let i = 1; i <= totalDays; i++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`
       const dayAppointments = (appointments || []).filter(app => app.appointmentDate && app.appointmentDate.startsWith(dateStr))
-      days.push({ 
-        day: i, 
-        currentMonth: true, 
+      days.push({
+        day: i,
+        currentMonth: true,
         dateStr,
         hasAppointments: dayAppointments.length > 0,
-        appointments: dayAppointments 
+        appointments: dayAppointments
       })
     }
     return days
@@ -234,7 +237,7 @@ const Profile = ({
                           {app.status}
                         </span>
                       </div>
-                      
+
                       <h4 className="font-bold text-slate-900 flex items-center gap-2">
                         <UserIcon className="w-4 h-4 text-[#0066cc]" />
                         {getDoctorName(app.doctorId)}
@@ -262,21 +265,21 @@ const Profile = ({
                       <div className="mt-5 pt-4 border-t border-slate-100">
                         {rescheduleData.id === app.id ? (
                           <div className="flex flex-col gap-3">
-                            <input 
-                              type="datetime-local" 
+                            <input
+                              type="datetime-local"
                               className="w-full text-xs p-2 rounded-lg border border-slate-200 outline-none focus:ring-1 focus:ring-[#0066cc]"
                               value={rescheduleData.date}
                               onChange={(e) => setRescheduleData({ ...rescheduleData, date: e.target.value })}
                             />
                             <div className="flex items-center gap-2">
-                              <button 
+                              <button
                                 onClick={() => handleReschedule(app.id)}
                                 disabled={isUpdating}
                                 className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-[#0066cc] text-white hover:bg-[#004d99] disabled:opacity-50"
                               >
                                 {isUpdating ? 'Saving...' : 'Confirm'}
                               </button>
-                              <button 
+                              <button
                                 onClick={() => setRescheduleData({ id: null, date: '' })}
                                 className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-400"
                               >
@@ -285,13 +288,13 @@ const Profile = ({
                             </div>
                           </div>
                         ) : (
-                            <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5 text-[#0066cc] text-xs font-semibold">
                               <BadgeCheck className="w-4 h-4" />
                               Verified
                             </div>
                             {['PENDING', 'SCHEDULED', 'BOOKED'].includes(app?.status?.toUpperCase()) && canReschedule(app?.appointmentDate) && (
-                              <button 
+                              <button
                                 onClick={() => setRescheduleData({ id: app.id, date: app.appointmentDate })}
                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066cc]/10 text-[#0066cc] text-xs font-bold hover:bg-[#0066cc] hover:text-white transition-all"
                               >
@@ -406,7 +409,7 @@ const Profile = ({
                             </div>
                           </div>
                           {['PENDING', 'SCHEDULED', 'BOOKED'].includes(app?.status?.toUpperCase()) && canReschedule(app?.appointmentDate) && (
-                            <button 
+                            <button
                               onClick={() => setRescheduleData({ id: app.id, date: app.appointmentDate })}
                               className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#0066cc]/5 text-[#0066cc] text-[10px] font-extrabold hover:bg-[#0066cc] hover:text-white transition-all uppercase"
                             >
@@ -423,6 +426,14 @@ const Profile = ({
             </div>
           </section>
         </>
+      )}
+      {user?.role === 'DOCTOR' && (
+        <DoctorProfileCard
+          profile={doctorProfile}
+          onSave={onSaveDoctorProfile}
+          isSaving={isSavingProfile}
+          error={profileError}
+        />
       )}
     </main>
   )
