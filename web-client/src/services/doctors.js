@@ -31,3 +31,21 @@ export const getDoctorsBySpecialization = async (specialization) => {
 
   return response.json()
 }
+
+export const getDoctorLeaves = async (doctorId, token) => {
+  const LEAVE_API = (import.meta.env.VITE_AUTH_API_URL || '/api').replace('/auth', '') + '/doctor-leaves'
+  const response = await fetch(`${LEAVE_API}/doctor/${doctorId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    throw new Error(errorBody.message || 'Failed to fetch doctor leaves.')
+  }
+
+  return response.json()
+}

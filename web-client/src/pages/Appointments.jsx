@@ -64,7 +64,7 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
       const appointmentDate = new Date(`${formData.date}T${formData.timeSlot}:00`).toISOString()
       
       const payload = {
-        patientId: user?.id || null,
+        patientId: (user && patientProfile) ? patientProfile.id : (user ? user.id : null),
         doctorId: parseInt(formData.doctorId.replace('dr_', '')),
         appointmentDate: appointmentDate,
         // Store name/phone only for guest bookings

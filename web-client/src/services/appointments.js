@@ -101,3 +101,20 @@ export const updateAppointment = async (id, appointmentData, token) => {
   if (!response.ok) throw new Error('Failed to update appointment')
   return response.json()
 }
+
+export const getAppointmentsByDoctor = async (doctorId, token) => {
+  const response = await fetch(`${API_BASE}/doctor/${doctorId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    throw new Error(errorBody.message || 'Failed to fetch doctor appointments.')
+  }
+
+  return response.json()
+}

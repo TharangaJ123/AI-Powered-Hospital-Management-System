@@ -26,9 +26,10 @@ import {
   cancelAppointment, 
   completeAppointment, 
   deleteAppointment,
-  updateAppointment 
+  updateAppointment,
+  getAppointmentsByDoctor 
 } from '../services/appointments'
-import { getAllDoctors } from '../services/doctors'
+import { getAllDoctors, getDoctorLeaves } from '../services/doctors'
 import { 
   getAllUsers, 
   verifyDoctor, 
@@ -49,6 +50,32 @@ const AdminDashboard = ({ token }) => {
     operations: null
   })
   const [rescheduleData, setRescheduleData] = useState({ id: null, date: '' })
+  
+  // Doctor Drill-down State
+  const [docViewMode, setDocViewMode] = useState('SPECIALITIES') // SPECIALITIES, LIST, DETAIL
+  const [selectedSpec, setSelectedSpec] = useState(null)
+  const [selectedDoc, setSelectedDoc] = useState(null)
+  const [docAppointments, setDocAppointments] = useState([])
+  const [docLeaves, setDocLeaves] = useState([])
+  const [isRefreshingDoc, setIsRefreshingDoc] = useState(false)
+
+  const fetchDoctorDetail = async (doctorId) => {
+    if (!token) return
+    setIsRefreshingDoc(true)
+    try {
+      const [apps, leaves] = await Promise.all([
+        getAppointmentsByDoctor(doctorId, token),
+        getDoctorLeaves(doctorId, token)
+      ])
+      setDocAppointments(apps)
+      setDocLeaves(leaves)
+    } catch (err) {
+      console.error('Failed to fetch doctor detail:', err)
+      setError('Unable to load doctor schedule or leaves.')
+    } finally {
+      setIsRefreshingDoc(false)
+    }
+  }
 
   const fetchDashboardData = async () => {
     if (!token) return
@@ -204,7 +231,10 @@ const AdminDashboard = ({ token }) => {
         {actions.map((action, i) => (
           <button 
             key={i}
-            onClick={() => setActiveView(action.id)}
+            onClick={() => {
+              setActiveView(action.id)
+              if (action.id === 'DOCTORS') setDocViewMode('SPECIALITIES')
+            }}
             className="text-left group relative p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:border-[#0066cc]/20 transition-all overflow-hidden"
           >
             <div className={`absolute top-0 right-0 w-32 h-32 ${action.color} opacity-5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700`}></div>
@@ -416,75 +446,222 @@ const AdminDashboard = ({ token }) => {
     </div>
   )
 
-  const renderDoctors = () => (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <button 
-          onClick={() => setActiveView('OVERVIEW')}
-          className="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-[#0066cc] transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Overview
-        </button>
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-          <input 
-            type="text" 
-            placeholder="Search doctors or specialty..."
-            className="pl-11 pr-6 py-2.5 rounded-full border border-slate-100 bg-white text-sm font-medium focus:ring-2 focus:ring-[#0066cc]/20 outline-none w-full md:w-80"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+  const renderSpecialitySelector = () => {
+    const specs = [...new Set(dashboardStats.doctors.map(d => d.specialization))].sort()
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        {specs.map(spec => {
+          const count = dashboardStats.doctors.filter(d => d.specialization === spec).length
+          return (
+            <button
+              key={spec}
+              onClick={() => {
+                setSelectedSpec(spec)
+                setDocViewMode('LIST')
+              }}
+              className="p-8 rounded-[2rem] bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:border-[#0066cc]/20 transition-all text-left group"
+            >
+              <div className="w-12 h-12 bg-[#00a69c]/10 text-[#00a69c] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Stethoscope className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-black text-slate-800 mb-2">{spec}</h3>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{count} {count === 1 ? 'Doctor' : 'Doctors'}</p>
+            </button>
+          )
+        })}
       </div>
+    )
+  }
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredDoctors.map((doc) => (
-          <div key={doc.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-[#00a69c]/10 flex items-center justify-center text-[#00a69c]">
-                <Stethoscope className="w-7 h-7" />
+  const renderDoctorGallery = () => {
+    const list = dashboardStats.doctors.filter(d => d.specialization === selectedSpec)
+    return (
+      <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div className="flex items-center justify-between">
+          <button 
+            onClick={() => setDocViewMode('SPECIALITIES')}
+            className="flex items-center gap-1.5 text-xs font-black text-slate-400 hover:text-[#0066cc] uppercase tracking-widest transition-all"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Specialities
+          </button>
+          <h2 className="text-xl font-black text-slate-900">{selectedSpec} Team</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {list.map(doc => (
+            <div key={doc.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-xl">
+                  {doc.fullName?.charAt(0)}
+                </div>
+                <div>
+                  <h4 className="text-lg font-black text-slate-900 leading-tight">{doc.fullName}</h4>
+                  <p className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full inline-block mt-1">DR-ID: #{doc.id}</p>
+                </div>
               </div>
-              <div>
-                <h4 className="text-lg font-black text-slate-900">{doc.fullName}</h4>
-                <p className="text-xs font-bold text-[#00a69c] uppercase tracking-wider">{doc.specialization}</p>
-              </div>
-            </div>
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Status</span>
-                <span className={`px-2 py-0.5 rounded-full font-black tracking-wider uppercase ${
-                  doc.verified ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
-                }`}>
-                  {doc.verified ? 'Verified' : 'Pending Verification'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Experience</span>
-                <span className="text-slate-600 font-black">8 Years</span>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              {!doc.verified && (
-                <button 
-                  onClick={() => handleAction(verifyDoctor, doc.id)}
-                  className="flex-1 btn-primary text-xs py-2.5"
-                >
-                  Verify Doctor
-                </button>
-              )}
               <button 
-                onClick={() => handleAction(deleteUser, doc.id)}
-                className="p-2.5 rounded-xl border border-slate-100 text-slate-300 hover:bg-red-50 hover:text-red-600 transition-all"
+                onClick={() => {
+                  setSelectedDoc(doc)
+                  setDocViewMode('DETAIL')
+                  fetchDoctorDetail(doc.id)
+                }}
+                className="w-full btn-primary py-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2"
               >
-                <Trash2 className="w-4 h-4" />
+                View Performance & Schedule
+                <ArrowUpRight className="w-4 h-4" />
               </button>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
+
+  const renderDoctorCommitments = () => {
+    if (!selectedDoc) return null
+    return (
+      <div className="space-y-8 animate-in fade-in zoom-in duration-500">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-100 pb-8">
+          <div className="space-y-4">
+            <button 
+              onClick={() => setDocViewMode('LIST')}
+              className="flex items-center gap-1.5 text-xs font-black text-slate-400 hover:text-[#0066cc] uppercase tracking-widest transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to {selectedSpec} List
+            </button>
+            <div className="flex items-center gap-6">
+               <div className="w-20 h-20 rounded-3xl bg-slate-900 text-white flex items-center justify-center font-black text-3xl">
+                 {selectedDoc.fullName?.charAt(0)}
+               </div>
+               <div>
+                 <h1 className="text-3xl font-black text-slate-900 leading-none mb-2">{selectedDoc.fullName}</h1>
+                 <div className="flex items-center gap-3">
+                    <span className="px-3 py-1 rounded-full bg-[#00a69c]/10 text-[#00a69c] text-[10px] font-black uppercase tracking-widest">{selectedDoc.specialization}</span>
+                    <span className="text-xs text-slate-400 font-medium">#{selectedDoc.email}</span>
+                 </div>
+               </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+             <div className="text-right">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p>
+                <div className="flex items-center gap-2 text-green-600 font-bold">
+                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                   Active Professional
+                </div>
+             </div>
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Appointments section */}
+          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+            <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+               <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                 <Calendar className="w-5 h-5 text-[#0066cc]" />
+                 Current Schedule
+               </h3>
+               {isRefreshingDoc && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
+            </div>
+            <div className="p-8 max-h-[500px] overflow-y-auto">
+              {docAppointments.length === 0 ? (
+                <div className="text-center py-12 text-slate-400 italic text-sm">No scheduled appointments found.</div>
+              ) : (
+                <div className="space-y-4">
+                  {docAppointments.map(app => (
+                    <div key={app.id} className="p-5 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between group hover:border-[#0066cc]/40 transition-all">
+                      <div>
+                        <p className="text-sm font-black text-slate-900">{app.fullName || 'Guest Patient'}</p>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {new Date(app.appointmentDate).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
+                        app.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
+                        app.status === 'CANCELLED' ? 'bg-red-100 text-red-700' :
+                        'bg-blue-100 text-blue-700'
+                      }`}>
+                        {app.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Leaves section */}
+          <div className="bg-slate-50 rounded-[2.5rem] border border-slate-100 overflow-hidden">
+            <div className="p-8 border-b border-slate-200/50 flex items-center justify-between">
+               <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                 <ShieldAlert className="w-5 h-5 text-orange-500" />
+                 Leave History
+               </h3>
+               <button className="text-[10px] font-black text-[#0066cc] uppercase tracking-widest bg-white px-3 py-1.5 rounded-full border border-slate-200">Export Log</button>
+            </div>
+            <div className="p-8">
+              {docLeaves.length === 0 ? (
+                <div className="text-center py-12">
+                   <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+                     <FileText className="w-8 h-8" />
+                   </div>
+                   <p className="text-sm font-bold text-slate-400 italic">No leave requests documented for this professional.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                   {docLeaves.map(leave => (
+                     <div key={leave.id} className="p-6 rounded-2xl bg-white shadow-sm border border-slate-100">
+                        <div className="flex items-center justify-between mb-4">
+                           <div className="flex items-center gap-3 text-xs font-black text-slate-900 uppercase">
+                             <Calendar className="w-4 h-4 text-indigo-500" />
+                             {leave.startDate} → {leave.endDate}
+                           </div>
+                           <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                             leave.status === 'APPROVED' ? 'bg-green-50 text-green-600' :
+                             leave.status === 'REJECTED' ? 'bg-red-50 text-red-600' :
+                             'bg-orange-50 text-orange-600'
+                           }`}>
+                             {leave.status}
+                           </span>
+                        </div>
+                        <p className="text-xs text-slate-500 italic leading-relaxed">"{leave.reason}"</p>
+                     </div>
+                   ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const renderDoctors = () => {
+    return (
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-black text-slate-900 leading-none">Medical <span className="text-[#00a69c]">Engine</span></h2>
+            <p className="text-slate-500 text-sm mt-2 font-medium">Coordinate specializations, clinical loads, and staff availability.</p>
+          </div>
+          <button 
+            onClick={() => setActiveView('OVERVIEW')}
+            className="hidden md:flex btn-secondary text-xs uppercase tracking-widest font-black"
+          >
+            Dashboard Overview
+          </button>
+        </div>
+
+        {docViewMode === 'SPECIALITIES' && renderSpecialitySelector()}
+        {docViewMode === 'LIST' && renderDoctorGallery()}
+        {docViewMode === 'DETAIL' && renderDoctorCommitments()}
+      </div>
+    )
+  }
 
   const renderPatients = () => (
     <div className="space-y-6">
