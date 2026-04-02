@@ -6,6 +6,9 @@ import AuthModal from './components/AuthModal'
 import Home from './pages/Home'
 import Profile from './pages/Profile'
 import Appointments from './pages/Appointments'
+import AboutUs from './pages/AboutUs'
+import Contact from './pages/Contact'
+import AdminDashboard from './pages/AdminDashboard'
 import {
   clearSession,
   getPatientProfile,
@@ -15,10 +18,10 @@ import {
   registerUser,
   updatePatientProfile,
 } from './services/auth'
-import { 
-  getDoctorByUserId, 
-  createDoctorProfile, 
-  updateDoctorProfile 
+import {
+  getDoctorByUserId,
+  createDoctorProfile,
+  updateDoctorProfile
 } from './services/doctors'
 import Doctors from './pages/Doctors'
 import DoctorDetail from './pages/DoctorDetail'
@@ -106,7 +109,12 @@ function App() {
     persistSession(nextSession)
     setSession(nextSession)
     handleCloseAuth()
-    navigate('/profile')
+
+    if (nextSession.user.role === 'ADMIN') {
+      navigate('/admin')
+    } else {
+      navigate('/profile')
+    }
   }
 
   const handleSignup = async (data) => {
@@ -119,7 +127,12 @@ function App() {
     persistSession(nextSession)
     setSession(nextSession)
     handleCloseAuth()
-    navigate('/profile')
+
+    if (nextSession.user.role === 'ADMIN') {
+      navigate('/admin')
+    } else {
+      navigate('/')
+    }
   }
 
   const handleLogout = () => {
@@ -201,13 +214,16 @@ function App() {
       />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/admin" element={<AdminDashboard token={session?.token} />} />
         <Route
           path="/profile"
           element={(
             <Profile
               user={session?.user || null}
-               patientProfile={patientProfile}
-              doctorProfile={doctorProfile}
+              token={session?.token}
+              patientProfile={patientProfile}
               profileError={profileError}
               isSavingProfile={isSavingProfile}
               onSavePatientProfile={handlePatientProfileSave}
@@ -224,6 +240,7 @@ function App() {
           element={(
             <Appointments
               user={session?.user || null}
+              patientProfile={patientProfile}
               onLoginClick={() => handleOpenAuth('login')}
             />
           )}

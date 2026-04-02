@@ -16,6 +16,7 @@ const EMPTY_SIGNUP = {
   phoneNumber: '',
   address: '',
   dateOfBirth: '',
+  specialization: '',
 }
 
 const ROLE_OPTIONS = ['PATIENT', 'DOCTOR', 'ADMIN']
@@ -75,8 +76,11 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
       return 'Passwords do not match.'
     }
 
-    if (signupData.role === 'PATIENT' && signupData.phoneNumber.trim().length < 10) {
-      return 'Please enter a valid patient phone number.'
+    if (signupData.role === 'PATIENT') {
+      if (!signupData.dateOfBirth) return 'Please enter your date of birth.'
+      const dob = new Date(signupData.dateOfBirth)
+      const today = new Date()
+      if (dob > today) return 'Date of Birth cannot be in the future.'
     }
 
     return ''
@@ -126,9 +130,9 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
         name: signupData.name.trim(),
         email: signupData.email.trim(),
         password: signupData.password,
-        phoneNumber: signupData.phoneNumber.trim(),
         address: signupData.address.trim(),
         dateOfBirth: signupData.dateOfBirth,
+        specialization: signupData.role === 'DOCTOR' ? signupData.specialization.trim() : null,
       })
       setSignupData(EMPTY_SIGNUP)
     } catch (submitError) {
@@ -140,7 +144,7 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
 
   return (
     <div className="fixed inset-0 z-[100] bg-slate-950/55 backdrop-blur-sm px-4 py-8 flex items-center justify-center">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-y-auto max-h-full border border-slate-100">
         <div className="relative px-6 py-6 bg-gradient-to-br from-[#002d5a] to-[#0066cc] text-white">
           <button
             type="button"
@@ -337,6 +341,7 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
                       value={signupData.dateOfBirth}
                       onChange={(event) => setSignupData((prev) => ({ ...prev, dateOfBirth: event.target.value }))}
                       className="auth-input"
+                      max={new Date().toISOString().split('T')[0]}
                       required
                     />
                   </div>
@@ -354,6 +359,20 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
                     />
                   </div>
                 </>
+              )}
+              {signupData.role === 'DOCTOR' && (
+                <div>
+                  <label htmlFor="signup-specialization" className="auth-label">Specialization</label>
+                  <input
+                    id="signup-specialization"
+                    type="text"
+                    value={signupData.specialization}
+                    onChange={(event) => setSignupData((prev) => ({ ...prev, specialization: event.target.value }))}
+                    className="auth-input"
+                    placeholder="e.g. Cardiology, Pediatrics"
+                    required
+                  />
+                </div>
               )}
               <button type="submit" className="btn-secondary w-full justify-center" disabled={isLoading}>
                 {isLoading ? (

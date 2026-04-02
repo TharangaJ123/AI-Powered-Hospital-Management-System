@@ -1,43 +1,43 @@
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\config\WebClientConfig.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\AppointmentRequestController.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\AvailabilityScheduleController.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\DoctorProfileController.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\PatientReportController.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\PrescriptionController.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\TelemedicineSessionController.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\DoctorManagementApplication.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\AppointmentRequestDTO.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\AvailabilityScheduleDTO.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\DoctorProfileDTO.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\PatientReportDTO.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\PrescriptionDTO.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\TelemedicineSessionDTO.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\exception\GlobalExceptionHandler.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\AppointmentRequest.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\AppointmentRequestStatus.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\AvailabilitySchedule.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\ConsultationType.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\DoctorProfile.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\DoctorStatus.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\PatientReport.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\Prescription.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\SessionStatus.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\TelemedicineSession.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\AppointmentRequestRepository.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\AvailabilityScheduleRepository.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\DoctorProfileRepository.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\PatientReportRepository.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\PrescriptionRepository.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\TelemedicineSessionRepository.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\AuthEntryPointJwt.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\AuthTokenFilter.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\JwtUtils.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\SecurityConfig.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\UserDetailsImpl.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\UserDetailsServiceImpl.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\AppointmentRequestService.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\AvailabilityScheduleService.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\DoctorProfileService.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\PatientReportService.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\PrescriptionService.java
-E:\3_2 Sem\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\TelemedicineSessionService.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\config\WebClientConfig.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\AppointmentRequestController.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\AvailabilityScheduleController.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\DoctorProfileController.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\PatientReportController.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\PrescriptionController.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\TelemedicineSessionController.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\DoctorManagementApplication.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\AppointmentRequestDTO.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\AvailabilityScheduleDTO.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\DoctorProfileDTO.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\PatientReportDTO.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\PrescriptionDTO.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\TelemedicineSessionDTO.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\exception\GlobalExceptionHandler.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\AppointmentRequest.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\AppointmentRequestStatus.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\AvailabilitySchedule.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\ConsultationType.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\DoctorProfile.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\DoctorStatus.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\PatientReport.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\Prescription.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\SessionStatus.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\TelemedicineSession.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\AppointmentRequestRepository.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\AvailabilityScheduleRepository.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\DoctorProfileRepository.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\PatientReportRepository.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\PrescriptionRepository.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\TelemedicineSessionRepository.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\AuthEntryPointJwt.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\AuthTokenFilter.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\JwtUtils.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\SecurityConfig.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\UserDetailsImpl.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\UserDetailsServiceImpl.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\AppointmentRequestService.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\AvailabilityScheduleService.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\DoctorProfileService.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\PatientReportService.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\PrescriptionService.java
+D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\TelemedicineSessionService.java
