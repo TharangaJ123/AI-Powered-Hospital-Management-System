@@ -25,6 +25,7 @@ import {
 } from './services/doctors'
 import Doctors from './pages/Doctors'
 import DoctorDetail from './pages/DoctorDetail'
+import SymptomChecker from './pages/SymptomChecker'
 
 function App() {
   const navigate = useNavigate()
@@ -235,6 +236,7 @@ function App() {
         />
         <Route path="/doctors" element={<Doctors />} />
         <Route path="/doctors/:id" element={<DoctorDetail />} />
+        <Route path="/ai-symptom-checker" element={<SymptomChecker />} />
         <Route
           path="/appointments"
           element={(
