@@ -34,7 +34,8 @@ public class EmailService {
 
     public String buildAppointmentBookedBody(String recipientName, String doctorName,
                                              String patientName, String date, String time,
-                                             String appointmentId, String specialty) {
+                                             String appointmentId, String specialty,
+                                             String consultationType, String reason, String doctorNotes) {
         return """
                 <!DOCTYPE html><html><head><meta charset="UTF-8"/>
                 <style>
@@ -43,28 +44,47 @@ public class EmailService {
                         box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden}
                   .hdr{background:#1a73e8;padding:24px;text-align:center;color:#fff;font-size:20px}
                   .body{padding:28px;color:#333}
-                  .row{margin-bottom:10px}
-                  .lbl{font-weight:bold;color:#555;min-width:140px;display:inline-block}
-                  .badge{background:#e8f0fe;color:#1a73e8;border-radius:4px;padding:2px 8px;font-size:13px}
+                  .row{margin-bottom:12px; display: flex; align-items: baseline;}
+                  .lbl{font-weight:bold;color:#555;width:150px; flex-shrink: 0;}
+                  .val{color: #222;}
+                  .badge{background:#e8f0fe;color:#1a73e8;border-radius:4px;padding:2px 8px;font-size:13px; font-weight: bold;}
                   .ftr{background:#f4f7fb;text-align:center;padding:14px;font-size:12px;color:#999}
+                  .section-title{border-bottom: 2px solid #eef2f7; padding-bottom: 8px; margin-bottom: 16px; color: #1a73e8; font-weight: bold; text-transform: uppercase; font-size: 14px;}
                 </style></head><body>
                 <div class="wrap">
-                  <div class="hdr">✅ Appointment Confirmed \u2013 MediConnect</div>
+                  <div class="hdr">✅ Appointment Summary \u2013 OminiHealth</div>
                   <div class="body">
                     <p>Dear <strong>%s</strong>,</p>
-                    <p>Your appointment has been successfully booked:</p>
-                    <div class="row"><span class="lbl">Ref:</span><span class="badge">%s</span></div>
-                    <div class="row"><span class="lbl">Patient:</span> %s</div>
-                    <div class="row"><span class="lbl">Doctor:</span> Dr. %s</div>
-                    <div class="row"><span class="lbl">Specialty:</span> %s</div>
-                    <div class="row"><span class="lbl">Date:</span> %s</div>
-                    <div class="row"><span class="lbl">Time:</span> %s</div>
-                    <p style="margin-top:20px">Please be ready 5 minutes before your scheduled time.</p>
+                    <p>Your appointment has been successfully confirmed. Here are the complete details for your upcoming consultation</p>
+                    
+                    <div class="section-title">Common Details</div>
+                    <div class="row"><span class="lbl">Reference:</span><span class="badge">%s</span></div>
+                    <div class="row"><span class="lbl">Consultation Type:</span><span class="val">%s</span></div>
+                    
+                    <div class="section-title">Patient Info</div>
+                    <div class="row"><span class="lbl">Patient Name:</span><span class="val">%s</span></div>
+                    
+                    <div class="section-title">Doctor Info</div>
+                    <div class="row"><span class="lbl">Doctor Name:</span><span class="val">Dr. %s</span></div>
+                    <div class="row"><span class="lbl">Specialty:</span><span class="val">%s</span></div>
+                    
+                    <div class="section-title">Schedule</div>
+                    <div class="row"><span class="lbl">Date:</span><span class="val">%s</span></div>
+                    <div class="row"><span class="lbl">Time:</span><span class="val">%s</span></div>
+                    
+                    <div class="section-title">Additional Info</div>
+                    <div class="row"><span class="lbl">Reason for Visit:</span><span class="val">%s</span></div>
+                    <div class="row"><span class="lbl">Doctor Notes:</span><span class="val">%s</span></div>
+
+                    <p style="margin-top:24px; padding: 12px; background: #fff8e1; border-radius: 6px; color: #856404; font-size: 14px;">
+                      <strong>Note:</strong> Please arrive 15 minutes before your scheduled time. For online consultations, the link will be active 5 minutes prior.
+                    </p>
                   </div>
-                  <div class="ftr">This is an automated message. Please do not reply.</div>
+                  <div class="ftr">This is an automated message from OminiHealth Hospital Management System. Please do not reply.</div>
                 </div></body></html>
-                """.formatted(recipientName, appointmentId, patientName, doctorName,
-                specialty, date, time);
+                """.formatted(recipientName, appointmentId, (consultationType != null ? consultationType : "General"),
+                patientName, firstName + lastName, specialization, date, time, 
+                (reason != null ? reason : "N/A"), (doctorNotes != null ? doctorNotes : "None provided"));
     }
 
     public String buildAppointmentCancelledBody(String recipientName, String doctorName,
@@ -80,12 +100,12 @@ public class EmailService {
                   .ftr{background:#f4f7fb;text-align:center;padding:14px;font-size:12px;color:#999}
                 </style></head><body>
                 <div class="wrap">
-                  <div class="hdr">\u274C Appointment Cancelled \u2013 MediConnect</div>
+                  <div class="hdr">\u274C Appointment Cancelled \u2013 OminiHealth</div>
                   <div class="body">
                     <p>Dear <strong>%s</strong>,</p>
                     <p>Your appointment (<strong>%s</strong>) with <strong>Dr. %s</strong>
                        on <strong>%s at %s</strong> has been cancelled.</p>
-                    <p>Please rebook via the MediConnect portal if needed.</p>
+                    <p>Please rebook via the OminiHealth portal if needed.</p>
                   </div>
                   <div class="ftr">This is an automated message. Please do not reply.</div>
                 </div></body></html>
@@ -105,13 +125,13 @@ public class EmailService {
                   .ftr{background:#f4f7fb;text-align:center;padding:14px;font-size:12px;color:#999}
                 </style></head><body>
                 <div class="wrap">
-                  <div class="hdr">\uD83C\uDF93 Consultation Completed \u2013 MediConnect</div>
+                  <div class="hdr">\uD83C\uDF93 Consultation Completed \u2013 OminiHealth</div>
                   <div class="body">
                     <p>Dear <strong>%s</strong>,</p>
                     <p>Your telemedicine consultation (<strong>%s</strong>) with <strong>Dr. %s</strong>
                        on <strong>%s</strong> is now complete.</p>
                     <p>Your prescription and medical summary are available in your patient portal.</p>
-                    <p>Thank you for using MediConnect. Stay healthy!</p>
+                    <p>Thank you for using OminiHealth. Stay healthy!</p>
                   </div>
                   <div class="ftr">This is an automated message. Please do not reply.</div>
                 </div></body></html>

@@ -32,11 +32,12 @@ public class NotificationService {
         switch (req.getType()) {
 
             case APPOINTMENT_BOOKED -> {
-                emailSubject = "✅ Appointment Confirmed \u2013 MediConnect";
+                emailSubject = "✅ Appointment Confirmed \u2013 OminiHealth";
                 emailBody = emailService.buildAppointmentBookedBody(
                         req.getRecipientName(), req.getDoctorName(), req.getPatientName(),
                         req.getAppointmentDate(), req.getAppointmentTime(),
-                        req.getAppointmentId(), req.getSpecialty());
+                        req.getAppointmentId(), req.getSpecialty(),
+                        req.getConsultationType(), req.getReason(), req.getDoctorNotes());
                 smsBody = smsService.buildAppointmentBookedSms(
                         req.getPatientName(), req.getDoctorName(), req.getAppointmentDate(),
                         req.getAppointmentTime(), req.getAppointmentId());
@@ -57,7 +58,8 @@ public class NotificationService {
                 emailBody = emailService.buildAppointmentBookedBody(   // reuse booked template
                         req.getRecipientName(), req.getDoctorName(), req.getPatientName(),
                         req.getAppointmentDate(), req.getAppointmentTime(),
-                        req.getAppointmentId(), req.getSpecialty());
+                        req.getAppointmentId(), req.getSpecialty(),
+                        req.getConsultationType(), req.getReason(), req.getDoctorNotes());
                 smsBody = smsService.buildAppointmentModifiedSms(
                         req.getPatientName(), req.getDoctorName(), req.getAppointmentDate(),
                         req.getAppointmentTime());

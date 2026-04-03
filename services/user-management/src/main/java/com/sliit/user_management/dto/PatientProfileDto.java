@@ -17,4 +17,5 @@ public class PatientProfileDto {
     private String phoneNumber;
     private String address;
     private String dateOfBirth;
+    private String email;
 }

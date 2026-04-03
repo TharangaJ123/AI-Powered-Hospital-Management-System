@@ -17,4 +17,7 @@ public class AppointmentRequestDto {
     private String fullName;
     private String phoneNumber;
     private LocalDateTime appointmentDate;
+    private String consultationType;
+    private String reason;
+    private String doctorNotes;
 }

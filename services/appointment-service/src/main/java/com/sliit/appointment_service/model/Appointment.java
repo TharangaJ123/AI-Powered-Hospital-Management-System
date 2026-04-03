@@ -39,4 +39,13 @@ public class Appointment {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private AppointmentStatus status;
+
+    @Column(name = "consultation_type", length = 100)
+    private String consultationType;
+
+    @Column(name = "reason", length = 255)
+    private String reason;
+
+    @Column(name = "doctor_notes", columnDefinition = "TEXT")
+    private String doctorNotes;
 }

@@ -151,7 +151,9 @@ const Home = ({ onBookAppointment }) => {
           doctorId,
           fullName: bookingForm.fullName,
           phoneNumber: bookingForm.phone,
-          appointmentDate: `${bookingForm.date}T${bookingForm.time}:00`
+          appointmentDate: `${bookingForm.date}T${bookingForm.time}:00`,
+          reason: "Quick Booking via Home Page",
+          consultationType: (bookingForm.specialty || "General") + " Consultation"
         })
       })
 

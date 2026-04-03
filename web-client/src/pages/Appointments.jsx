@@ -67,9 +67,10 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
         patientId: (user && patientProfile) ? patientProfile.id : (user ? user.id : null),
         doctorId: parseInt(formData.doctorId.replace('dr_', '')),
         appointmentDate: appointmentDate,
-        // Store name/phone only for guest bookings
-        fullName: user ? null : formData.fullName,
-        phoneNumber: user ? null : formData.phoneNumber,
+        fullName: formData.fullName,
+        phoneNumber: formData.phoneNumber,
+        reason: formData.reason,
+        consultationType: formData.speciality + " Consultation"
       }
 
       await createAppointment(payload)
