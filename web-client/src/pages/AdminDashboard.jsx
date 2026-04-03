@@ -47,6 +47,7 @@ const AdminDashboard = ({ token }) => {
     doctors: [],
     patients: [],
     allUsers: [],
+    pendingDoctors: [],
     operations: null
   })
   const [rescheduleData, setRescheduleData] = useState({ id: null, date: '' })
@@ -91,12 +92,14 @@ const AdminDashboard = ({ token }) => {
       ])
 
       const patientUsers = allUsers.filter(u => u.role === 'PATIENT')
+      const pendingDocs = allUsers.filter(u => u.role === 'DOCTOR' && !u.active)
       
       setDashboardStats({
         appointments: allApps,
         doctors: allDocs,
         patients: patientUsers,
         allUsers: allUsers,
+        pendingDoctors: pendingDocs,
         operations: ops
       })
     } catch (err) {
@@ -656,7 +659,51 @@ const AdminDashboard = ({ token }) => {
           </button>
         </div>
 
-        {docViewMode === 'SPECIALITIES' && renderSpecialitySelector()}
+        {docViewMode === 'SPECIALITIES' && (
+          <div className="space-y-10">
+            {dashboardStats.pendingDoctors.length > 0 && (
+              <section className="bg-amber-50 rounded-[2.5rem] border border-amber-200/50 p-8">
+                 <div className="flex items-center gap-3 mb-6">
+                    <ShieldAlert className="w-6 h-6 text-amber-600" />
+                    <h3 className="text-xl font-black text-amber-900">Pending Doctor Approvals</h3>
+                    <span className="bg-amber-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{dashboardStats.pendingDoctors.length}</span>
+                 </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {dashboardStats.pendingDoctors.map(doc => (
+                      <div key={doc.id} className="bg-white p-6 rounded-3xl border border-amber-100 shadow-sm flex flex-col justify-between">
+                         <div className="space-y-4">
+                            <div>
+                               <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Doctor Name</p>
+                               <p className="text-lg font-black text-slate-900 leading-tight">
+                                  {doc.firstName} {doc.lastName}
+                               </p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                               <div>
+                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Email</p>
+                                  <p className="text-xs font-bold text-slate-600 truncate">{doc.email}</p>
+                               </div>
+                               <div>
+                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Medical Reg No.</p>
+                                  <p className="text-xs font-black text-amber-600">{doc.doctorRegistrationNumber}</p>
+                               </div>
+                            </div>
+                         </div>
+                         <button 
+                            onClick={() => handleAction(verifyDoctor, doc.id)}
+                            className="w-full mt-8 py-3 bg-amber-600 text-white text-xs font-black rounded-xl hover:bg-amber-700 transition-colors shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2"
+                         >
+                            <ShieldCheck className="w-5 h-5" />
+                            Confirm Approval
+                         </button>
+                      </div>
+                    ))}
+                 </div>
+              </section>
+            )}
+            {renderSpecialitySelector()}
+          </div>
+        )}
         {docViewMode === 'LIST' && renderDoctorGallery()}
         {docViewMode === 'DETAIL' && renderDoctorCommitments()}
       </div>

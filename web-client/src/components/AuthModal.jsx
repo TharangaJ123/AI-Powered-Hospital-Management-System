@@ -17,6 +17,7 @@ const EMPTY_SIGNUP = {
   address: '',
   dateOfBirth: '',
   specialization: '',
+  doctorRegistrationNumber: '',
 }
 
 const ROLE_OPTIONS = ['PATIENT', 'DOCTOR', 'ADMIN']
@@ -133,6 +134,7 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
         address: signupData.address.trim(),
         dateOfBirth: signupData.dateOfBirth,
         specialization: signupData.role === 'DOCTOR' ? signupData.specialization.trim() : null,
+        doctorRegistrationNumber: signupData.role === 'DOCTOR' ? signupData.doctorRegistrationNumber.trim() : null,
       })
       setSignupData(EMPTY_SIGNUP)
     } catch (submitError) {
@@ -361,18 +363,32 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
                 </>
               )}
               {signupData.role === 'DOCTOR' && (
-                <div>
-                  <label htmlFor="signup-specialization" className="auth-label">Specialization</label>
-                  <input
-                    id="signup-specialization"
-                    type="text"
-                    value={signupData.specialization}
-                    onChange={(event) => setSignupData((prev) => ({ ...prev, specialization: event.target.value }))}
-                    className="auth-input"
-                    placeholder="e.g. Cardiology, Pediatrics"
-                    required
-                  />
-                </div>
+                <>
+                  <div>
+                    <label htmlFor="signup-specialization" className="auth-label">Specialization</label>
+                    <input
+                      id="signup-specialization"
+                      type="text"
+                      value={signupData.specialization}
+                      onChange={(event) => setSignupData((prev) => ({ ...prev, specialization: event.target.value }))}
+                      className="auth-input"
+                      placeholder="e.g. Cardiology, Pediatrics"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="signup-reg-no" className="auth-label">Medical Registration No.</label>
+                    <input
+                      id="signup-reg-no"
+                      type="text"
+                      value={signupData.doctorRegistrationNumber}
+                      onChange={(event) => setSignupData((prev) => ({ ...prev, doctorRegistrationNumber: event.target.value }))}
+                      className="auth-input"
+                      placeholder="Reg-XXXXX"
+                      required
+                    />
+                  </div>
+                </>
               )}
               <button type="submit" className="btn-secondary w-full justify-center" disabled={isLoading}>
                 {isLoading ? (

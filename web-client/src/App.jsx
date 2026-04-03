@@ -228,6 +228,7 @@ function App() {
               profileError={profileError}
               isSavingProfile={isSavingProfile}
               onSavePatientProfile={handlePatientProfileSave}
+              doctorProfile={doctorProfile}
               onSaveDoctorProfile={handleDoctorProfileSave}
               onLoginClick={() => handleOpenAuth('login')}
               onSignupClick={() => handleOpenAuth('signup')}

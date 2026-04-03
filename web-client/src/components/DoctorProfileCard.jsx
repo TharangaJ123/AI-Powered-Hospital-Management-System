@@ -12,11 +12,17 @@ import {
   Camera,
   Save,
   Globe,
-  ShieldCheck
+  ShieldCheck,
+  Loader2
 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { uploadImageToCloudinary } from '../services/cloudinary'
+import { useRef } from 'react'
 
 const DoctorProfileCard = ({ profile, onSave, isSaving, error }) => {
+  const fileInputRef = useRef(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState(null)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -59,6 +65,31 @@ const DoctorProfileCard = ({ profile, onSave, isSaving, error }) => {
     }))
   }
 
+  const handleCameraClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setIsUploading(true)
+    setUploadError(null)
+
+    try {
+      const url = await uploadImageToCloudinary(file)
+      setFormData(prev => ({
+        ...prev,
+        profilePhotoUrl: url
+      }))
+    } catch (err) {
+      setUploadError('Failed to upload image. Please check your Cloudinary configuration.')
+      console.error(err)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
     onSave(formData)
@@ -74,12 +105,24 @@ const DoctorProfileCard = ({ profile, onSave, isSaving, error }) => {
                 <div className="w-32 h-32 rounded-3xl overflow-hidden border-4 border-white/20 shadow-2xl">
                    <img 
                       src={formData.profilePhotoUrl || `https://ui-avatars.com/api/?name=${formData.firstName}+${formData.lastName}&background=0D8ABC&color=fff&size=256`} 
-                      className="w-full h-full object-cover" 
+                      className={`w-full h-full object-cover ${isUploading ? 'opacity-40 animate-pulse' : ''}`} 
                       alt="Profile" 
                    />
                 </div>
-                <button className="absolute -bottom-2 -right-2 bg-white text-[#002d5a] p-2 rounded-xl shadow-lg hover:bg-slate-100 transition-all">
-                  <Camera className="w-5 h-5" />
+                <input 
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept="image/*"
+                />
+                <button 
+                  type="button" 
+                  onClick={handleCameraClick}
+                  disabled={isUploading}
+                  className="absolute -bottom-2 -right-2 bg-white text-[#002d5a] p-2 rounded-xl shadow-lg hover:bg-slate-100 transition-all disabled:opacity-50"
+                >
+                  {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
                 </button>
               </div>
               <div className="text-center md:text-left space-y-2">
@@ -102,6 +145,13 @@ const DoctorProfileCard = ({ profile, onSave, isSaving, error }) => {
             <div className="flex items-center space-x-3 bg-red-50 p-4 rounded-2xl border border-red-100 text-red-600">
               <AlertCircle className="w-5 h-5 flex-shrink-0" />
               <p className="text-sm font-bold">{error}</p>
+            </div>
+          )}
+
+          {uploadError && (
+            <div className="flex items-center space-x-3 bg-red-50 p-4 rounded-2xl border border-red-100 text-red-600">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <p className="text-sm font-bold">{uploadError}</p>
             </div>
           )}
 
@@ -249,7 +299,7 @@ const DoctorProfileCard = ({ profile, onSave, isSaving, error }) => {
                     onChange={handleChange}
                     className="sr-only peer" 
                   />
-                  <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-[#00a69c]/20 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a69c]"></div>
+                  <div className="relative w-11 h-6 bg-slate-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-[#00a69c]/20 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00a69c]"></div>
                   <span className="ms-3 text-sm font-bold text-[#002d5a] flex items-center">
                     <Video className={`w-4 h-4 mr-2 ${formData.isAvailableForTelemedicine ? 'text-[#00a69c]' : 'text-slate-400'}`} />
                     Opt-in for Telemedicine Consultations

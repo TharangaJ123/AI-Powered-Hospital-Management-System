@@ -25,15 +25,23 @@ public class RegistrationService {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already taken");
         }
-
         Role role = request.getRole() == null ? Role.PATIENT : request.getRole();
+
+        if (role == Role.DOCTOR && request.getDoctorRegistrationNumber() != null) {
+            if (userRepository.findByDoctorRegistrationNumber(request.getDoctorRegistrationNumber()).isPresent()) {
+                throw new RuntimeException("Doctor Registration Number already in use");
+            }
+        }
 
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(role)
-                .active(true)
+                .active(role != Role.DOCTOR)
                 .isVerified(role != Role.DOCTOR)
+                .doctorRegistrationNumber(role == Role.DOCTOR ? request.getDoctorRegistrationNumber() : null)
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
                 .build();
 
         user = userRepository.save(user);
@@ -55,6 +63,9 @@ public class RegistrationService {
                 .email(user.getEmail())
                 .role(user.getRole())
                 .active(user.isActive())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .doctorRegistrationNumber(user.getDoctorRegistrationNumber())
                 .build();
     }
 }

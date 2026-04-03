@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react'
+import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle, AlertCircle } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import PatientProfileCard from '../components/PatientProfileCard'
 import DoctorProfileCard from '../components/DoctorProfileCard'
-import { getAppointmentsByPatient, updateAppointment } from '../services/appointments'
 import { getAllDoctors } from '../services/doctors'
+import { getAppointmentsByPatient, getAppointmentsByDoctor, updateAppointment, cancelAppointment, completeAppointment } from '../services/appointments'
 
 const Profile = ({
   user,
@@ -23,6 +24,7 @@ const Profile = ({
   const [appointmentError, setAppointmentError] = useState(null)
   const [rescheduleData, setRescheduleData] = useState({ id: null, date: '' })
   const [isUpdating, setIsUpdating] = useState(false)
+  const [activeTab, setActiveTab] = useState('profile')
 
   // Calendar State
   const [viewDate, setViewDate] = useState(new Date())
@@ -32,20 +34,38 @@ const Profile = ({
   }, [user, patientProfile?.id, token])
 
   const fetchData = async () => {
-    if (!user || user.role !== 'PATIENT' || !patientProfile?.id || !token) return
+    if (!user || !token) return
+    if (user.role === 'PATIENT' && !patientProfile?.id) return
+    if (user.role === 'DOCTOR' && !doctorProfile?.id) return
 
     setIsLoadingAppointments(true)
     try {
-      const [appsData, docsData] = await Promise.all([
-        getAppointmentsByPatient(patientProfile.id, token),
-        getAllDoctors()
-      ])
-      setAppointments(appsData)
-      setDoctors(docsData)
+      if (user.role === 'PATIENT' && patientProfile?.id) {
+        const [appsData, docsData] = await Promise.all([
+          getAppointmentsByPatient(patientProfile.id, token),
+          getAllDoctors()
+        ])
+        setAppointments(appsData)
+        setDoctors(docsData)
+      } else if (user.role === 'DOCTOR' && doctorProfile?.id) {
+        const appsData = await getAppointmentsByDoctor(doctorProfile.id, token)
+        setAppointments(appsData)
+      }
     } catch (err) {
       setAppointmentError(err.message || 'Failed to load appointments')
     } finally {
       setIsLoadingAppointments(false)
+    }
+  }
+  const handleAction = async (actionFn, appointmentId) => {
+    setIsUpdating(true)
+    try {
+      await actionFn(appointmentId, token)
+      await fetchData()
+    } catch (err) {
+      setAppointmentError(err.message)
+    } finally {
+      setIsUpdating(false)
     }
   }
 
@@ -165,28 +185,6 @@ const Profile = ({
 
   return (
     <main className="w-full pt-32 pb-12">
-      <section className="max-w-7xl mx-auto px-4 mb-8 w-full">
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
-          <h1 className="text-lg font-extrabold text-slate-900">My Profile</h1>
-          <p className="text-sm text-slate-500 mt-1">View your account details and manage your profile information.</p>
-          <div className="mt-4 grid md:grid-cols-3 gap-4 text-sm">
-            <div className="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Name</p>
-              <p className="mt-1 font-semibold text-slate-900">
-                {user?.name || user?.fullName || 'Not provided'}
-              </p>
-            </div>
-            <div className="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</p>
-              <p className="mt-1 font-semibold text-slate-900 break-all">{user?.email || 'Not provided'}</p>
-            </div>
-            <div className="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Role</p>
-              <p className="mt-1 font-semibold text-slate-900">{user?.role || 'PATIENT'}</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {user?.role === 'PATIENT' && (
         <>
@@ -428,12 +426,151 @@ const Profile = ({
         </>
       )}
       {user?.role === 'DOCTOR' && (
-        <DoctorProfileCard
-          profile={doctorProfile}
-          onSave={onSaveDoctorProfile}
-          isSaving={isSavingProfile}
-          error={profileError}
-        />
+        <div className="max-w-7xl mx-auto px-4 mt-8">
+          {/* Dashboard Tabs */}
+          <div className="flex items-center bg-slate-100 p-2 rounded-[2rem] w-fit mb-12 border border-slate-200 shadow-inner">
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`flex items-center space-x-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${
+                activeTab === 'profile' 
+                ? 'bg-[#002d5a] text-white shadow-xl scale-105' 
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+              }`}
+            >
+              <UserIcon className={`w-4 h-4 ${activeTab === 'profile' ? 'text-blue-300' : 'text-slate-400'}`} />
+              <span>Clinical Profile</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('appointments')}
+              className={`flex items-center space-x-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${
+                activeTab === 'appointments' 
+                ? 'bg-[#002d5a] text-white shadow-xl scale-105' 
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+              }`}
+            >
+              <Clock className={`w-4 h-4 ${activeTab === 'appointments' ? 'text-blue-300' : 'text-slate-400'}`} />
+              <span>Patient Consultations</span>
+            </button>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {activeTab === 'profile' ? (
+              <motion.div
+                key="profile"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+              >
+                <DoctorProfileCard
+                  profile={doctorProfile}
+                  onSave={onSaveDoctorProfile}
+                  isSaving={isSavingProfile}
+                  error={profileError}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="appointments"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+                className="pb-20"
+              >
+                <div className="rounded-[2.5rem] border border-slate-200 bg-white shadow-sm p-8 md:p-12 overflow-hidden">
+                  <div className="flex items-center justify-between mb-12">
+                    <div>
+                      <h2 className="text-3xl font-black text-[#002d5a] flex items-center gap-4">
+                        <Clock className="w-10 h-10 text-[#0066cc]" />
+                        Consultation Schedule
+                      </h2>
+                      <p className="text-slate-500 mt-2 font-medium text-lg">Manage your patient stream and visit status in real-time.</p>
+                    </div>
+                  </div>
+
+                  {isLoadingAppointments ? (
+                    <div className="flex flex-col items-center justify-center py-32 text-slate-400">
+                      <Loader2 className="w-16 h-16 animate-spin mb-6 text-[#0066cc]" />
+                      <p className="text-sm font-black uppercase tracking-widest">Hydrating Schedule...</p>
+                    </div>
+                  ) : appointmentError ? (
+                    <div className="p-8 rounded-3xl bg-red-50 border border-red-100 text-red-600 font-bold flex items-center gap-4 shadow-sm">
+                      <AlertCircle className="w-8 h-8" />
+                      <p className="text-lg">{appointmentError}</p>
+                    </div>
+                  ) : (appointments || []).length === 0 ? (
+                    <div className="text-center py-32 rounded-[3.5rem] border-2 border-dashed border-slate-100 bg-slate-50/50">
+                      <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm">
+                        <Calendar className="w-10 h-10 text-slate-200" />
+                      </div>
+                      <h3 className="text-slate-900 text-2xl font-black italic">No Patient Visits Logged</h3>
+                      <p className="text-slate-500 mt-3 max-w-sm mx-auto font-medium text-lg">Your queue is currently empty. New patient bookings will appear here instantly.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+                      {(appointments || []).map((app) => (
+                        <div key={app?.id} className="relative group rounded-[2.5rem] border border-slate-100 p-8 bg-white hover:border-[#0066cc]/20 hover:shadow-2xl hover:shadow-blue-500/5 transition-all duration-700 flex flex-col">
+                          <div className="flex items-start justify-between mb-8">
+                            <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center text-[#0066cc] group-hover:bg-[#0066cc] group-hover:text-white transition-all duration-700 shadow-sm">
+                              <UserIcon className="w-8 h-8" />
+                            </div>
+                            <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm ${getStatusColor(app.status)}`}>
+                              {app.status}
+                            </span>
+                          </div>
+
+                          <div className="space-y-6 flex-grow">
+                            <div>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Scheduled Patient</p>
+                              <h4 className="text-2xl font-black text-[#002d5a] tracking-tight">{app.patientName}</h4>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-slate-50">
+                              <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Visit Date</p>
+                                <div className="flex items-center gap-2.5 text-sm font-bold text-slate-700">
+                                   <Calendar className="w-4 h-4 text-slate-400" />
+                                   {new Date(app.appointmentDate).toLocaleDateString()}
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Arrival Time</p>
+                                <div className="flex items-center gap-2.5 text-sm font-bold text-slate-700">
+                                   <Clock className="w-4 h-4 text-slate-400" />
+                                   {new Date(app.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-10 pt-8 border-t border-slate-50 flex gap-4">
+                             {app.status === 'PENDING' && (
+                               <button 
+                                 onClick={() => handleAction(completeAppointment, app.id)}
+                                 className="flex-1 py-4 bg-[#00a69c] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#008d84] transition-all shadow-xl shadow-cyan-500/20 active:scale-95"
+                               >
+                                 Complete Visit
+                               </button>
+                             )}
+                             {['PENDING', 'SCHEDULED'].includes(app.status?.toUpperCase()) && (
+                               <button 
+                                 onClick={() => handleAction(cancelAppointment, app.id)}
+                                 className="flex-1 py-4 bg-red-50 text-red-600 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-red-100 transition-all font-bold active:scale-95"
+                               >
+                                 Deny Visit
+                               </button>
+                             )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       )}
     </main>
   )
