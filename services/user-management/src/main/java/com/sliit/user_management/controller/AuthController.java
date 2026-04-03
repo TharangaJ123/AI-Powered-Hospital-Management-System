@@ -2,8 +2,11 @@ package com.sliit.user_management.controller;
 
 import com.sliit.user_management.dto.JwtResponseDto;
 import com.sliit.user_management.dto.LoginRequestDto;
+import com.sliit.user_management.dto.UserRegistrationDto;
+import com.sliit.user_management.dto.UserResponseDto;
 import com.sliit.user_management.security.JwtUtils;
 import com.sliit.user_management.security.UserDetailsImpl;
+import com.sliit.user_management.service.RegistrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,6 +23,12 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
+        private final RegistrationService registrationService;
+
+        @PostMapping("/register")
+        public ResponseEntity<UserResponseDto> registerUser(@RequestBody UserRegistrationDto registrationRequest) {
+                return ResponseEntity.ok(registrationService.registerByRole(registrationRequest));
+        }
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponseDto> authenticateUser(@RequestBody LoginRequestDto loginRequest) {
@@ -41,6 +50,7 @@ public class AuthController {
                 .token(jwt)
                 .id(userDetails.getId())
                 .email(userDetails.getEmail())
+                .name(userDetails.getName())
                 .role(role)
                 .build());
     }

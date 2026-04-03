@@ -3,9 +3,9 @@ package com.sliit.hospitalManagementSystem.doctor_management.controller;
 import com.sliit.hospitalManagementSystem.doctor_management.dto.AvailabilityScheduleDTO;
 import com.sliit.hospitalManagementSystem.doctor_management.service.AvailabilityScheduleService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.DayOfWeek;
@@ -14,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/doctors/availability")
 @CrossOrigin(origins = "*")
+@SuppressWarnings("null")
 public class AvailabilityScheduleController {
 
     private final AvailabilityScheduleService availabilityScheduleService;
@@ -23,6 +24,7 @@ public class AvailabilityScheduleController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<AvailabilityScheduleDTO> createSchedule(@Valid @RequestBody AvailabilityScheduleDTO dto) {
         AvailabilityScheduleDTO created = availabilityScheduleService.createSchedule(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
@@ -48,6 +50,7 @@ public class AvailabilityScheduleController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<AvailabilityScheduleDTO> updateSchedule(
             @PathVariable Long id, @Valid @RequestBody AvailabilityScheduleDTO dto) {
         AvailabilityScheduleDTO updated = availabilityScheduleService.updateSchedule(id, dto);
@@ -55,12 +58,14 @@ public class AvailabilityScheduleController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<Void> deleteSchedule(@PathVariable Long id) {
         availabilityScheduleService.deleteSchedule(id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/doctor/{doctorId}")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<Void> deleteAllSchedulesByDoctorId(@PathVariable Long doctorId) {
         availabilityScheduleService.deleteAllSchedulesByDoctorId(doctorId);
         return ResponseEntity.noContent().build();

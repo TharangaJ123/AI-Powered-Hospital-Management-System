@@ -4,7 +4,7 @@ import com.sliit.hospitalManagementSystem.doctor_management.dto.AvailabilitySche
 import com.sliit.hospitalManagementSystem.doctor_management.model.AvailabilitySchedule;
 import com.sliit.hospitalManagementSystem.doctor_management.model.ConsultationType;
 import com.sliit.hospitalManagementSystem.doctor_management.repository.AvailabilityScheduleRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +21,10 @@ public class AvailabilityScheduleService {
         this.availabilityScheduleRepository = availabilityScheduleRepository;
     }
 
+    @SuppressWarnings("null")
     public AvailabilityScheduleDTO createSchedule(AvailabilityScheduleDTO dto) {
         AvailabilitySchedule schedule = mapToEntity(dto);
-        AvailabilitySchedule saved = availabilityScheduleRepository.save(schedule);
-        return mapToDTO(saved);
+        return mapToDTO(availabilityScheduleRepository.save(schedule));
     }
 
     public List<AvailabilityScheduleDTO> getSchedulesByDoctorId(Long doctorId) {
@@ -45,26 +45,26 @@ public class AvailabilityScheduleService {
                 .collect(Collectors.toList());
     }
 
-    public AvailabilityScheduleDTO updateSchedule(Long id, AvailabilityScheduleDTO dto) {
-        AvailabilitySchedule existing = availabilityScheduleRepository.findById(id)
+    public AvailabilityScheduleDTO updateSchedule(@NonNull Long id, AvailabilityScheduleDTO dto) {
+        return availabilityScheduleRepository.findById(id)
+                .map(existing -> {
+                    existing.setDayOfWeek(dto.getDayOfWeek());
+                    existing.setStartTime(dto.getStartTime());
+                    existing.setEndTime(dto.getEndTime());
+                    existing.setSlotDurationMinutes(dto.getSlotDurationMinutes());
+                    existing.setMaxPatientsPerSlot(dto.getMaxPatientsPerSlot());
+                    existing.setIsAvailable(dto.getIsAvailable());
+
+                    if (dto.getConsultationType() != null) {
+                        existing.setConsultationType(ConsultationType.valueOf(dto.getConsultationType().toUpperCase()));
+                    }
+
+                    return mapToDTO(availabilityScheduleRepository.save(existing));
+                })
                 .orElseThrow(() -> new RuntimeException("Availability schedule not found with id: " + id));
-
-        existing.setDayOfWeek(dto.getDayOfWeek());
-        existing.setStartTime(dto.getStartTime());
-        existing.setEndTime(dto.getEndTime());
-        existing.setSlotDurationMinutes(dto.getSlotDurationMinutes());
-        existing.setMaxPatientsPerSlot(dto.getMaxPatientsPerSlot());
-        existing.setIsAvailable(dto.getIsAvailable());
-
-        if (dto.getConsultationType() != null) {
-            existing.setConsultationType(ConsultationType.valueOf(dto.getConsultationType().toUpperCase()));
-        }
-
-        AvailabilitySchedule updated = availabilityScheduleRepository.save(existing);
-        return mapToDTO(updated);
     }
 
-    public void deleteSchedule(Long id) {
+    public void deleteSchedule(@NonNull Long id) {
         if (!availabilityScheduleRepository.existsById(id)) {
             throw new RuntimeException("Availability schedule not found with id: " + id);
         }

@@ -8,8 +8,10 @@ import com.sliit.appointment_service.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
+import static org.springframework.http.HttpStatus.CONFLICT;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,8 +24,25 @@ public class AppointmentService {
     /** Create and save a new appointment with BOOKED status */
     @Transactional
     public AppointmentResponseDto bookAppointment(AppointmentRequestDto request) {
+        Long resolvedDoctorId = resolveDoctorId(request.getDoctorId());
+        if (request.getPatientId() != null) {
+            boolean duplicateExists = appointmentRepository.existsByPatientIdAndDoctorIdAndAppointmentDateAndStatus(
+                request.getPatientId(),
+                resolvedDoctorId,
+                request.getAppointmentDate(),
+                AppointmentStatus.BOOKED
+            );
+
+            if (duplicateExists) {
+                throw new ResponseStatusException(CONFLICT, "An appointment already exists for the selected date and time.");
+            }
+        }
+
         Appointment appointment = Appointment.builder()
                 .patientId(request.getPatientId())
+            .doctorId(resolvedDoctorId)
+                .fullName(request.getFullName())
+                .phoneNumber(request.getPhoneNumber())
                 .appointmentDate(request.getAppointmentDate())
                 .status(AppointmentStatus.BOOKED)
                 .build();
@@ -40,6 +59,9 @@ public class AppointmentService {
 
         appointment.setAppointmentDate(request.getAppointmentDate());
         appointment.setPatientId(request.getPatientId());
+        appointment.setDoctorId(resolveDoctorId(request.getDoctorId()));
+        appointment.setFullName(request.getFullName());
+        appointment.setPhoneNumber(request.getPhoneNumber());
 
         appointment = appointmentRepository.save(appointment);
         return mapToResponseDto(appointment);
@@ -97,14 +119,28 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
 
+    /** Fetch all appointments scheduled for a specific doctor */
+    public List<AppointmentResponseDto> getAppointmentsByDoctor(Long doctorId) {
+        return appointmentRepository.findByDoctorId(doctorId).stream()
+                .map(this::mapToResponseDto)
+                .collect(Collectors.toList());
+    }
+
 
 
     private AppointmentResponseDto mapToResponseDto(Appointment appointment) {
         return AppointmentResponseDto.builder()
                 .id(appointment.getId())
                 .patientId(appointment.getPatientId())
+                .doctorId(appointment.getDoctorId())
+            .fullName(appointment.getFullName())
+            .phoneNumber(appointment.getPhoneNumber())
                 .appointmentDate(appointment.getAppointmentDate())
                 .status(appointment.getStatus())
                 .build();
+    }
+
+    private Long resolveDoctorId(Long doctorId) {
+        return doctorId != null ? doctorId : 1L;
     }
 }

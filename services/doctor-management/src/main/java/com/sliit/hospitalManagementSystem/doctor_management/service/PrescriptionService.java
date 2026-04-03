@@ -3,7 +3,7 @@ package com.sliit.hospitalManagementSystem.doctor_management.service;
 import com.sliit.hospitalManagementSystem.doctor_management.dto.PrescriptionDTO;
 import com.sliit.hospitalManagementSystem.doctor_management.model.Prescription;
 import com.sliit.hospitalManagementSystem.doctor_management.repository.PrescriptionRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,16 +18,16 @@ public class PrescriptionService {
         this.prescriptionRepository = prescriptionRepository;
     }
 
+    @SuppressWarnings("null")
     public PrescriptionDTO createPrescription(PrescriptionDTO dto) {
         Prescription prescription = mapToEntity(dto);
-        Prescription saved = prescriptionRepository.save(prescription);
-        return mapToDTO(saved);
+        return mapToDTO(prescriptionRepository.save(prescription));
     }
 
-    public PrescriptionDTO getPrescriptionById(Long id) {
-        Prescription prescription = prescriptionRepository.findById(id)
+    public PrescriptionDTO getPrescriptionById(@NonNull Long id) {
+        return prescriptionRepository.findById(id)
+                .map(this::mapToDTO)
                 .orElseThrow(() -> new RuntimeException("Prescription not found with id: " + id));
-        return mapToDTO(prescription);
     }
 
     public List<PrescriptionDTO> getPrescriptionsByDoctorId(Long doctorId) {
@@ -48,21 +48,20 @@ public class PrescriptionService {
                 .collect(Collectors.toList());
     }
 
-    public PrescriptionDTO updatePrescription(Long id, PrescriptionDTO dto) {
-        Prescription existing = prescriptionRepository.findById(id)
+    public PrescriptionDTO updatePrescription(@NonNull Long id, PrescriptionDTO dto) {
+        return prescriptionRepository.findById(id)
+                .map(existing -> {
+                    existing.setDiagnosis(dto.getDiagnosis());
+                    existing.setMedications(dto.getMedications());
+                    existing.setDosageInstructions(dto.getDosageInstructions());
+                    existing.setAdditionalNotes(dto.getAdditionalNotes());
+                    existing.setValidUntil(dto.getValidUntil());
+                    return mapToDTO(prescriptionRepository.save(existing));
+                })
                 .orElseThrow(() -> new RuntimeException("Prescription not found with id: " + id));
-
-        existing.setDiagnosis(dto.getDiagnosis());
-        existing.setMedications(dto.getMedications());
-        existing.setDosageInstructions(dto.getDosageInstructions());
-        existing.setAdditionalNotes(dto.getAdditionalNotes());
-        existing.setValidUntil(dto.getValidUntil());
-
-        Prescription updated = prescriptionRepository.save(existing);
-        return mapToDTO(updated);
     }
 
-    public void deletePrescription(Long id) {
+    public void deletePrescription(@NonNull Long id) {
         if (!prescriptionRepository.existsById(id)) {
             throw new RuntimeException("Prescription not found with id: " + id);
         }

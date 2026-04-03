@@ -56,6 +56,9 @@ public class PatientService {
                 .user(user)
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
+                .phoneNumber(request.getPhoneNumber())
+                .address(request.getAddress())
+                .dateOfBirth(request.getDateOfBirth())
                 .build();
         patientProfileRepository.save(profile);
 

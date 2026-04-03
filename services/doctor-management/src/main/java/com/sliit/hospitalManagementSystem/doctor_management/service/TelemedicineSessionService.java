@@ -4,11 +4,12 @@ import com.sliit.hospitalManagementSystem.doctor_management.dto.TelemedicineSess
 import com.sliit.hospitalManagementSystem.doctor_management.model.SessionStatus;
 import com.sliit.hospitalManagementSystem.doctor_management.model.TelemedicineSession;
 import com.sliit.hospitalManagementSystem.doctor_management.repository.TelemedicineSessionRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -24,19 +25,17 @@ public class TelemedicineSessionService {
     public TelemedicineSessionDTO createSession(TelemedicineSessionDTO dto) {
         TelemedicineSession session = mapToEntity(dto);
 
-        // Generate a unique session URL if not provided
         if (session.getSessionUrl() == null || session.getSessionUrl().isBlank()) {
             session.setSessionUrl("https://meet.hospital.com/session/" + UUID.randomUUID().toString());
         }
 
-        TelemedicineSession saved = telemedicineSessionRepository.save(session);
-        return mapToDTO(saved);
+        return mapToDTO(Objects.requireNonNull(telemedicineSessionRepository.save(session)));
     }
 
-    public TelemedicineSessionDTO getSessionById(Long id) {
-        TelemedicineSession session = telemedicineSessionRepository.findById(id)
+    public TelemedicineSessionDTO getSessionById(@NonNull Long id) {
+        return telemedicineSessionRepository.findById(id)
+                .map(this::mapToDTO)
                 .orElseThrow(() -> new RuntimeException("Telemedicine session not found with id: " + id));
-        return mapToDTO(session);
     }
 
     public List<TelemedicineSessionDTO> getSessionsByDoctorId(Long doctorId) {
@@ -51,42 +50,37 @@ public class TelemedicineSessionService {
                 .collect(Collectors.toList());
     }
 
-    public TelemedicineSessionDTO startSession(Long id) {
-        TelemedicineSession session = telemedicineSessionRepository.findById(id)
+    public TelemedicineSessionDTO startSession(@NonNull Long id) {
+        return telemedicineSessionRepository.findById(id)
+                .map(session -> {
+                    session.setStatus(SessionStatus.IN_PROGRESS);
+                    session.setActualStartTime(LocalDateTime.now());
+                    return mapToDTO(Objects.requireNonNull(telemedicineSessionRepository.save(session)));
+                })
                 .orElseThrow(() -> new RuntimeException("Telemedicine session not found with id: " + id));
-
-        session.setStatus(SessionStatus.IN_PROGRESS);
-        session.setActualStartTime(LocalDateTime.now());
-
-        TelemedicineSession updated = telemedicineSessionRepository.save(session);
-        return mapToDTO(updated);
     }
 
-    public TelemedicineSessionDTO endSession(Long id, String notes) {
-        TelemedicineSession session = telemedicineSessionRepository.findById(id)
+    public TelemedicineSessionDTO endSession(@NonNull Long id, String notes) {
+        return telemedicineSessionRepository.findById(id)
+                .map(session -> {
+                    session.setStatus(SessionStatus.COMPLETED);
+                    session.setActualEndTime(LocalDateTime.now());
+                    session.setNotes(notes);
+                    return mapToDTO(Objects.requireNonNull(telemedicineSessionRepository.save(session)));
+                })
                 .orElseThrow(() -> new RuntimeException("Telemedicine session not found with id: " + id));
-
-        session.setStatus(SessionStatus.COMPLETED);
-        session.setActualEndTime(LocalDateTime.now());
-        session.setNotes(notes);
-
-        TelemedicineSession updated = telemedicineSessionRepository.save(session);
-        return mapToDTO(updated);
     }
 
-    public TelemedicineSessionDTO cancelSession(Long id) {
-        TelemedicineSession session = telemedicineSessionRepository.findById(id)
+    public TelemedicineSessionDTO cancelSession(@NonNull Long id) {
+        return telemedicineSessionRepository.findById(id)
+                .map(session -> {
+                    session.setStatus(SessionStatus.CANCELLED);
+                    return mapToDTO(Objects.requireNonNull(telemedicineSessionRepository.save(session)));
+                })
                 .orElseThrow(() -> new RuntimeException("Telemedicine session not found with id: " + id));
-
-        session.setStatus(SessionStatus.CANCELLED);
-
-        TelemedicineSession updated = telemedicineSessionRepository.save(session);
-        return mapToDTO(updated);
     }
 
-    // --- Mapping helpers ---
-
-    private TelemedicineSessionDTO mapToDTO(TelemedicineSession session) {
+    private TelemedicineSessionDTO mapToDTO(@NonNull TelemedicineSession session) {
         return TelemedicineSessionDTO.builder()
                 .id(session.getId())
                 .doctorId(session.getDoctorId())

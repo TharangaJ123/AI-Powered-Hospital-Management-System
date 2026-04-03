@@ -3,9 +3,9 @@ package com.sliit.hospitalManagementSystem.doctor_management.controller;
 import com.sliit.hospitalManagementSystem.doctor_management.dto.PrescriptionDTO;
 import com.sliit.hospitalManagementSystem.doctor_management.service.PrescriptionService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/doctors/prescriptions")
 @CrossOrigin(origins = "*")
+@SuppressWarnings("null")
 public class PrescriptionController {
 
     private final PrescriptionService prescriptionService;
@@ -22,6 +23,7 @@ public class PrescriptionController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<PrescriptionDTO> createPrescription(@Valid @RequestBody PrescriptionDTO dto) {
         PrescriptionDTO created = prescriptionService.createPrescription(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
@@ -53,6 +55,7 @@ public class PrescriptionController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<PrescriptionDTO> updatePrescription(
             @PathVariable Long id, @Valid @RequestBody PrescriptionDTO dto) {
         PrescriptionDTO updated = prescriptionService.updatePrescription(id, dto);
@@ -60,6 +63,7 @@ public class PrescriptionController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<Void> deletePrescription(@PathVariable Long id) {
         prescriptionService.deletePrescription(id);
         return ResponseEntity.noContent().build();
