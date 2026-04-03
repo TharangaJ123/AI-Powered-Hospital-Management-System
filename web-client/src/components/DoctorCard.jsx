@@ -99,18 +99,12 @@ const DoctorCard = ({ doctor }) => {
       </div>
 
       {/* Actions */}
-      <div className="p-6 pt-0 mt-auto grid grid-cols-2 gap-3">
-        <Link 
-          to={`/book-appointment?doctorId=${id}`}
-          className="flex items-center justify-center space-x-2 py-3 px-4 bg-[#002d5a] text-white rounded-xl text-xs font-bold hover:bg-[#003d7a] transition-all"
-        >
-          <span>Book Now</span>
-        </Link>
+      <div className="p-6 pt-0 mt-auto">
         <Link 
           to={`/doctors/${id}`}
-          className="flex items-center justify-center space-x-2 py-3 px-4 border border-slate-200 text-[#002d5a] rounded-xl text-xs font-bold hover:bg-slate-50 transition-all"
+          className="flex items-center justify-center space-x-2 w-full py-4 bg-[#002d5a] text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#003d7a] transition-all shadow-xl shadow-blue-900/10 active:scale-95"
         >
-          <span>View Profile</span>
+          <span>Book Now</span>
         </Link>
       </div>
     </motion.div>

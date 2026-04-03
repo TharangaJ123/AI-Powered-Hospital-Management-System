@@ -3,7 +3,7 @@ import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, Ch
 import { motion, AnimatePresence } from 'framer-motion'
 import PatientProfileCard from '../components/PatientProfileCard'
 import DoctorProfileCard from '../components/DoctorProfileCard'
-import { getAllDoctors } from '../services/doctors'
+import { getAllDoctors, requestDoctorLeave, getDoctorLeaves } from '../services/doctors'
 import { getAppointmentsByPatient, getAppointmentsByDoctor, updateAppointment, cancelAppointment, completeAppointment } from '../services/appointments'
 
 const Profile = ({
@@ -25,6 +25,13 @@ const Profile = ({
   const [rescheduleData, setRescheduleData] = useState({ id: null, date: '' })
   const [isUpdating, setIsUpdating] = useState(false)
   const [activeTab, setActiveTab] = useState('profile')
+  const [leaves, setLeaves] = useState([])
+  const [isRequestingLeave, setIsRequestingLeave] = useState(false)
+  const [leaveForm, setLeaveForm] = useState({
+    startDate: '',
+    endDate: '',
+    reason: ''
+  })
 
   // Calendar State
   const [viewDate, setViewDate] = useState(new Date())
@@ -48,11 +55,15 @@ const Profile = ({
         setAppointments(appsData)
         setDoctors(docsData)
       } else if (user.role === 'DOCTOR' && doctorProfile?.id) {
-        const appsData = await getAppointmentsByDoctor(doctorProfile.id, token)
+        const [appsData, leavesData] = await Promise.all([
+          getAppointmentsByDoctor(doctorProfile.id, token),
+          getDoctorLeaves(doctorProfile.id, token)
+        ])
         setAppointments(appsData)
+        setLeaves(leavesData)
       }
     } catch (err) {
-      setAppointmentError(err.message || 'Failed to load appointments')
+      setAppointmentError(err.message || 'Failed to load dashboard data')
     } finally {
       setIsLoadingAppointments(false)
     }
@@ -84,19 +95,23 @@ const Profile = ({
     }
   }
 
-  const canReschedule = (appointmentDate) => {
-    if (!appointmentDate) return false
+  const handleRequestLeave = async (e) => {
+    e.preventDefault()
+    if (!leaveForm.startDate || !leaveForm.endDate || !token) return
+    setIsRequestingLeave(true)
     try {
-      // Ensure we have a valid date object
-      const appDate = new Date(appointmentDate)
-      if (isNaN(appDate.getTime())) return false
-
-      const now = new Date()
-      const diffTime = appDate.getTime() - now.getTime()
-      const diffDays = diffTime / (1000 * 60 * 60 * 24)
-      return diffDays >= 2
-    } catch (e) {
-      return false
+      await requestDoctorLeave({
+        doctorId: doctorProfile.id,
+        startDate: leaveForm.startDate,
+        endDate: leaveForm.endDate,
+        reason: leaveForm.reason
+      }, token)
+      setLeaveForm({ startDate: '', endDate: '', reason: '' })
+      await fetchData() // Refresh leaves list
+    } catch (err) {
+      setAppointmentError(err.message)
+    } finally {
+      setIsRequestingLeave(false)
     }
   }
 
@@ -451,6 +466,17 @@ const Profile = ({
               <Clock className={`w-4 h-4 ${activeTab === 'appointments' ? 'text-blue-300' : 'text-slate-400'}`} />
               <span>Patient Consultations</span>
             </button>
+            <button
+              onClick={() => setActiveTab('leaves')}
+              className={`flex items-center space-x-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${
+                activeTab === 'leaves' 
+                ? 'bg-[#002d5a] text-white shadow-xl scale-105' 
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+              }`}
+            >
+              <Calendar className={`w-4 h-4 ${activeTab === 'leaves' ? 'text-blue-300' : 'text-slate-400'}`} />
+              <span>Manage Leaves</span>
+            </button>
           </div>
 
           <AnimatePresence mode="wait">
@@ -468,6 +494,107 @@ const Profile = ({
                   isSaving={isSavingProfile}
                   error={profileError}
                 />
+              </motion.div>
+            ) : activeTab === 'leaves' ? (
+              <motion.div
+                key="leaves"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+                className="space-y-12 pb-20"
+              >
+                {/* Leave Request Form */}
+                <div className="bg-white rounded-[3rem] p-10 md:p-16 border border-slate-100 shadow-xl space-y-10">
+                  <div className="space-y-2">
+                    <h2 className="text-3xl font-black text-[#002d5a]">Request Time-Off</h2>
+                    <p className="text-slate-500 font-medium">Submit your leave request for administrative approval.</p>
+                  </div>
+
+                  <form onSubmit={handleRequestLeave} className="grid md:grid-cols-2 gap-8 items-end">
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Start Date</label>
+                      <input 
+                        type="date" 
+                        required
+                        value={leaveForm.startDate}
+                        onChange={(e) => setLeaveForm({...leaveForm, startDate: e.target.value})}
+                        className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-bold text-[#002d5a]"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">End Date</label>
+                      <input 
+                        type="date" 
+                        required
+                        value={leaveForm.endDate}
+                        onChange={(e) => setLeaveForm({...leaveForm, endDate: e.target.value})}
+                        className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-bold text-[#002d5a]"
+                      />
+                    </div>
+                    <div className="md:col-span-2 space-y-4">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Reason (Optional)</label>
+                      <textarea 
+                        value={leaveForm.reason}
+                        onChange={(e) => setLeaveForm({...leaveForm, reason: e.target.value})}
+                        placeholder="Clinical conferences, personal reasons, etc."
+                        rows="3"
+                        className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium text-slate-600 resize-none"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <button 
+                        type="submit"
+                        disabled={isRequestingLeave}
+                        className="w-full md:w-fit px-12 py-5 bg-[#002d5a] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#003d7a] transition-all shadow-xl shadow-blue-900/10 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isRequestingLeave ? 'Submitting Request...' : 'Submit Leave Request'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Leaves History */}
+                <div className="space-y-6">
+                  <h3 className="text-xl font-black text-[#002d5a] px-2">Leave History & Status</h3>
+                  {leaves.length > 0 ? (
+                    <div className="grid gap-4">
+                      {leaves.map((leave, i) => (
+                        <div key={leave.id || i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md transition-shadow">
+                          <div className="flex items-center space-x-6">
+                             <div className={`p-4 rounded-2xl ${
+                               leave.status === 'APPROVED' ? 'bg-green-50 text-green-600' : 
+                               leave.status === 'REJECTED' ? 'bg-red-50 text-red-600' : 
+                               'bg-amber-50 text-amber-600'
+                             }`}>
+                               <Calendar className="w-6 h-6" />
+                             </div>
+                             <div>
+                                <p className="text-lg font-extrabold text-[#002d5a]">
+                                  {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
+                                </p>
+                                <p className="text-sm text-slate-500 font-medium">{leave.reason || 'No reason provided'}</p>
+                             </div>
+                          </div>
+                          <div className="flex items-center space-x-4">
+                             <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                               leave.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 
+                               leave.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 
+                               'bg-amber-100 text-amber-700'
+                             }`}>
+                               {leave.status}
+                             </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem]">
+                       <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                       <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No leave requests found</p>
+                    </div>
+                  )}
+                </div>
               </motion.div>
             ) : (
               <motion.div

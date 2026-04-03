@@ -19,13 +19,15 @@ import {
   PhoneCall,
   ArrowRight
 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { getDoctorById } from '../services/doctors'
+import { getAppointmentsByDoctor } from '../services/appointments'
 
 const DoctorDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const [doctor, setDoctor] = useState(null)
+  const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -36,11 +38,24 @@ const DoctorDetail = () => {
 
   const fetchDoctor = async () => {
     setLoading(true)
+    setError(null)
     try {
       const data = await getDoctorById(id)
       setDoctor(data)
+      
+      // Fetch appointments in a separate try-catch to avoid hiding the whole profile on failure
+      try {
+        const token = localStorage.getItem('token') || localStorage.getItem('jwtToken')
+        if (token) {
+          const appts = await getAppointmentsByDoctor(id, token)
+          setAppointments(appts.filter(a => ['APPROVED', 'SCHEDULED', 'COMPLETED'].includes(a.status)))
+        }
+      } catch (apptErr) {
+        console.warn('Could not fetch doctor schedule:', apptErr)
+        // We don't set the main error state here, so the doctor profile still shows
+      }
     } catch (err) {
-      setError('Unable to load doctor profile.')
+      setError('Unable to load doctor profile. Please verify that the specialist directory service is online.')
       console.error(err)
     } finally {
       setLoading(false)
@@ -147,7 +162,7 @@ const DoctorDetail = () => {
                 </div>
 
                 <Link
-                  to={`/book-appointment?doctorId=${id}`}
+                  to={`/appointments?doctorId=${id}&specialty=${doctor.specialization}`}
                   className="w-full flex items-center justify-center space-x-3 bg-gradient-to-r from-[#002d5a] to-[#0066cc] text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/20 active:scale-95 transition-all"
                 >
                   <span>Request Appointment</span>
@@ -275,21 +290,48 @@ const DoctorDetail = () => {
               </div>
             </div>
 
-            {/* Professional Certifications / Affiliations */}
-            <div className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-xl">
-               <h3 className="text-xl font-extrabold text-[#002d5a] mb-8">Professional Affiliations</h3>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                 {[
-                   { label: 'Board Certification', value: 'American Board of Internal Medicine' },
-                   { label: 'Current Affiliation', value: 'National General Hospital' },
-                   { label: 'Society Membership', value: 'Sri Lanka Medical Association' }
-                 ].map((cert, idx) => (
-                   <div key={idx} className="border-l-4 border-slate-100 pl-4 space-y-1">
-                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{cert.label}</p>
-                     <p className="text-sm font-bold text-[#002d5a] tracking-tight">{cert.value}</p>
-                   </div>
-                 ))}
+            {/* Specialist Schedule */}
+            <div className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-xl space-y-8">
+               <div className="flex justify-between items-center">
+                  <div className="space-y-1">
+                    <h3 className="text-2xl font-black text-[#002d5a]">Clinical Schedule</h3>
+                    <p className="text-slate-500 text-sm font-medium">Currently confirmed patient consultations</p>
+                  </div>
+                  <div className="bg-blue-50 px-4 py-2 rounded-xl border border-blue-100">
+                    <span className="text-[#0066cc] font-black text-xs uppercase tracking-widest">{appointments.length} Slots Occupied</span>
+                  </div>
                </div>
+
+               {appointments.length > 0 ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   {appointments.map((appt, index) => (
+                     <div key={index} className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100 hover:border-[#0066cc]/30 transition-all group">
+                        <div className="flex items-center space-x-4">
+                           <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-[#0066cc] group-hover:bg-[#002d5a] group-hover:text-white transition-all">
+                              <Clock className="w-6 h-6" />
+                           </div>
+                           <div>
+                              <p className="font-bold text-[#002d5a]">{new Date(appt.appointmentDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</p>
+                              <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter">{new Date(appt.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                           </div>
+                        </div>
+                        <div className="text-right">
+                           <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                             appt.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                           }`}>
+                             {appt.status}
+                           </span>
+                        </div>
+                     </div>
+                   ))}
+                 </div>
+               ) : (
+                 <div className="text-center py-12 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200">
+                    <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <p className="text-slate-500 font-bold">No active appointments scheduled.</p>
+                    <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">Ready for new bookings</p>
+                 </div>
+               )}
             </div>
           </motion.div>
         </div>
@@ -298,7 +340,7 @@ const DoctorDetail = () => {
       {/* Floating Action for Mobile */}
       <div className="lg:hidden fixed bottom-6 left-6 right-6 z-50">
          <Link
-            to={`/book-appointment?doctorId=${id}`}
+            to={`/appointments?doctorId=${id}&specialty=${doctor.specialization}`}
             className="w-full flex items-center justify-center space-x-3 bg-[#00a69c] text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl active:scale-95 transition-all"
           >
             <span>Book Visit</span>
