@@ -55,6 +55,14 @@ public class AiSymptomService {
                     .bodyToMono(String.class)
                     .block();
 
+            if (responseBody == null) {
+                return SymptomCheckResponse.builder()
+                        .diagnosis("AI analysis returned an empty response.")
+                        .recommendations("Please try again. If the issue persists, contact system administration.")
+                        .recommendedSpecialties(Collections.singletonList("General Practice"))
+                        .urgencyLevel("MEDIUM")
+                        .build();
+            }
             return parseGeminiResponse(responseBody);
         } catch (Exception e) {
             System.err.println("AI Service Error: " + e.getMessage());
