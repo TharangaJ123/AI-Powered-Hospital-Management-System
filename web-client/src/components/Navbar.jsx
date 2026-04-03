@@ -67,6 +67,10 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, o
               Doctors
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
             </Link>
+            <Link to="/ai-symptom-checker" className="text-[#0066cc] font-black flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+              <span className="w-2 h-2 bg-[#00a69c] rounded-full animate-pulse"></span>
+              AI Assistant
+            </Link>
             <Link to="/" className="hover:text-[#0066cc] transition-colors relative group">
               Services
               <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-[#0066cc] transition-all group-hover:w-full"></span>
@@ -148,8 +152,12 @@ const Navbar = ({ user, onLoginClick, onSignupClick, onLogout, onProfileClick, o
         <div className="lg:hidden bg-white border-b border-slate-200 px-4 py-6 space-y-4 animate-in slide-in-from-top duration-300">
           <Link to="/about" className="block font-bold text-slate-800" onClick={() => setIsMenuOpen(false)}>About Us</Link>
           <a href="#" className="block font-bold text-slate-800">Specialties</a>
-          <a href="#" className="block font-bold text-slate-800">Doctors</a>
-          <a href="#" className="block font-bold text-slate-800">Services</a>
+          <Link to="/doctors" className="block font-bold text-slate-800" onClick={() => setIsMenuOpen(false)}>Doctors</Link>
+          <Link to="/ai-symptom-checker" className="block font-black text-[#0066cc] flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
+            <div className="w-2 h-2 bg-[#00a69c] rounded-full"></div>
+            AI Assistant
+          </Link>
+          <Link to="/" className="block font-bold text-slate-800" onClick={() => setIsMenuOpen(false)}>Services</Link>
           <Link to="/contact" className="block font-bold text-slate-800" onClick={() => setIsMenuOpen(false)}>Contact</Link>
           {user?.role === 'ADMIN' && (
             <Link to="/admin" className="block font-bold text-[#0066cc]" onClick={() => setIsMenuOpen(false)}>Admin Dashboard</Link>
