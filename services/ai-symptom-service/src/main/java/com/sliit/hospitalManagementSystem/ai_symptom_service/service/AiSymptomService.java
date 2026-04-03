@@ -46,7 +46,7 @@ public class AiSymptomService {
 
             String responseBody = webClientBuilder.build()
                     .post()
-                    .uri(apiUrl)
+                    .uri(Objects.requireNonNull(apiUrl, "Gemini API URL must not be null"))
                     .header("x-goog-api-key", apiKey)
                     .bodyValue(geminiRequest)
                     .retrieve()
