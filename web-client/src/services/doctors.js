@@ -117,7 +117,7 @@ export const updateDoctorProfile = async (id, profileData, token) => {
 }
 
 export const getDoctorLeaves = async (doctorId, token) => {
-  const LEAVE_API = (import.meta.env.VITE_AUTH_API_URL || '/api').replace('/auth', '') + '/doctor-leaves'
+  const LEAVE_API = (import.meta.env.VITE_AUTH_API_URL || '/api').replace('/auth', '') + '/doctors/leaves'
   const response = await fetch(`${LEAVE_API}/doctor/${doctorId}`, {
     method: 'GET',
     headers: {
@@ -129,6 +129,61 @@ export const getDoctorLeaves = async (doctorId, token) => {
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}))
     throw new Error(errorBody.message || 'Failed to fetch doctor leaves.')
+  }
+
+  return response.json()
+}
+
+export const requestDoctorLeave = async (leaveData, token) => {
+  const LEAVE_API = (import.meta.env.VITE_AUTH_API_URL || '/api').replace('/auth', '') + '/doctors/leaves'
+  const response = await fetch(`${LEAVE_API}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(leaveData),
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    throw new Error(errorBody.message || 'Failed to request leave.')
+  }
+
+  return response.json()
+}
+
+export const getAllDoctorLeaves = async (token) => {
+  const LEAVE_API = (import.meta.env.VITE_AUTH_API_URL || '/api').replace('/auth', '') + '/doctors/leaves'
+  const response = await fetch(`${LEAVE_API}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    throw new Error(errorBody.message || 'Failed to fetch all leaves.')
+  }
+
+  return response.json()
+}
+
+export const updateDoctorLeaveStatus = async (id, status, token) => {
+  const LEAVE_API = (import.meta.env.VITE_AUTH_API_URL || '/api').replace('/auth', '') + '/doctors/leaves'
+  const response = await fetch(`${LEAVE_API}/${id}/status?status=${status}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    throw new Error(errorBody.message || 'Failed to update leave status.')
   }
 
   return response.json()
