@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.core.ParameterizedTypeReference;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -20,6 +21,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final WebClient.Builder webClientBuilder;
 
+    @SuppressWarnings("null")
     public ReviewDTO submitReview(ReviewDTO reviewDto) {
         // 1. Verify that the patient has a completed appointment with this doctor
         boolean hasCompletedAppointment = verifyCompletedAppointment(reviewDto.getPatientId(), reviewDto.getDoctorId());
@@ -80,7 +82,7 @@ public class ReviewService {
     }
 
     public void deleteReview(Long reviewId) {
-        reviewRepository.deleteById(reviewId);
+        reviewRepository.deleteById(Objects.requireNonNull(reviewId, "reviewId must not be null"));
     }
 
     private ReviewDTO mapToDTO(Review review) {

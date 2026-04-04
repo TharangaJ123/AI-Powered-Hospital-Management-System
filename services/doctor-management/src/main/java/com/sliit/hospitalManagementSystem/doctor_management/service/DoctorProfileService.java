@@ -3,7 +3,6 @@ package com.sliit.hospitalManagementSystem.doctor_management.service;
 import com.sliit.hospitalManagementSystem.doctor_management.dto.DoctorProfileDTO;
 import com.sliit.hospitalManagementSystem.doctor_management.model.DoctorProfile;
 import com.sliit.hospitalManagementSystem.doctor_management.model.DoctorStatus;
-import com.sliit.hospitalManagementSystem.doctor_management.model.Review;
 import com.sliit.hospitalManagementSystem.doctor_management.repository.DoctorProfileRepository;
 import com.sliit.hospitalManagementSystem.doctor_management.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;

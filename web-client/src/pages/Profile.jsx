@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle, AlertCircle } from 'lucide-react'
+import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Video, Star } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PatientProfileCard from '../components/PatientProfileCard'
 import DoctorProfileCard from '../components/DoctorProfileCard'
 import { getAllDoctors, requestDoctorLeave, getDoctorLeaves } from '../services/doctors'
 import { getAppointmentsByPatient, getAppointmentsByDoctor, updateAppointment, cancelAppointment, completeAppointment } from '../services/appointments'
+import { createTelemedicineSession, joinTelemedicineSession } from '../services/telemedicine'
 import ReviewFormModal from '../components/ReviewFormModal'
 
 const Profile = ({
@@ -117,6 +118,34 @@ const Profile = ({
       setIsRequestingLeave(false)
     }
   }
+
+  const handleJoinVideoConsultation = async (appointmentId) => {
+    try {
+      const res = await joinTelemedicineSession(appointmentId, token);
+      if (res && res.jitsiUrl) {
+        window.open(res.jitsiUrl, '_blank');
+      }
+    } catch (err) {
+      alert(err.message || "Failed to join video consultation. The doctor might not have started it yet.");
+    }
+  };
+
+  const handleStartVideoConsultation = async (appointmentId) => {
+    try {
+      await createTelemedicineSession(appointmentId, token);
+      const res = await joinTelemedicineSession(appointmentId, token);
+      if (res && res.jitsiUrl) {
+        window.open(res.jitsiUrl, '_blank');
+      }
+    } catch (err) {
+      alert(err.message || "Failed to start video consultation.");
+    }
+  };
+
+  const canReschedule = (dateStr) => {
+    if (!dateStr) return false;
+    return new Date(dateStr) > new Date();
+  };
 
   const getDoctorName = (doctorId) => {
     const cleanId = String(doctorId).replace('dr_', '')
@@ -325,6 +354,15 @@ const Profile = ({
                                 Reschedule
                               </button>
                             )}
+                            {['SCHEDULED', 'BOOKED'].includes(app?.status?.toUpperCase()) && (
+                              <button
+                                onClick={() => handleJoinVideoConsultation(app.id)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/10 text-green-600 text-xs font-bold hover:bg-green-500 hover:text-white transition-all"
+                              >
+                                <Video className="w-3.5 h-3.5" />
+                                Join Call
+                              </button>
+                            )}
                             {app?.status?.toUpperCase() === 'COMPLETED' && (
                               <button
                                 onClick={() => openReviewModal(app.doctorId)}
@@ -448,6 +486,15 @@ const Profile = ({
                               <Calendar className="w-3 h-3" />
                               Edit
                             </button>
+                          )}
+                          {['SCHEDULED', 'BOOKED'].includes(app?.status?.toUpperCase()) && (
+                              <button
+                                onClick={() => handleJoinVideoConsultation(app.id)}
+                                className="flex items-center gap-1 px-2 py-1 rounded-md bg-green-500/10 text-green-600 text-[10px] font-extrabold hover:bg-green-500 hover:text-white transition-all uppercase"
+                              >
+                                <Video className="w-3 h-3" />
+                                Join
+                              </button>
                           )}
                         </div>
                       </div>
@@ -703,6 +750,15 @@ const Profile = ({
                           </div>
 
                           <div className="mt-10 pt-8 border-t border-slate-50 flex gap-4">
+                             {['SCHEDULED', 'BOOKED'].includes(app.status?.toUpperCase()) && (
+                               <button 
+                                 onClick={() => handleStartVideoConsultation(app.id)}
+                                 className="flex-1 py-4 bg-[#0066cc] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#004d99] transition-all shadow-xl shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2"
+                               >
+                                 <Video className="w-4 h-4" />
+                                 Start Video Call
+                               </button>
+                             )}
                              {app.status === 'PENDING' && (
                                <button 
                                  onClick={() => handleAction(completeAppointment, app.id)}
