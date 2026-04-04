@@ -17,6 +17,8 @@ public class DoctorProfileDTO {
     private Double consultationFee;
     private Boolean isAvailableForTelemedicine;
     private String status;
+    private Double averageRating;
+    private Integer reviewCount;
 
     public DoctorProfileDTO() {}
 
@@ -51,6 +53,10 @@ public class DoctorProfileDTO {
     public void setIsAvailableForTelemedicine(Boolean isAvailableForTelemedicine) { this.isAvailableForTelemedicine = isAvailableForTelemedicine; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public Double getAverageRating() { return averageRating; }
+    public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
+    public Integer getReviewCount() { return reviewCount; }
+    public void setReviewCount(Integer reviewCount) { this.reviewCount = reviewCount; }
 
     public static DoctorProfileDTOBuilder builder() { return new DoctorProfileDTOBuilder(); }
 
@@ -70,6 +76,8 @@ public class DoctorProfileDTO {
         private Double consultationFee;
         private Boolean isAvailableForTelemedicine;
         private String status;
+        private Double averageRating;
+        private Integer reviewCount;
 
         public DoctorProfileDTOBuilder id(Long id) { this.id = id; return this; }
         public DoctorProfileDTOBuilder userId(Long userId) { this.userId = userId; return this; }
@@ -86,6 +94,8 @@ public class DoctorProfileDTO {
         public DoctorProfileDTOBuilder consultationFee(Double consultationFee) { this.consultationFee = consultationFee; return this; }
         public DoctorProfileDTOBuilder isAvailableForTelemedicine(Boolean isAvailableForTelemedicine) { this.isAvailableForTelemedicine = isAvailableForTelemedicine; return this; }
         public DoctorProfileDTOBuilder status(String status) { this.status = status; return this; }
+        public DoctorProfileDTOBuilder averageRating(Double averageRating) { this.averageRating = averageRating; return this; }
+        public DoctorProfileDTOBuilder reviewCount(Integer reviewCount) { this.reviewCount = reviewCount; return this; }
 
         public DoctorProfileDTO build() {
             DoctorProfileDTO d = new DoctorProfileDTO();
@@ -104,6 +114,8 @@ public class DoctorProfileDTO {
             d.setConsultationFee(this.consultationFee);
             d.setIsAvailableForTelemedicine(this.isAvailableForTelemedicine);
             d.setStatus(this.status);
+            d.setAverageRating(this.averageRating);
+            d.setReviewCount(this.reviewCount);
             return d;
         }
     }

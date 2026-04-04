@@ -5,6 +5,7 @@ import PatientProfileCard from '../components/PatientProfileCard'
 import DoctorProfileCard from '../components/DoctorProfileCard'
 import { getAllDoctors, requestDoctorLeave, getDoctorLeaves } from '../services/doctors'
 import { getAppointmentsByPatient, getAppointmentsByDoctor, updateAppointment, cancelAppointment, completeAppointment } from '../services/appointments'
+import ReviewFormModal from '../components/ReviewFormModal'
 
 const Profile = ({
   user,
@@ -24,6 +25,8 @@ const Profile = ({
   const [appointmentError, setAppointmentError] = useState(null)
   const [rescheduleData, setRescheduleData] = useState({ id: null, date: '' })
   const [isUpdating, setIsUpdating] = useState(false)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+  const [selectedDoctorForReview, setSelectedDoctorForReview] = useState(null)
   const [activeTab, setActiveTab] = useState('profile')
   const [leaves, setLeaves] = useState([])
   const [isRequestingLeave, setIsRequestingLeave] = useState(false)
@@ -116,11 +119,18 @@ const Profile = ({
   }
 
   const getDoctorName = (doctorId) => {
-    // doctorId comes as 'dr_123' in the form but backend might return it differently or just the numeric ID.
-    // Let's normalize it.
     const cleanId = String(doctorId).replace('dr_', '')
     const doc = doctors.find(d => String(d.id) === cleanId)
     return doc ? `Dr. ${doc.firstName} ${doc.lastName}` : `Doctor ID: ${cleanId}`
+  }
+
+  const openReviewModal = (doctorId) => {
+    const cleanId = String(doctorId).replace('dr_', '')
+    const doc = doctors.find(d => String(d.id) === cleanId)
+    if (doc) {
+      setSelectedDoctorForReview(doc)
+      setIsReviewModalOpen(true)
+    }
   }
 
   const getStatusColor = (status) => {
@@ -315,6 +325,15 @@ const Profile = ({
                                 Reschedule
                               </button>
                             )}
+                            {app?.status?.toUpperCase() === 'COMPLETED' && (
+                              <button
+                                onClick={() => openReviewModal(app.doctorId)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 text-xs font-bold hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+                              >
+                                <Star className="w-3.5 h-3.5 fill-amber-500 border-none" />
+                                Review
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
@@ -437,6 +456,18 @@ const Profile = ({
                 )}
               </div>
             </div>
+
+            {/* Review Modal */}
+            {selectedDoctorForReview && (
+              <ReviewFormModal
+                isOpen={isReviewModalOpen}
+                onClose={() => setIsReviewModalOpen(false)}
+                doctor={selectedDoctorForReview}
+                patient={patientProfile}
+                token={token}
+                onReviewSubmitted={fetchData}
+              />
+            )}
           </section>
         </>
       )}

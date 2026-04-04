@@ -13,7 +13,9 @@ const DoctorCard = ({ doctor }) => {
     consultationFee,
     isAvailableForTelemedicine,
     profilePhotoUrl,
-    status
+    status,
+    averageRating,
+    reviewCount
   } = doctor
 
   const fullName = `Dr. ${firstName} ${lastName}`
@@ -88,7 +90,7 @@ const DoctorCard = ({ doctor }) => {
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase">Rating</p>
-              <p className="text-xs font-bold text-[#002d5a]">4.9 (120+)</p>
+              <p className="text-xs font-bold text-[#002d5a]">{averageRating?.toFixed(1) || 'New'} ({reviewCount || 0})</p>
             </div>
           </div>
         </div>

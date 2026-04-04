@@ -5,6 +5,7 @@ C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\serv
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\DoctorProfileController.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\PatientReportController.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\PrescriptionController.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\ReviewController.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\controller\TelemedicineSessionController.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\DoctorManagementApplication.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\AppointmentRequestDTO.java
@@ -12,6 +13,7 @@ C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\serv
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\DoctorProfileDTO.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\PatientReportDTO.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\PrescriptionDTO.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\ReviewDTO.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\dto\TelemedicineSessionDTO.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\exception\GlobalExceptionHandler.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\AppointmentRequest.java
@@ -24,6 +26,7 @@ C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\serv
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\LeaveStatus.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\PatientReport.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\Prescription.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\Review.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\SessionStatus.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\model\TelemedicineSession.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\AppointmentRequestRepository.java
@@ -32,6 +35,7 @@ C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\serv
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\DoctorProfileRepository.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\PatientReportRepository.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\PrescriptionRepository.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\ReviewRepository.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\repository\TelemedicineSessionRepository.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\AuthEntryPointJwt.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\security\AuthTokenFilter.java
@@ -44,4 +48,5 @@ C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\serv
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\DoctorProfileService.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\PatientReportService.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\PrescriptionService.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\ReviewService.java
 C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\doctor-management\src\main\java\com\sliit\hospitalManagementSystem\doctor_management\service\TelemedicineSessionService.java
