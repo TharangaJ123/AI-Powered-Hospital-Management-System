@@ -64,7 +64,7 @@ export const loginUser = async ({ email, password }) => {
   return postAuth('/auth/login', { email, password })
 }
 
-export const registerUser = async ({ role, name, email, password, phoneNumber, address, dateOfBirth }) => {
+export const registerUser = async ({ role, name, email, password, phoneNumber, address, dateOfBirth, specialization, doctorRegistrationNumber }) => {
   const [firstName, ...rest] = name.trim().split(/\s+/)
   const lastName = rest.join(' ')
 
@@ -77,6 +77,8 @@ export const registerUser = async ({ role, name, email, password, phoneNumber, a
     phoneNumber,
     address,
     dateOfBirth,
+    specialization,
+    doctorRegistrationNumber,
   })
 
   return loginUser({ email, password })

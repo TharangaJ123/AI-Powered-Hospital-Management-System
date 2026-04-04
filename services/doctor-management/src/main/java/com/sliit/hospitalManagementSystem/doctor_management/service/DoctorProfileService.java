@@ -21,6 +21,7 @@ public class DoctorProfileService {
 
     @SuppressWarnings("null")
     public DoctorProfileDTO createProfile(DoctorProfileDTO dto) {
+        System.out.println("Creating new profile for userId: " + dto.getUserId() + " with Photo URL: " + dto.getProfilePhotoUrl());
         DoctorProfile profile = mapToEntity(dto);
         return mapToDTO(doctorProfileRepository.save(profile));
     }
@@ -73,6 +74,7 @@ public class DoctorProfileService {
     }
 
     public DoctorProfileDTO updateProfile(@NonNull Long id, DoctorProfileDTO dto) {
+        System.out.println("Updating profile " + id + " with Photo URL: " + dto.getProfilePhotoUrl());
         return doctorProfileRepository.findById(id)
                 .map(existing -> {
                     existing.setFirstName(dto.getFirstName());

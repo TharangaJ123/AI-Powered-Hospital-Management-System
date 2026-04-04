@@ -238,7 +238,7 @@ const Doctors = () => {
           </div>
           <div className="hidden lg:block relative z-10">
             <img 
-              src="https://www.pngmart.com/files/21/Medical-Doctor-PNG-File.png" 
+              src="/doc.png" 
               className="w-[450px] -mb-20 transform group-hover:scale-105 transition-transform duration-700 drop-shadow-2xl" 
               alt="Medical Specialist" 
             />

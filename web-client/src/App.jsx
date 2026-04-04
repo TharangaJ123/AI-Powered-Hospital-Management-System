@@ -24,6 +24,7 @@ import {
   updateDoctorProfile
 } from './services/doctors'
 import Doctors from './pages/Doctors'
+import Services from './pages/Services'
 import DoctorDetail from './pages/DoctorDetail'
 import SymptomChecker from './pages/SymptomChecker'
 
@@ -217,6 +218,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/services" element={<Services />} />
         <Route path="/admin" element={<AdminDashboard token={session?.token} />} />
         <Route
           path="/profile"
@@ -228,6 +230,7 @@ function App() {
               profileError={profileError}
               isSavingProfile={isSavingProfile}
               onSavePatientProfile={handlePatientProfileSave}
+              doctorProfile={doctorProfile}
               onSaveDoctorProfile={handleDoctorProfileSave}
               onLoginClick={() => handleOpenAuth('login')}
               onSignupClick={() => handleOpenAuth('signup')}

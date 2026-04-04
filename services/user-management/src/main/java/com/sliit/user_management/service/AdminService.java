@@ -35,6 +35,9 @@ public class AdminService {
                         .email(u.getEmail())
                         .role(u.getRole())
                         .active(u.isActive())
+                        .firstName(u.getFirstName())
+                        .lastName(u.getLastName())
+                        .doctorRegistrationNumber(u.getDoctorRegistrationNumber())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -78,6 +81,7 @@ public class AdminService {
         }
         
         user.setVerified(true);
+        user.setActive(true);
         user = userRepository.save(user);
         
         return UserResponseDto.builder()

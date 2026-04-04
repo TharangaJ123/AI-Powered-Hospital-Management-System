@@ -29,7 +29,7 @@ import {
   updateAppointment,
   getAppointmentsByDoctor 
 } from '../services/appointments'
-import { getAllDoctors, getDoctorLeaves } from '../services/doctors'
+import { getAllDoctors, getDoctorLeaves, getAllDoctorLeaves, updateDoctorLeaveStatus } from '../services/doctors'
 import { 
   getAllUsers, 
   verifyDoctor, 
@@ -47,6 +47,8 @@ const AdminDashboard = ({ token }) => {
     doctors: [],
     patients: [],
     allUsers: [],
+    pendingDoctors: [],
+    allLeaves: [],
     operations: null
   })
   const [rescheduleData, setRescheduleData] = useState({ id: null, date: '' })
@@ -83,20 +85,24 @@ const AdminDashboard = ({ token }) => {
     setLoading(true)
     setError(null)
     try {
-      const [allApps, allDocs, allUsers, ops] = await Promise.all([
+      const [allApps, allDocs, allUsers, allLeaves, ops] = await Promise.all([
         getAllAppointments(token),
         getAllDoctors(),
         getAllUsers(token),
+        getAllDoctorLeaves(token),
         getPlatformOperations(token).catch(() => null)
       ])
 
       const patientUsers = allUsers.filter(u => u.role === 'PATIENT')
+      const pendingDocs = allUsers.filter(u => u.role === 'DOCTOR' && !u.active)
       
       setDashboardStats({
         appointments: allApps,
         doctors: allDocs,
         patients: patientUsers,
         allUsers: allUsers,
+        pendingDoctors: pendingDocs,
+        allLeaves: allLeaves,
         operations: ops
       })
     } catch (err) {
@@ -160,6 +166,7 @@ const AdminDashboard = ({ token }) => {
     { id: 'APPOINTMENTS', title: "Manage Appointments", icon: Calendar, desc: "Approve, reschedule, or cancel patient visits.", color: "bg-blue-500" },
     { id: 'DOCTORS', title: "Doctor Management", icon: Stethoscope, desc: "Update doctor profiles and specialties.", color: "bg-[#00a69c]" },
     { id: 'PATIENTS', title: "Patient Records", icon: Users, desc: "Access and manage central patient databases.", color: "bg-purple-500" },
+    { id: 'LEAVES', title: "Leave Requests", icon: ShieldAlert, desc: "Approve or reject doctor time-off requests.", color: "bg-orange-500" },
     { id: 'LOGS', title: "System Logs", icon: FileText, desc: "Monitor system health and security events.", color: "bg-slate-700" }
   ]
 
@@ -656,7 +663,51 @@ const AdminDashboard = ({ token }) => {
           </button>
         </div>
 
-        {docViewMode === 'SPECIALITIES' && renderSpecialitySelector()}
+        {docViewMode === 'SPECIALITIES' && (
+          <div className="space-y-10">
+            {dashboardStats.pendingDoctors.length > 0 && (
+              <section className="bg-amber-50 rounded-[2.5rem] border border-amber-200/50 p-8">
+                 <div className="flex items-center gap-3 mb-6">
+                    <ShieldAlert className="w-6 h-6 text-amber-600" />
+                    <h3 className="text-xl font-black text-amber-900">Pending Doctor Approvals</h3>
+                    <span className="bg-amber-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{dashboardStats.pendingDoctors.length}</span>
+                 </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {dashboardStats.pendingDoctors.map(doc => (
+                      <div key={doc.id} className="bg-white p-6 rounded-3xl border border-amber-100 shadow-sm flex flex-col justify-between">
+                         <div className="space-y-4">
+                            <div>
+                               <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Doctor Name</p>
+                               <p className="text-lg font-black text-slate-900 leading-tight">
+                                  {doc.firstName} {doc.lastName}
+                               </p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                               <div>
+                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Email</p>
+                                  <p className="text-xs font-bold text-slate-600 truncate">{doc.email}</p>
+                               </div>
+                               <div>
+                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Medical Reg No.</p>
+                                  <p className="text-xs font-black text-amber-600">{doc.doctorRegistrationNumber}</p>
+                               </div>
+                            </div>
+                         </div>
+                         <button 
+                            onClick={() => handleAction(verifyDoctor, doc.id)}
+                            className="w-full mt-8 py-3 bg-amber-600 text-white text-xs font-black rounded-xl hover:bg-amber-700 transition-colors shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2"
+                         >
+                            <ShieldCheck className="w-5 h-5" />
+                            Confirm Approval
+                         </button>
+                      </div>
+                    ))}
+                 </div>
+              </section>
+            )}
+            {renderSpecialitySelector()}
+          </div>
+        )}
         {docViewMode === 'LIST' && renderDoctorGallery()}
         {docViewMode === 'DETAIL' && renderDoctorCommitments()}
       </div>
@@ -752,6 +803,125 @@ const AdminDashboard = ({ token }) => {
     </div>
   )
 
+  const renderLeaves = () => {
+    const pendingLeaves = dashboardStats.allLeaves.filter(l => l.status === 'PENDING')
+    const otherLeaves = dashboardStats.allLeaves.filter(l => l.status !== 'PENDING')
+
+    return (
+      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex items-center justify-between">
+           <div>
+             <h2 className="text-3xl font-black text-slate-900 leading-none">Leave <span className="text-orange-500">Approvals</span></h2>
+             <p className="text-slate-500 text-sm mt-2 font-medium">Manage clinical availability and staff time-off requests.</p>
+           </div>
+           <button 
+             onClick={() => setActiveView('OVERVIEW')}
+             className="btn-secondary text-xs"
+           >
+             Back to Overview
+           </button>
+        </div>
+
+        {/* Pending Requests */}
+        <section className="space-y-6">
+           <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+             <Clock className="w-5 h-5 text-orange-500" />
+             Pending Requests ({pendingLeaves.length})
+           </h3>
+           
+           {pendingLeaves.length === 0 ? (
+             <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem]">
+                <ShieldCheck className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">All caught up! No pending requests.</p>
+             </div>
+           ) : (
+             <div className="grid gap-6">
+               {pendingLeaves.map(leave => {
+                 const doctor = dashboardStats.doctors.find(d => d.id === leave.doctorId)
+                 return (
+                   <div key={leave.id} className="bg-white p-8 rounded-[2.5rem] border border-orange-100 shadow-xl shadow-orange-900/5 flex flex-col lg:flex-row lg:items-center justify-between gap-8 transition-all hover:border-orange-200">
+                      <div className="flex items-start gap-6">
+                         <div className="w-16 h-16 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center font-black text-xl">
+                           {doctor?.fullName?.charAt(0) || 'D'}
+                         </div>
+                         <div>
+                            <h4 className="text-2xl font-black text-slate-900 leading-tight">{doctor?.fullName || `Doctor ID: ${leave.doctorId}`}</h4>
+                            <p className="text-xs font-bold text-orange-600 uppercase tracking-widest mt-1 mb-4">{doctor?.specialization || 'Clinical Specialist'}</p>
+                            <div className="flex flex-wrap gap-4 text-sm font-bold text-slate-500">
+                               <div className="flex items-center gap-2">
+                                  <Calendar className="w-4 h-4 text-slate-300" />
+                                  {leave.startDate} to {leave.endDate}
+                               </div>
+                               <div className="flex items-center gap-2 italic">
+                                  <FileText className="w-4 h-4 text-slate-300" />
+                                  "{leave.reason || 'No reason provided'}"
+                               </div>
+                            </div>
+                         </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                         <button 
+                           onClick={() => handleAction(updateDoctorLeaveStatus, leave.id, 'APPROVED')}
+                           className="flex-1 lg:flex-none px-8 py-4 bg-green-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-green-700 transition-all shadow-lg shadow-green-900/20"
+                         >
+                           Approve
+                         </button>
+                         <button 
+                           onClick={() => handleAction(updateDoctorLeaveStatus, leave.id, 'REJECTED')}
+                           className="flex-1 lg:flex-none px-8 py-4 bg-red-50 text-red-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all"
+                         >
+                           Reject
+                         </button>
+                      </div>
+                   </div>
+                 )
+               })}
+             </div>
+           )}
+        </section>
+
+        {/* History */}
+        <section className="space-y-6 pt-10">
+           <div className="flex items-center gap-2 px-2">
+             <Clock className="w-5 h-5 text-slate-400" />
+             <h3 className="text-lg font-black text-slate-900">Processed History</h3>
+           </div>
+           <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-widest text-slate-400 border-b border-slate-100">
+                  <tr>
+                    <th className="px-8 py-4">Doctor</th>
+                    <th className="px-8 py-4">Period</th>
+                    <th className="px-8 py-4">Status</th>
+                    <th className="px-8 py-4 text-right">Updated At</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  {otherLeaves.map(leave => {
+                    const doctor = dashboardStats.doctors.find(d => d.id === leave.doctorId)
+                    return (
+                      <tr key={leave.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                        <td className="px-8 py-4 font-bold text-slate-800">{doctor?.fullName || leave.doctorId}</td>
+                        <td className="px-8 py-4 text-slate-500">{leave.startDate} - {leave.endDate}</td>
+                        <td className="px-8 py-4">
+                           <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                             leave.status === 'APPROVED' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+                           }`}>
+                             {leave.status}
+                           </span>
+                        </td>
+                        <td className="px-8 py-4 text-right text-slate-400 text-xs">{new Date(leave.updatedAt).toLocaleDateString()}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+           </div>
+        </section>
+      </div>
+    )
+  }
+
   return (
     <div className="pt-32 pb-20 px-4 max-w-7xl mx-auto space-y-10">
       {error && (
@@ -766,6 +936,7 @@ const AdminDashboard = ({ token }) => {
       {activeView === 'APPOINTMENTS' && renderAppointments()}
       {activeView === 'DOCTORS' && renderDoctors()}
       {activeView === 'PATIENTS' && renderPatients()}
+      {activeView === 'LEAVES' && renderLeaves()}
       {activeView === 'LOGS' && renderLogs()}
 
       {/* Loading Overlay */}

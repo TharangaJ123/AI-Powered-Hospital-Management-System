@@ -1,16 +1,17 @@
 import { Calendar, Clock, User, MapPin, ArrowLeft, Phone, CheckCircle, BadgeCheck, Stethoscope } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { createAppointment } from '../services/appointments'
 import { getAllDoctors } from '../services/doctors'
 
 const Appointments = ({ user, patientProfile, onLoginClick }) => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [formData, setFormData] = useState({
     fullName: '',
     phoneNumber: '',
-    speciality: '',
-    doctorId: '',
+    speciality: searchParams.get('specialty') || '',
+    doctorId: searchParams.get('doctorId') ? `dr_${searchParams.get('doctorId')}` : '',
     date: '',
     timeSlot: '',
     reason: '',
@@ -34,13 +35,22 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
       try {
         const data = await getAllDoctors()
         setDoctorsList(data)
+        
+        // If doctorId was provided in URL, make sure speciality is also set if missing
+        const urlDoctorId = searchParams.get('doctorId')
+        if (urlDoctorId && !formData.speciality) {
+          const doctor = data.find(d => d.id.toString() === urlDoctorId)
+          if (doctor) {
+            setFormData(prev => ({ ...prev, speciality: doctor.specialization }))
+          }
+        }
       } catch (err) {
         console.error('Failed to load doctors:', err)
       }
     }
 
     fetchDoctors()
-  }, [])
+  }, [searchParams])
 
   const specialities = [...new Set(doctorsList.map(d => d.specialization))].filter(Boolean).sort()
   const filteredDoctors = doctorsList.filter(d => 
