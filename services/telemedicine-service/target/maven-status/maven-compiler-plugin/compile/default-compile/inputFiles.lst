@@ -1,9 +1,9 @@
-D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\config\SecurityConfig.java
-D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\controller\TelemedicineController.java
-D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\dto\TelemedicineSessionResponse.java
-D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\model\TelemedicineSession.java
-D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\repository\TelemedicineSessionRepository.java
-D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\security\AuthTokenFilter.java
-D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\security\JwtUtils.java
-D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\service\TelemedicineService.java
-D:\Programming\SLIIT\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\TelemedicineServiceApplication.java
+D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\config\SecurityConfig.java
+D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\controller\TelemedicineController.java
+D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\dto\TelemedicineSessionResponse.java
+D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\model\TelemedicineSession.java
+D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\repository\TelemedicineSessionRepository.java
+D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\security\AuthTokenFilter.java
+D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\security\JwtUtils.java
+D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\service\TelemedicineService.java
+D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\TelemedicineServiceApplication.java
