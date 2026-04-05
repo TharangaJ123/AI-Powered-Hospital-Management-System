@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: doctor-management
+  labels:
+    app: doctor-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: doctor-management
+  template:
+    metadata:
+      labels:
+        app: doctor-management
+    spec:
+      containers:
+      - name: doctor-management
+        image: doctor-management:latest # Replace with your registry image in production
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8085
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:mysql://mysql-db:3306/doctor_management_db?createDatabaseIfNotExist=true
+        - name: SPRING_DATASOURCE_USERNAME
+          value: root
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: Chath@2001
+        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+          value: http://discovery-service:8761/eureka/
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: doctor-management
+spec:
+  selector:
+    app: doctor-management
+  ports:
+    - protocol: TCP
+      port: 8085
+      targetPort: 8085
