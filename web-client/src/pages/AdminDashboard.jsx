@@ -18,9 +18,11 @@ import {
   XCircle,
   Trash2,
   ExternalLink,
-  ShieldAlert
+  ShieldAlert,
+  MessageSquare,
+  Send as SendIcon
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { 
   getAllAppointments, 
   cancelAppointment, 
@@ -36,6 +38,7 @@ import {
   deleteUser, 
   getPlatformOperations 
 } from '../services/auth'
+import { getAllContactForms, replyToContactForm } from '../services/contact'
 
 const AdminDashboard = ({ token }) => {
   const [activeView, setActiveView] = useState('OVERVIEW') // OVERVIEW, APPOINTMENTS, DOCTORS, PATIENTS, LOGS
@@ -49,6 +52,7 @@ const AdminDashboard = ({ token }) => {
     allUsers: [],
     pendingDoctors: [],
     allLeaves: [],
+    contactForms: [],
     operations: null
   })
   const [rescheduleData, setRescheduleData] = useState({ id: null, date: '' })
@@ -60,6 +64,8 @@ const AdminDashboard = ({ token }) => {
   const [docAppointments, setDocAppointments] = useState([])
   const [docLeaves, setDocLeaves] = useState([])
   const [isRefreshingDoc, setIsRefreshingDoc] = useState(false)
+  const [replyData, setReplyData] = useState({ id: null, text: '' })
+  const [isReplying, setIsReplying] = useState(false)
 
   const fetchDoctorDetail = async (doctorId) => {
     if (!token) return
@@ -85,12 +91,13 @@ const AdminDashboard = ({ token }) => {
     setLoading(true)
     setError(null)
     try {
-      const [allApps, allDocs, allUsers, allLeaves, ops] = await Promise.all([
+      const [allApps, allDocs, allUsers, allLeaves, ops, allContacts] = await Promise.all([
         getAllAppointments(token),
         getAllDoctors(),
         getAllUsers(token),
         getAllDoctorLeaves(token),
-        getPlatformOperations(token).catch(() => null)
+        getPlatformOperations(token).catch(() => null),
+        getAllContactForms(token)
       ])
 
       const patientUsers = allUsers.filter(u => u.role === 'PATIENT')
@@ -103,6 +110,7 @@ const AdminDashboard = ({ token }) => {
         allUsers: allUsers,
         pendingDoctors: pendingDocs,
         allLeaves: allLeaves,
+        contactForms: allContacts,
         operations: ops
       })
     } catch (err) {
@@ -167,6 +175,7 @@ const AdminDashboard = ({ token }) => {
     { id: 'DOCTORS', title: "Doctor Management", icon: Stethoscope, desc: "Update doctor profiles and specialties.", color: "bg-[#00a69c]" },
     { id: 'PATIENTS', title: "Patient Records", icon: Users, desc: "Access and manage central patient databases.", color: "bg-purple-500" },
     { id: 'LEAVES', title: "Leave Requests", icon: ShieldAlert, desc: "Approve or reject doctor time-off requests.", color: "bg-orange-500" },
+    { id: 'CONTACTS', title: "Support Management", icon: MessageSquare, desc: "Reply to patient inquiries and feedback.", color: "bg-teal-500" },
     { id: 'LOGS', title: "System Logs", icon: FileText, desc: "Monitor system health and security events.", color: "bg-slate-700" }
   ]
 
@@ -803,6 +812,135 @@ const AdminDashboard = ({ token }) => {
     </div>
   )
 
+  const renderContacts = () => {
+    const sortedForms = [...dashboardStats.contactForms].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+    return (
+      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-black text-slate-900 leading-none">Support <span className="text-teal-500">Center</span></h2>
+            <p className="text-slate-500 text-sm mt-2 font-medium">Read and respond to patient inquiries and feedback.</p>
+          </div>
+          <button 
+            onClick={() => setActiveView('OVERVIEW')}
+            className="btn-secondary text-xs uppercase tracking-widest font-black"
+          >
+            Dashboard Overview
+          </button>
+        </div>
+
+        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50 text-[10px] uppercase font-black tracking-widest text-slate-400 border-b border-slate-100">
+              <tr>
+                <th className="px-8 py-5">Date</th>
+                <th className="px-8 py-5">Patient</th>
+                <th className="px-8 py-5">Subject</th>
+                <th className="px-8 py-5">Status</th>
+                <th className="px-8 py-5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm">
+              {sortedForms.map(form => (
+                <Fragment key={form.id}>
+                  <tr className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                    <td className="px-8 py-6 text-slate-500 whitespace-nowrap">
+                      {new Date(form.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="font-bold text-slate-900">{form.name}</div>
+                      <div className="text-xs text-slate-400">{form.email}</div>
+                    </td>
+                    <td className="px-8 py-6 font-medium text-slate-700">{form.subject}</td>
+                    <td className="px-8 py-6">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                        form.status === 'REPLIED' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'
+                      }`}>
+                        {form.status || 'PENDING'}
+                      </span>
+                    </td>
+                    <td className="px-8 py-6 text-right">
+                      <button 
+                        onClick={() => setReplyData({ id: form.id === replyData.id ? null : form.id, text: '' })}
+                        className="p-3 rounded-2xl bg-teal-50 text-teal-600 hover:bg-teal-600 hover:text-white transition-all shadow-sm"
+                      >
+                        <MessageSquare className="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                  {replyData.id === form.id && (
+                    <tr className="bg-slate-50/50 border-b border-slate-100 animate-in slide-in-from-top-2 duration-300">
+                      <td colSpan="5" className="px-12 py-8">
+                        <div className="space-y-6 max-w-4xl">
+                          <div className="p-6 bg-white rounded-3xl border border-slate-200 shadow-sm">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Original Message</p>
+                            <p className="text-slate-700 leading-relaxed font-medium">"{form.message}"</p>
+                          </div>
+                          
+                          {form.adminReply && (
+                            <div className="p-6 bg-teal-50 rounded-3xl border border-teal-100 shadow-sm ml-8">
+                              <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-3">Previous Admin Reply</p>
+                              <p className="text-teal-800 leading-relaxed font-medium">"{form.adminReply}"</p>
+                            </div>
+                          )}
+
+                          <div className="space-y-4">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Your Response</p>
+                            <textarea 
+                              className="w-full p-6 border border-slate-200 rounded-3xl outline-none focus:ring-4 focus:ring-teal-100 transition-all font-medium text-slate-600 min-h-[120px] shadow-inner"
+                              placeholder="Type your reply here..."
+                              value={replyData.text}
+                              onChange={(e) => setReplyData({ ...replyData, text: e.target.value })}
+                            />
+                            <div className="flex items-center gap-3 justify-end">
+                              <button 
+                                onClick={() => setReplyData({ id: null, text: '' })}
+                                className="px-8 py-4 text-xs font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button 
+                                onClick={async () => {
+                                  setIsReplying(true)
+                                  try {
+                                    await replyToContactForm(form.id, replyData.text, token)
+                                    setReplyData({ id: null, text: '' })
+                                    await fetchDashboardData()
+                                  } catch (err) {
+                                    setError('Failed to send reply. Please try again.')
+                                  } finally {
+                                    setIsReplying(false)
+                                  }
+                                }}
+                                disabled={!replyData.text || isReplying}
+                                className="px-10 py-4 bg-teal-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-teal-700 transition-all shadow-xl shadow-teal-900/20 flex items-center gap-2 disabled:opacity-50"
+                              >
+                                {isReplying ? <Loader2 className="w-5 h-5 animate-spin" /> : <SendIcon className="w-5 h-5" />}
+                                Send Reply
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+          
+          {dashboardStats.contactForms.length === 0 && (
+            <div className="text-center py-32">
+              <MessageSquare className="w-16 h-16 text-slate-200 mx-auto mb-6" />
+              <h3 className="text-xl font-black text-slate-400 italic">No Support Inquiries Logged</h3>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   const renderLeaves = () => {
     const pendingLeaves = dashboardStats.allLeaves.filter(l => l.status === 'PENDING')
     const otherLeaves = dashboardStats.allLeaves.filter(l => l.status !== 'PENDING')
@@ -936,8 +1074,9 @@ const AdminDashboard = ({ token }) => {
       {activeView === 'APPOINTMENTS' && renderAppointments()}
       {activeView === 'DOCTORS' && renderDoctors()}
       {activeView === 'PATIENTS' && renderPatients()}
-      {activeView === 'LEAVES' && renderLeaves()}
-      {activeView === 'LOGS' && renderLogs()}
+      { activeView === 'LEAVES' && renderLeaves() }
+      { activeView === 'CONTACTS' && renderContacts() }
+      { activeView === 'LOGS' && renderLogs() }
 
       {/* Loading Overlay */}
       {loading && (

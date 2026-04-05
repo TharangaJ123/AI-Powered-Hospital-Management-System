@@ -7,7 +7,10 @@ import com.sliit.user_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.util.Map;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +25,7 @@ public class AdminService {
     private final UserRepository userRepository;
     private final com.sliit.user_management.repository.FinancialTransactionRepository financialTransactionRepository;
     private final ReviewRepository reviewRepository;
+    private final WebClient.Builder webClientBuilder;
 
     /**
      * Retrieves all registered users from the database.
@@ -38,6 +42,7 @@ public class AdminService {
                         .firstName(u.getFirstName())
                         .lastName(u.getLastName())
                         .doctorRegistrationNumber(u.getDoctorRegistrationNumber())
+                        .specialization(u.getSpecialization())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -62,6 +67,9 @@ public class AdminService {
                 .email(user.getEmail())
                 .role(user.getRole())
                 .active(user.isActive())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .specialization(user.getSpecialization())
                 .build();
     }
 
@@ -83,13 +91,66 @@ public class AdminService {
         user.setVerified(true);
         user.setActive(true);
         user = userRepository.save(user);
+
+        // Synchronize with doctor-management service to create or activate the profile
+        try {
+            syncDoctorProfile(user, "ACTIVE");
+        } catch (Exception e) {
+            // Log error but don't fail verification
+            System.err.println("Failed to sync doctor profile in doctor-management service: " + e.getMessage());
+        }
         
         return UserResponseDto.builder()
                 .id(user.getId())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .active(user.isActive())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .doctorRegistrationNumber(user.getDoctorRegistrationNumber())
+                .specialization(user.getSpecialization())
                 .build();
+    }
+
+    private void syncDoctorProfile(User user, String status) {
+        WebClient webClient = webClientBuilder.baseUrl("http://localhost:8085").build();
+        
+        Map<String, Object> profileData = new java.util.HashMap<>();
+        profileData.put("userId", user.getId());
+        profileData.put("firstName", user.getFirstName());
+        profileData.put("lastName", user.getLastName());
+        profileData.put("email", user.getEmail());
+        profileData.put("specialization", user.getSpecialization());
+        profileData.put("licenseNumber", user.getDoctorRegistrationNumber());
+        profileData.put("status", status);
+
+        try {
+            Map<String, Object> existingProfile = webClient.get()
+                    .uri("/api/doctors/profiles/user/{userId}", user.getId())
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+
+            if (existingProfile != null && existingProfile.get("id") != null) {
+                Number profileId = (Number) existingProfile.get("id");
+                webClient.put()
+                        .uri("/api/doctors/profiles/{id}", profileId.longValue())
+                        .bodyValue(profileData)
+                        .retrieve()
+                        .bodyToMono(Object.class)
+                        .block();
+                return;
+            }
+        } catch (WebClientResponseException.NotFound ignored) {
+            // Profile does not exist yet, so create it below.
+        }
+
+        webClient.post()
+                .uri("/api/doctors/profiles")
+                .bodyValue(profileData)
+                .retrieve()
+                .bodyToMono(Object.class)
+                .block();
     }
 
 

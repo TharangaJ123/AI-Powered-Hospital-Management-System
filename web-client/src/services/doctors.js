@@ -118,12 +118,17 @@ export const updateDoctorProfile = async (id, profileData, token) => {
 
 export const getDoctorLeaves = async (doctorId, token) => {
   const LEAVE_API = (import.meta.env.VITE_AUTH_API_URL || '/api').replace('/auth', '') + '/doctors/leaves'
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+
   const response = await fetch(`${LEAVE_API}/doctor/${doctorId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
   })
 
   if (!response.ok) {

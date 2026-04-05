@@ -118,3 +118,19 @@ export const getAppointmentsByDoctor = async (doctorId, token) => {
 
   return response.json()
 }
+
+export const checkDoctorAvailabilityByDate = async (doctorId, date) => {
+  const response = await fetch(`${API_BASE}/appointments/availability?doctorId=${doctorId}&date=${date}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    throw new Error(errorBody.message || 'Failed to check doctor availability.')
+  }
+
+  return response.json()
+}

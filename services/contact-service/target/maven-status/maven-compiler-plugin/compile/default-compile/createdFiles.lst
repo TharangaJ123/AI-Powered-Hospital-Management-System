@@ -1,0 +1,8 @@
+com\sliit\contact_service\dto\ReplyRequest.class
+com\sliit\contact_service\dto\ContactRequest.class
+com\sliit\contact_service\controller\ContactController.class
+com\sliit\contact_service\model\ContactMessage.class
+com\sliit\contact_service\repository\ContactRepository.class
+com\sliit\contact_service\model\ContactMessage$ContactMessageBuilder.class
+com\sliit\contact_service\service\ContactService.class
+com\sliit\contact_service\ContactServiceApplication.class
