@@ -1,5 +1,5 @@
-# Hospital Management System - Backend Startup Script
-# This script starts all microservices in the correct order.
+# Hospital Management System - Startup Script
+# This script starts all services and the web client in the correct order.
 
 Write-Host 'Starting Discovery Service (Eureka)...' -ForegroundColor Cyan
 Start-Process powershell -ArgumentList '-Command cd infrastructure/discovery-service; .\mvnw spring-boot:run' -NoNewWindow
@@ -24,6 +24,12 @@ Start-Process powershell -ArgumentList '-Command cd services/telemedicine-servic
 Write-Host 'Starting AI Symptom Service...' -ForegroundColor Cyan
 Start-Process powershell -ArgumentList '-Command cd services/ai-symptom-service; .\mvnw spring-boot:run' -NoNewWindow
 
-Write-Host 'All services have been initiated!' -ForegroundColor Green
+Write-Host 'Starting Contact Service...' -ForegroundColor Cyan
+Start-Process powershell -ArgumentList '-Command cd services/contact-service; mvn spring-boot:run' -NoNewWindow
+
+Write-Host 'Starting Web Client...' -ForegroundColor Cyan
+Start-Process powershell -ArgumentList '-Command cd web-client; npm run dev -- --host' -NoNewWindow
+
+Write-Host 'All services, the contact service, and the web client have been initiated!' -ForegroundColor Green
 Write-Host 'Please wait about 60 seconds for everything to register with Eureka.' -ForegroundColor Yellow
 Write-Host 'Access Eureka Dashboard at: http://localhost:8761' -ForegroundColor Gray

@@ -1,6 +1,9 @@
 com\sliit\telemedicine\TelemedicineServiceApplication.class
+com\sliit\telemedicine\dto\TelemedicineSessionResponse.class
 com\sliit\telemedicine\config\SecurityConfig.class
 com\sliit\telemedicine\controller\TelemedicineController.class
+com\sliit\telemedicine\dto\TelemedicineSessionResponse$TelemedicineSessionResponseBuilder.class
+com\sliit\telemedicine\service\TelemedicineService.class
 com\sliit\telemedicine\model\TelemedicineSession$SessionStatus.class
 com\sliit\telemedicine\security\JwtUtils.class
 com\sliit\telemedicine\model\TelemedicineSession.class

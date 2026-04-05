@@ -28,6 +28,7 @@
         <module>services/telemedicine-service</module>
         <module>services/doctor-management</module>
         <module>services/ai-symptom-service</module>
+        <module>services/contact-service</module>
     </modules>
 
     <dependencyManagement>

@@ -9,27 +9,49 @@ import {
   HelpCircle,
   PhoneCall
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { submitContactForm } from '../services/contact'
 
-const Contact = () => {
+const Contact = ({ user, patientProfile }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
     message: ''
   })
+
+  // Pre-fill form if user is logged in
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : prev.name,
+        email: user.email || prev.email
+      }))
+    }
+  }, [user])
+
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
+    
+    try {
+      const payload = {
+        ...formData,
+        patientId: user?.role === 'PATIENT' ? patientProfile?.id : null
+      }
+      
+      await submitContactForm(payload)
       setIsSubmitted(true)
       setFormData({ name: '', email: '', subject: '', message: '' })
-    }, 1500)
+    } catch (error) {
+      console.error('Error submitting form:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const contactMethods = [
