@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle, AlertCircle } from 'lucide-react'
+import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Stethoscope } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PatientProfileCard from '../components/PatientProfileCard'
 import DoctorProfileCard from '../components/DoctorProfileCard'
@@ -33,12 +33,55 @@ const Profile = ({
     reason: ''
   })
 
+  const canReschedule = (date) => {
+    if (!date) return false
+    const appDate = new Date(date)
+    const now = new Date()
+    // Can reschedule if at least 2 hours in the future
+    return appDate.getTime() > now.getTime() + (2 * 60 * 60 * 1000)
+  }
+
   // Calendar State
   const [viewDate, setViewDate] = useState(new Date())
   const [selectedCalendarDay, setSelectedCalendarDay] = useState(null)
   useEffect(() => {
     fetchData()
-  }, [user, patientProfile?.id, token])
+  }, [user, patientProfile?.id, doctorProfile?.id, token])
+
+  useEffect(() => {
+    if (!user || !token) return
+
+    if (user.role === 'PATIENT' && !patientProfile?.id) return
+    if (user.role === 'DOCTOR' && !doctorProfile?.id) return
+
+    const shouldPollAppointments =
+      user.role === 'PATIENT' || (user.role === 'DOCTOR' && activeTab === 'appointments')
+
+    if (!shouldPollAppointments) return
+
+    const intervalId = setInterval(() => {
+      fetchData()
+    }, 20000)
+
+    return () => clearInterval(intervalId)
+  }, [user, token, patientProfile?.id, doctorProfile?.id, activeTab])
+
+  useEffect(() => {
+    if (user?.role !== 'DOCTOR' || !doctorProfile?.id || !token || activeTab !== 'leaves') {
+      return
+    }
+
+    const refreshLeaves = async () => {
+      try {
+        const leavesData = await getDoctorLeaves(doctorProfile.id, token)
+        setLeaves(leavesData)
+      } catch (err) {
+        setAppointmentError(err.message || 'Failed to refresh leave data')
+      }
+    }
+
+    refreshLeaves()
+  }, [activeTab, user?.role, doctorProfile?.id, token])
 
   const fetchData = async () => {
     if (!user || !token) return
@@ -99,6 +142,11 @@ const Profile = ({
     e.preventDefault()
     if (!leaveForm.startDate || !leaveForm.endDate || !token) return
     setIsRequestingLeave(true)
+    if (!doctorProfile?.id) {
+      setAppointmentError('Please complete and save your clinical profile before requesting leave.')
+      setIsRequestingLeave(false)
+      return
+    }
     try {
       await requestDoctorLeave({
         doctorId: doctorProfile.id,
@@ -504,7 +552,25 @@ const Profile = ({
                 transition={{ duration: 0.4 }}
                 className="space-y-12 pb-20"
               >
-                {/* Leave Request Form */}
+                {!doctorProfile?.id ? (
+                  <div className="bg-white rounded-[3rem] p-16 border border-slate-100 shadow-xl text-center space-y-6">
+                    <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto text-[#002d5a]">
+                      <Stethoscope className="w-10 h-10" />
+                    </div>
+                    <div className="space-y-2">
+                       <h2 className="text-3xl font-black text-[#002d5a]">Profile Incomplete</h2>
+                       <p className="text-slate-500 font-medium max-w-md mx-auto">You must first complete your professional clinical profile before you can manage leaves or consultations.</p>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('profile')}
+                      className="px-10 py-4 bg-[#002d5a] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#003d7a] transition-all shadow-xl"
+                    >
+                      Go to Profile Setup
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Leave Request Form */}
                 <div className="bg-white rounded-[3rem] p-10 md:p-16 border border-slate-100 shadow-xl space-y-10">
                   <div className="space-y-2">
                     <h2 className="text-3xl font-black text-[#002d5a]">Request Time-Off</h2>
@@ -595,8 +661,10 @@ const Profile = ({
                     </div>
                   )}
                 </div>
-              </motion.div>
-            ) : (
+              </>
+            )}
+          </motion.div>
+        ) : (
               <motion.div
                 key="appointments"
                 initial={{ opacity: 0, y: 20 }}
@@ -683,7 +751,7 @@ const Profile = ({
                              {['PENDING', 'SCHEDULED'].includes(app.status?.toUpperCase()) && (
                                <button 
                                  onClick={() => handleAction(cancelAppointment, app.id)}
-                                 className="flex-1 py-4 bg-red-50 text-red-600 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-red-100 transition-all font-bold active:scale-95"
+                                   className="flex-1 py-4 bg-red-50 text-red-600 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-red-100 transition-all active:scale-95"
                                >
                                  Deny Visit
                                </button>
@@ -696,7 +764,7 @@ const Profile = ({
                 </div>
               </motion.div>
             )}
-          </AnimatePresence>
+        </AnimatePresence>
         </div>
       )}
     </main>

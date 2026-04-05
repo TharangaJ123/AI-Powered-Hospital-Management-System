@@ -37,6 +37,8 @@ public class User {
     @Column(unique = true)
     private String doctorRegistrationNumber;
 
+    private String specialization;
+
     private String firstName;
     private String lastName;
 }

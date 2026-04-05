@@ -18,15 +18,26 @@ import {
 } from 'lucide-react'
 import { getAllDoctors, getDoctorsBySpecialization } from '../services/doctors'
 import DoctorCard from '../components/DoctorCard'
+import { DOCTOR_SPECIALTIES } from '../constants/specialties'
 
 const specialties = [
   { id: 'all', name: 'All Specialties', icon: Activity },
-  { id: 'Cardiology', name: 'Cardiology', icon: Heart },
-  { id: 'Neurology', name: 'Neurology', icon: Brain },
-  { id: 'Paediatrics', name: 'Paediatrics', icon: Baby },
-  { id: 'Laboratory', name: 'Laboratory', icon: FlaskConical },
-  { id: 'Radiology', name: 'Radiology', icon: Microscope },
-  { id: 'Orthopaedics', name: 'Orthopaedics', icon: Stethoscope }
+  ...DOCTOR_SPECIALTIES.map((specialty) => {
+    const iconMap = {
+      Cardiology: Heart,
+      Neurology: Brain,
+      Paediatrics: Baby,
+      Laboratory: FlaskConical,
+      Radiology: Microscope,
+      Orthopaedics: Stethoscope,
+      'General Practice': Stethoscope,
+    }
+
+    return {
+      ...specialty,
+      icon: iconMap[specialty.id],
+    }
+  })
 ]
 
 const Doctors = () => {
@@ -36,40 +47,46 @@ const Doctors = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSpecialty, setSelectedSpecialty] = useState('all')
 
-  useEffect(() => {
-    fetchDoctors()
-  }, [])
+  const loadDoctors = async (specialtyId = 'all', { silent = false } = {}) => {
+    if (!silent) {
+      setLoading(true)
+    }
 
-  const fetchDoctors = async () => {
-    setLoading(true)
     setError(null)
     try {
-      const data = await getAllDoctors()
+      const data = specialtyId === 'all'
+        ? await getAllDoctors()
+        : await getDoctorsBySpecialization(specialtyId)
+
       setDoctors(data)
     } catch (err) {
-      setError('Unable to load doctor profiles. Please check if the doctor-management service is running.')
+      if (!silent) {
+        setError('Unable to load doctor profiles. Please check if the doctor-management service is running.')
+      }
+
       console.error(err)
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
   }
 
+  useEffect(() => {
+    loadDoctors('all')
+  }, [])
+
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      loadDoctors(selectedSpecialty, { silent: true })
+    }, 20000)
+
+    return () => clearInterval(refreshInterval)
+  }, [selectedSpecialty])
+
   const handleSpecialtyChange = async (specialtyId) => {
     setSelectedSpecialty(specialtyId)
-    setLoading(true)
-    try {
-      if (specialtyId === 'all') {
-        const data = await getAllDoctors()
-        setDoctors(data)
-      } else {
-        const data = await getDoctorsBySpecialization(specialtyId)
-        setDoctors(data)
-      }
-    } catch (err) {
-      setError('Failed to filter doctors.')
-    } finally {
-      setLoading(false)
-    }
+    await loadDoctors(specialtyId)
   }
 
   const filteredDoctors = doctors.filter(doctor => {
@@ -166,7 +183,7 @@ const Doctors = () => {
             <p className="text-slate-500 mt-2 font-medium">Browse verified medical experts based on your criteria.</p>
           </div>
           <div className="flex items-center space-x-2 text-sm font-bold text-slate-400 uppercase tracking-widest cursor-pointer hover:text-[#0066cc] transition-colors">
-            <span>Sort by Rank</span>
+            <span>Auto-refresh every 20s</span>
             <ChevronDown className="w-5 h-5" />
           </div>
         </div>
@@ -182,7 +199,7 @@ const Doctors = () => {
             <h3 className="text-2xl font-bold text-red-700 mb-4">{error}</h3>
             <p className="text-red-500 max-w-md mx-auto mb-8 font-medium">Please verify that all microservices (API Gateway, Discovery Service, and Doctor Service) are correctly running.</p>
             <button 
-              onClick={fetchDoctors}
+              onClick={() => loadDoctors(selectedSpecialty)}
               className="px-10 py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all font-sans"
             >
               Retry Connection
@@ -196,7 +213,11 @@ const Doctors = () => {
              <h3 className="text-2xl font-bold text-slate-700">No Specialists Found</h3>
              <p className="text-slate-500 mt-2 max-w-sm mx-auto font-medium">We couldn't find any doctors matching your search or filter requirements. Try relaxing your filters.</p>
              <button 
-                onClick={() => {setSearchTerm(''); setSelectedSpecialty('all'); fetchDoctors();}}
+                onClick={() => {
+                  setSearchTerm('')
+                  setSelectedSpecialty('all')
+                  loadDoctors('all')
+                }}
                 className="mt-8 px-10 py-4 border-2 border-[#002d5a] text-[#002d5a] rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#002d5a] hover:text-white transition-all font-sans"
              >
                Clear All Filters
