@@ -16,4 +16,5 @@ public class UserRegistrationDto {
     private String address;
     private String dateOfBirth;
     private String specialization;
+    private String doctorRegistrationNumber;
 }
