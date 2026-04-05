@@ -218,7 +218,15 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutUs />} />
-        <Route path="/contact" element={<Contact />} />
+        <Route 
+          path="/contact" 
+          element={
+            <Contact 
+              user={session?.user} 
+              patientProfile={patientProfile} 
+            />
+          } 
+        />
         <Route path="/services" element={<Services />} />
         <Route path="/admin" element={<AdminDashboard token={session?.token} />} />
         <Route

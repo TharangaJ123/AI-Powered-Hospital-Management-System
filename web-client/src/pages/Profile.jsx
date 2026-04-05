@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Stethoscope, Video } from 'lucide-react'
+import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Stethoscope, MessageSquare } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PatientProfileCard from '../components/PatientProfileCard'
 import DoctorProfileCard from '../components/DoctorProfileCard'
 import { getAllDoctors, requestDoctorLeave, getDoctorLeaves } from '../services/doctors'
 import { getAppointmentsByPatient, getAppointmentsByDoctor, updateAppointment, cancelAppointment, completeAppointment } from '../services/appointments'
 import { createTelemedicineSession, getTelemedicineSession } from '../services/telemedicine'
+import { getContactFormsByUser } from '../services/contact'
 
 const Profile = ({
   user,
@@ -28,6 +30,8 @@ const Profile = ({
   const [rescheduleData, setRescheduleData] = useState({ id: null, date: '' })
   const [isUpdating, setIsUpdating] = useState(false)
   const [activeTab, setActiveTab] = useState('profile')
+  const [contactForms, setContactForms] = useState([])
+  const [isLoadingContacts, setIsLoadingContacts] = useState(false)
   const [leaves, setLeaves] = useState([])
   const [isRequestingLeave, setIsRequestingLeave] = useState(false)
   const [leaveForm, setLeaveForm] = useState({
@@ -94,12 +98,14 @@ const Profile = ({
     setIsLoadingAppointments(true)
     try {
       if (user.role === 'PATIENT' && patientProfile?.id) {
-        const [appsData, docsData] = await Promise.all([
+        const [appsData, docsData, contactsData] = await Promise.all([
           getAppointmentsByPatient(patientProfile.id, token),
-          getAllDoctors()
+          getAllDoctors(),
+          getContactFormsByUser(patientProfile.id, token)
         ])
         setAppointments(appsData)
         setDoctors(docsData)
+        setContactForms(contactsData)
       } else if (user.role === 'DOCTOR' && doctorProfile?.id) {
         const [appsData, leavesData] = await Promise.all([
           getAppointmentsByDoctor(doctorProfile.id, token),
@@ -276,7 +282,44 @@ const Profile = ({
           />
 
           <section className="max-w-7xl mx-auto px-4 mt-8 pb-20">
+            {/* Patient Tabs */}
+            <div className="flex items-center bg-slate-100 p-1.5 rounded-2xl w-fit mb-8 border border-slate-200">
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                  activeTab === 'profile' ? 'bg-white text-[#0066cc] shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                Profile
+              </button>
+              <button
+                onClick={() => setActiveTab('appointments')}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                  activeTab === 'appointments' ? 'bg-white text-[#0066cc] shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                Appointments
+              </button>
+              <button
+                onClick={() => setActiveTab('support')}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                  activeTab === 'support' ? 'bg-white text-[#0066cc] shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                Support Inquiries
+              </button>
+            </div>
+
             <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 overflow-hidden">
+              {activeTab === 'profile' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4">
+                   <h3 className="text-lg font-black text-slate-900 mb-6">General Information</h3>
+                   <p className="text-slate-500 text-sm">Please update your profile information in the card above.</p>
+                </div>
+              )}
+
+              {activeTab === 'appointments' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
@@ -393,6 +436,64 @@ const Profile = ({
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+                </div>
+              )}
+
+              {activeTab === 'support' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 space-y-8">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                        <MessageSquare className="w-6 h-6 text-[#00a69c]" />
+                        Support History
+                      </h2>
+                      <p className="text-sm text-slate-500 mt-1">View your submitted inquiries and responses from our team.</p>
+                    </div>
+                  </div>
+
+                  {contactForms.length === 0 ? (
+                    <div className="text-center py-20 border-2 border-dashed border-slate-100 rounded-3xl">
+                      <MessageSquare className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                      <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No inquiries found</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {contactForms.map(form => (
+                        <div key={form.id} className="p-8 rounded-[2rem] border border-slate-100 bg-slate-50/30 hover:bg-white hover:shadow-xl transition-all duration-500">
+                          <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+                            <div>
+                              <span className="text-[10px] font-black text-[#00a69c] uppercase tracking-widest bg-[#00a69c]/5 px-2 py-0.5 rounded-full mb-2 inline-block">
+                                #{form.id} • {new Date(form.createdAt).toLocaleDateString()}
+                              </span>
+                              <h3 className="text-xl font-black text-slate-900">{form.subject}</h3>
+                            </div>
+                            <span className={`h-fit px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                              form.status === 'REPLIED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                            }`}>
+                              {form.status || 'PENDING'}
+                            </span>
+                          </div>
+                          
+                          <div className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm mb-6 text-slate-600 italic font-medium">
+                            "{form.message}"
+                          </div>
+
+                          {form.adminReply && (
+                            <div className="p-6 bg-teal-50 rounded-2xl border border-teal-100 shadow-sm ml-4 md:ml-12 relative animate-in slide-in-from-left-4">
+                              <div className="absolute top-0 left-0 w-1 h-full bg-teal-400 rounded-full -ml-4"></div>
+                              <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                <BadgeCheck className="w-4 h-4" />
+                                Official Response • {form.repliedAt ? new Date(form.repliedAt).toLocaleDateString() : 'Recent'}
+                              </p>
+                              <p className="text-teal-900 font-bold leading-relaxed">{form.adminReply}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
