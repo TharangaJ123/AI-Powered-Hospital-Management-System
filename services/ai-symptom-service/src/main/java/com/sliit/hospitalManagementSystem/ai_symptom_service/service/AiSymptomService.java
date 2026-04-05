@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.*;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +47,7 @@ public class AiSymptomService {
 
             String responseBody = webClientBuilder.build()
                     .post()
-                    .uri(apiUrl)
+                    .uri(Objects.requireNonNull(apiUrl, "Gemini API URL must be configured"))
                     .header("x-goog-api-key", apiKey)
                     .bodyValue(geminiRequest)
                     .retrieve()
