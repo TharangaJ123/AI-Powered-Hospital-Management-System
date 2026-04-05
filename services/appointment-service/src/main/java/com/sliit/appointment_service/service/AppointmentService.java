@@ -54,6 +54,7 @@ public class AppointmentService {
                 .patientId(request.getPatientId())
                 .doctorId(resolvedDoctorId)
                 .fullName(request.getFullName())
+                .email(request.getEmail())
                 .phoneNumber(request.getPhoneNumber())
                 .appointmentDate(request.getAppointmentDate())
                 .status(AppointmentStatus.BOOKED)
@@ -83,13 +84,13 @@ public class AppointmentService {
         try {
             // Use data already available in the appointment - no blocking calls needed
             String recipientName = appointment.getFullName() != null ? appointment.getFullName() : "Patient";
-            String recipientEmail = "patient@example.com"; // Fallback
+            String recipientEmail = appointment.getEmail() != null && !appointment.getEmail().isEmpty() ? appointment.getEmail() : "patient@example.com"; 
             String doctorName = appointment.getDoctorName() != null ? appointment.getDoctorName() : "Specialist";
             String specialty = appointment.getSpecialty() != null ? appointment.getSpecialty() : "General";
 
-            // Try to enrich with patient email (with timeout to prevent hanging)
+            // Try to enrich with patient email if not provided in appointment (with timeout to prevent hanging)
             try {
-                if (appointment.getPatientId() != null && appointment.getPatientId() != 0) {
+                if ((appointment.getEmail() == null || appointment.getEmail().isEmpty()) && appointment.getPatientId() != null && appointment.getPatientId() != 0) {
                     Map profile = webClientBuilder.build()
                         .get()
                         .uri("http://user-management/api/patients/" + appointment.getPatientId() + "/profile")
@@ -177,6 +178,7 @@ public class AppointmentService {
         appointment.setPatientId(request.getPatientId());
         appointment.setDoctorId(resolveDoctorId(request.getDoctorId()));
         appointment.setFullName(request.getFullName());
+        appointment.setEmail(request.getEmail());
         appointment.setPhoneNumber(request.getPhoneNumber());
         appointment.setDoctorName(request.getDoctorName());
         appointment.setSpecialty(request.getSpecialty());
@@ -250,6 +252,7 @@ public class AppointmentService {
                 .patientId(appointment.getPatientId())
                 .doctorId(appointment.getDoctorId())
                 .fullName(appointment.getFullName())
+                .email(appointment.getEmail())
                 .phoneNumber(appointment.getPhoneNumber())
                 .appointmentDate(appointment.getAppointmentDate())
                 .status(appointment.getStatus())

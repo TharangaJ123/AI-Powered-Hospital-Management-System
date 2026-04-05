@@ -9,6 +9,7 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
   const [searchParams] = useSearchParams()
   const [formData, setFormData] = useState({
     fullName: '',
+    email: '',
     phoneNumber: '',
     speciality: searchParams.get('specialty') || '',
     doctorId: searchParams.get('doctorId') ? `dr_${searchParams.get('doctorId')}` : '',
@@ -25,6 +26,7 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
       setFormData(prev => ({
         ...prev,
         fullName: user.name || '',
+        email: user.email || '',
         phoneNumber: patientProfile?.phoneNumber || '',
       }))
     }
@@ -78,6 +80,7 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
         doctorId: parseInt(formData.doctorId.replace('dr_', '')),
         appointmentDate: appointmentDate,
         fullName: formData.fullName,
+        email: formData.email,
         phoneNumber: formData.phoneNumber,
         reason: formData.reason,
         consultationType: formData.speciality + " Consultation"
@@ -189,6 +192,25 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
                   onChange={handleInputChange}
                   required
                   placeholder="e.g. +1 234 567 890"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/10 outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+              {/* Email Address */}
+              <div>
+                <label className="auth-label">
+                  <User className="w-5 h-5" />
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Enter your email address"
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/10 outline-none transition-all"
                 />
               </div>

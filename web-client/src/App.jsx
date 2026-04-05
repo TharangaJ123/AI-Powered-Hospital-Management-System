@@ -215,7 +215,7 @@ function App() {
         onBookAppointmentClick={handleBookAppointmentClick}
       />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home user={session?.user || null} />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/services" element={<Services />} />

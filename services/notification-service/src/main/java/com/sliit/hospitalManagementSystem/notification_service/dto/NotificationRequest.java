@@ -33,8 +33,8 @@ public class NotificationRequest {
     private String appointmentId;
     private String doctorName;
     private String patientName;
-    private String appointmentDate;   // "2026-04-10"
-    private String appointmentTime;   // "10:30 AM"
+    private String appointmentDate;   
+    private String appointmentTime;   
     private String specialty;
     
     // New fields for full summary
@@ -46,6 +46,7 @@ public class NotificationRequest {
         APPOINTMENT_BOOKED,
         APPOINTMENT_CANCELLED,
         APPOINTMENT_MODIFIED,
-        CONSULTATION_COMPLETED
+        CONSULTATION_COMPLETED,
+        USER_REGISTERED
     }
 }

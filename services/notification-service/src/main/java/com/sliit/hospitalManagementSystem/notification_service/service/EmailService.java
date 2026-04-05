@@ -52,7 +52,7 @@ public class EmailService {
                   .section-title{border-bottom: 2px solid #eef2f7; padding-bottom: 8px; margin-bottom: 16px; color: #1a73e8; font-weight: bold; text-transform: uppercase; font-size: 14px;}
                 </style></head><body>
                 <div class="wrap">
-                  <div class="hdr">✅ Appointment Summary \u2013 OminiHealth</div>
+                  <div class="hdr">Appointment Summary \u2013 OminiHealth</div>
                   <div class="body">
                     <p>Dear <strong>%s</strong>,</p>
                     <p>Your appointment has been successfully confirmed. Here are the complete details for your upcoming consultation</p>
@@ -83,7 +83,7 @@ public class EmailService {
                   <div class="ftr">This is an automated message from OminiHealth Hospital Management System. Please do not reply.</div>
                 </div></body></html>
                 """.formatted(recipientName, appointmentId, (consultationType != null ? consultationType : "General"),
-                patientName, firstName + lastName, specialization, date, time, 
+                patientName, doctorName, specialty, date, time, 
                 (reason != null ? reason : "N/A"), (doctorNotes != null ? doctorNotes : "None provided"));
     }
 
@@ -100,7 +100,7 @@ public class EmailService {
                   .ftr{background:#f4f7fb;text-align:center;padding:14px;font-size:12px;color:#999}
                 </style></head><body>
                 <div class="wrap">
-                  <div class="hdr">\u274C Appointment Cancelled \u2013 OminiHealth</div>
+                  <div class="hdr">Appointment Cancelled \u2013 OminiHealth</div>
                   <div class="body">
                     <p>Dear <strong>%s</strong>,</p>
                     <p>Your appointment (<strong>%s</strong>) with <strong>Dr. %s</strong>
@@ -125,7 +125,7 @@ public class EmailService {
                   .ftr{background:#f4f7fb;text-align:center;padding:14px;font-size:12px;color:#999}
                 </style></head><body>
                 <div class="wrap">
-                  <div class="hdr">\uD83C\uDF93 Consultation Completed \u2013 OminiHealth</div>
+                  <div class="hdr">Consultation Completed \u2013 OminiHealth</div>
                   <div class="body">
                     <p>Dear <strong>%s</strong>,</p>
                     <p>Your telemedicine consultation (<strong>%s</strong>) with <strong>Dr. %s</strong>
@@ -136,5 +136,40 @@ public class EmailService {
                   <div class="ftr">This is an automated message. Please do not reply.</div>
                 </div></body></html>
                 """.formatted(recipientName, appointmentId, doctorName, date);
+    }
+    public String buildUserRegisteredBody(String recipientName, String email) {
+        return """
+                <!DOCTYPE html><html><head><meta charset="UTF-8"/>
+                <style>
+                  body{font-family:Arial,sans-serif;background:#f4f7fb;margin:0;padding:0}
+                  .wrap{max-width:600px;margin:40px auto;background:#fff;border-radius:8px;
+                        box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden}
+                  .hdr{background:#1a73e8;padding:24px;text-align:center;color:#fff;font-size:20px}
+                  .body{padding:28px;color:#333}
+                  .row{margin-bottom:12px; display: flex; align-items: baseline;}
+                  .lbl{font-weight:bold;color:#555;width:150px; flex-shrink: 0;}
+                  .val{color: #222;}
+                  .badge{background:#e8f0fe;color:#1a73e8;border-radius:4px;padding:2px 8px;font-size:13px; font-weight: bold;}
+                  .ftr{background:#f4f7fb;text-align:center;padding:14px;font-size:12px;color:#999}
+                  .section-title{border-bottom: 2px solid #eef2f7; padding-bottom: 8px; margin-bottom: 16px; color: #1a73e8; font-weight: bold; text-transform: uppercase; font-size: 14px;}
+                </style></head><body>
+                <div class="wrap">
+                  <div class="hdr">Welcome to OminiHealth!</div>
+                  <div class="body">
+                    <p>Dear <strong>%s</strong>,</p>
+                    <p>Welcome to the <strong>OminiHealth Hospital Management System</strong>. Your registration is complete, and your account has been successfully created.</p>
+                    
+                    <div class="section-title">Account Details</div>
+                    <div class="row"><span class="lbl">Account Name:</span><span class="val">%s</span></div>
+                    <div class="row"><span class="lbl">Registered Email:</span><span class="val">%s</span></div>
+                    <div class="row"><span class="lbl">Status:</span><span class="badge">Active</span></div>
+                    
+                    <p style="margin-top:24px; padding: 12px; background: #e8f0fe; border-radius: 6px; color: #1a73e8; font-size: 14px;">
+                      <strong>Next Steps:</strong> You can now log into your Web Portal to book appointments, view prescriptions, or consult with our professionals.
+                    </p>
+                  </div>
+                  <div class="ftr">This is an automated message from OminiHealth. Please do not reply.</div>
+                </div></body></html>
+                """.formatted(recipientName, recipientName, email);
     }
 }

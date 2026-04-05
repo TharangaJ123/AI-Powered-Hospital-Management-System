@@ -36,8 +36,13 @@ public class SmsService {
     public void sendSms(String to, String body) {
         log.info("Sending SMS to {} via Notify.lk...", to);
         try {
-            // Notify.lk expects 947XXXXXXXX format (no '+' prefix)
-            String formattedPhone = to.startsWith("+") ? to.substring(1) : to;
+            // Notify.lk expects 947XXXXXXXX format (11 digits)
+            String formattedPhone = to.replaceAll("\\D", "");
+            if (formattedPhone.startsWith("0")) {
+                formattedPhone = "94" + formattedPhone.substring(1);
+            } else if (!formattedPhone.startsWith("94") && formattedPhone.length() == 9) {
+                formattedPhone = "94" + formattedPhone;
+            }
 
             // Build form data as POST body (application/x-www-form-urlencoded)
             HttpHeaders headers = new HttpHeaders();
@@ -62,23 +67,27 @@ public class SmsService {
 
     // --- Template Builders ---
 
+    public String buildUserRegisteredSms(String userName) {
+        return String.format("Hi %s! Welcome to OminiHealth. Your registration was successful. Log in anytime for premium healthcare services.", userName);
+    }
+
     public String buildAppointmentBookedSms(String patientName, String doctorName, String date, String time, String appointmentId) {
-        return String.format("Hi %s, your appointment with Dr. %s is confirmed on %s at %s. ID: %s. - MediConnect",
+        return String.format("Hi %s, your appointment with Dr. %s is confirmed on %s at %s. ID: %s. - OmniHealth",
                 patientName, doctorName, date, time, appointmentId);
     }
 
     public String buildAppointmentCancelledSms(String patientName, String doctorName, String date, String time) {
-        return String.format("Hi %s, your appointment with Dr. %s on %s at %s has been cancelled. Contact us for details. - MediConnect",
+        return String.format("Hi %s, your appointment with Dr. %s on %s at %s has been cancelled. Contact us for details. - OmniHealth",
                 patientName, doctorName, date, time);
     }
 
     public String buildAppointmentModifiedSms(String patientName, String doctorName, String date, String time) {
-        return String.format("Hi %s, your appointment with Dr. %s has been updated. New time: %s at %s. - MediConnect",
+        return String.format("Hi %s, your appointment with Dr. %s has been updated. New time: %s at %s. - OmniHealth",
                 patientName, doctorName, date, time);
     }
 
     public String buildConsultationCompletedSms(String patientName, String doctorName) {
-        return String.format("Hi %s, your consultation with Dr. %s is complete. Wishing you good health! - MediConnect",
+        return String.format("Hi %s, your consultation with Dr. %s is complete. Wishing you good health! - OmniHealth",
                 patientName, doctorName);
     }
 }

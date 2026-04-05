@@ -29,6 +29,9 @@ public class Appointment {
     @Column(name = "full_name", nullable = true, length = 120)
     private String fullName;
 
+    @Column(name = "email", nullable = true, length = 120)
+    private String email;
+
     @Column(name = "phone_number", nullable = true, length = 20)
     private String phoneNumber;
 
