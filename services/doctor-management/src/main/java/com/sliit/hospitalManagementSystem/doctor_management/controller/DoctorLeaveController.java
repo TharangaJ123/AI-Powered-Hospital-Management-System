@@ -30,6 +30,9 @@ public class DoctorLeaveController {
 
     @PutMapping("/{id}/status")
     public ResponseEntity<DoctorLeave> updateLeaveStatus(@PathVariable("id") Long id, @RequestParam LeaveStatus status) {
+        if (id == null) {
+            return ResponseEntity.badRequest().build();
+        }
         return doctorLeaveRepository.findById(id)
                 .map(leave -> {
                     leave.setStatus(status);

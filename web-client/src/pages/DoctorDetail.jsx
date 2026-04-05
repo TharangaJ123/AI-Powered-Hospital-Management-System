@@ -22,12 +22,15 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { getDoctorById } from '../services/doctors'
 import { getAppointmentsByDoctor } from '../services/appointments'
+import { getDoctorReviews } from '../services/reviews'
+import DoctorReviewsList from '../components/DoctorReviewsList'
 
 const DoctorDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const [doctor, setDoctor] = useState(null)
   const [appointments, setAppointments] = useState([])
+  const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -45,14 +48,20 @@ const DoctorDetail = () => {
       
       // Fetch appointments in a separate try-catch to avoid hiding the whole profile on failure
       try {
-        const token = localStorage.getItem('token') || localStorage.getItem('jwtToken')
         if (token) {
           const appts = await getAppointmentsByDoctor(id, token)
           setAppointments(appts.filter(a => ['APPROVED', 'SCHEDULED', 'COMPLETED'].includes(a.status)))
         }
       } catch (apptErr) {
         console.warn('Could not fetch doctor schedule:', apptErr)
-        // We don't set the main error state here, so the doctor profile still shows
+      }
+
+      // Fetch reviews
+      try {
+        const reviewsData = await getDoctorReviews(id)
+        setReviews(reviewsData)
+      } catch (reviewErr) {
+        console.warn('Could not fetch doctor reviews:', reviewErr)
       }
     } catch (err) {
       setError('Unable to load doctor profile. Please verify that the specialist directory service is online.')
@@ -186,7 +195,7 @@ const DoctorDetail = () => {
               </div>
               <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg text-center space-y-2 group hover:border-[#0066cc] transition-all">
                 <Star className="w-8 h-8 text-amber-400 mx-auto group-hover:rotate-12 transition-transform" />
-                <h4 className="text-2xl font-black text-[#002d5a]">4.9</h4>
+                <h4 className="text-2xl font-black text-[#002d5a]">{doctor.averageRating?.toFixed(1) || '0.0'}</h4>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Avg Rating</p>
               </div>
             </div>
@@ -331,8 +340,15 @@ const DoctorDetail = () => {
                     <p className="text-slate-500 font-bold">No active appointments scheduled.</p>
                     <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">Ready for new bookings</p>
                  </div>
-               )}
+                )}
             </div>
+
+            {/* Reviews Section */}
+            <DoctorReviewsList 
+                reviews={reviews} 
+                averageRating={doctor.averageRating} 
+                reviewCount={doctor.reviewCount} 
+            />
           </motion.div>
         </div>
       </div>
