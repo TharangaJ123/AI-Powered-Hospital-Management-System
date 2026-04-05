@@ -38,9 +38,9 @@ public class NotificationService {
                         req.getAppointmentDate(), req.getAppointmentTime(),
                         req.getAppointmentId(), req.getSpecialty(),
                         req.getConsultationType(), req.getReason(), req.getDoctorNotes());
-                // smsBody = smsService.buildAppointmentBookedSms(
-                //         req.getPatientName(), req.getDoctorName(), req.getAppointmentDate(),
-                //         req.getAppointmentTime(), req.getAppointmentId());
+                smsBody = smsService.buildAppointmentBookedSms(
+                        req.getPatientName(), req.getDoctorName(), req.getAppointmentDate(),
+                        req.getAppointmentTime(), req.getAppointmentId());
             }
 
             case APPOINTMENT_CANCELLED -> {
@@ -48,9 +48,9 @@ public class NotificationService {
                 emailBody = emailService.buildAppointmentCancelledBody(
                         req.getRecipientName(), req.getDoctorName(),
                         req.getAppointmentDate(), req.getAppointmentTime(), req.getAppointmentId());
-//                smsBody = smsService.buildAppointmentCancelledSms(
-//                        req.getPatientName(), req.getDoctorName(), req.getAppointmentDate(),
-//                        req.getAppointmentTime());
+               smsBody = smsService.buildAppointmentCancelledSms(
+                       req.getPatientName(), req.getDoctorName(), req.getAppointmentDate(),
+                       req.getAppointmentTime());
             }
 
             case APPOINTMENT_MODIFIED -> {
@@ -60,9 +60,9 @@ public class NotificationService {
                         req.getAppointmentDate(), req.getAppointmentTime(),
                         req.getAppointmentId(), req.getSpecialty(),
                         req.getConsultationType(), req.getReason(), req.getDoctorNotes());
-//                smsBody = smsService.buildAppointmentModifiedSms(
-//                        req.getPatientName(), req.getDoctorName(), req.getAppointmentDate(),
-//                        req.getAppointmentTime());
+               smsBody = smsService.buildAppointmentModifiedSms(
+                       req.getPatientName(), req.getDoctorName(), req.getAppointmentDate(),
+                       req.getAppointmentTime());
             }
 
             case CONSULTATION_COMPLETED -> {
@@ -70,14 +70,14 @@ public class NotificationService {
                 emailBody = emailService.buildConsultationCompletedBody(
                         req.getRecipientName(), req.getDoctorName(),
                         req.getAppointmentDate(), req.getAppointmentId());
-//                smsBody = smsService.buildConsultationCompletedSms(
-//                        req.getPatientName(), req.getDoctorName());
+               smsBody = smsService.buildConsultationCompletedSms(
+                       req.getPatientName(), req.getDoctorName());
             }
             
             case USER_REGISTERED -> {
                 emailSubject = "Welcome to OmniHealth - Registration Successful!";
                 emailBody = emailService.buildUserRegisteredBody(req.getRecipientName(), req.getRecipientEmail());
-//                smsBody = smsService.buildUserRegisteredSms(req.getRecipientName());
+               smsBody = smsService.buildUserRegisteredSms(req.getRecipientName());
             }
 
             default -> throw new IllegalArgumentException("Unknown type: " + req.getType());
@@ -92,9 +92,9 @@ public class NotificationService {
             log.error("Email delivery failed: {}", e.getMessage());
         }
 
-        // Send SMS if phone number is provided
-        // Send SMS disabled as per user request (limited credits)
-        /*
+        Send SMS if phone number is provided
+        Send SMS disabled as per user request (limited credits)
+        
         if (req.getRecipientPhone() != null && !req.getRecipientPhone().isEmpty() && smsBody != null) {
             try {
                 smsService.sendSms(req.getRecipientPhone(), smsBody);
@@ -104,7 +104,7 @@ public class NotificationService {
                 log.error("SMS delivery failed: {}", e.getMessage());
             }
         }
-        */
+        
 
         String summaryMessage = "Notification processed. Email: " + (emailSent ? "Sent" : "Failed") + ", SMS: Disabled";
 
