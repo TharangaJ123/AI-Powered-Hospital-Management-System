@@ -4,6 +4,7 @@ com\sliit\hospitalManagementSystem\doctor_management\dto\AvailabilityScheduleDTO
 com\sliit\hospitalManagementSystem\doctor_management\model\DoctorStatus.class
 com\sliit\hospitalManagementSystem\doctor_management\controller\AvailabilityScheduleController.class
 com\sliit\hospitalManagementSystem\doctor_management\DoctorManagementApplication.class
+com\sliit\hospitalManagementSystem\doctor_management\dto\NotificationRequest.class
 com\sliit\hospitalManagementSystem\doctor_management\security\JwtUtils.class
 com\sliit\hospitalManagementSystem\doctor_management\service\PrescriptionService.class
 com\sliit\hospitalManagementSystem\doctor_management\repository\AppointmentRequestRepository.class
@@ -22,6 +23,7 @@ com\sliit\hospitalManagementSystem\doctor_management\config\WebClientConfig.clas
 com\sliit\hospitalManagementSystem\doctor_management\repository\DoctorProfileRepository.class
 com\sliit\hospitalManagementSystem\doctor_management\service\ReviewService$1.class
 com\sliit\hospitalManagementSystem\doctor_management\security\UserDetailsServiceImpl.class
+com\sliit\hospitalManagementSystem\doctor_management\dto\NotificationRequest$NotificationType.class
 com\sliit\hospitalManagementSystem\doctor_management\model\SessionStatus.class
 com\sliit\hospitalManagementSystem\doctor_management\model\DoctorLeave$DoctorLeaveBuilder.class
 com\sliit\hospitalManagementSystem\doctor_management\security\AuthTokenFilter.class
@@ -33,6 +35,7 @@ com\sliit\hospitalManagementSystem\doctor_management\model\LeaveStatus.class
 com\sliit\hospitalManagementSystem\doctor_management\model\AppointmentRequest$AppointmentRequestBuilder.class
 com\sliit\hospitalManagementSystem\doctor_management\model\DoctorProfile.class
 com\sliit\hospitalManagementSystem\doctor_management\dto\DoctorProfileDTO$DoctorProfileDTOBuilder.class
+com\sliit\hospitalManagementSystem\doctor_management\dto\NotificationRequest$NotificationRequestBuilder.class
 com\sliit\hospitalManagementSystem\doctor_management\model\AppointmentRequestStatus.class
 com\sliit\hospitalManagementSystem\doctor_management\model\Prescription.class
 com\sliit\hospitalManagementSystem\doctor_management\repository\AvailabilityScheduleRepository.class

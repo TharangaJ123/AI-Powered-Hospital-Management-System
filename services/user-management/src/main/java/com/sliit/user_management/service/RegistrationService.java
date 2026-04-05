@@ -12,6 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.reactive.function.client.WebClient;
+import java.util.Map;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RegistrationService {
@@ -19,6 +24,7 @@ public class RegistrationService {
     private final UserRepository userRepository;
     private final PatientProfileRepository patientProfileRepository;
     private final PasswordEncoder passwordEncoder;
+    private final WebClient.Builder webClientBuilder;
 
     @Transactional
     public UserResponseDto registerByRole(UserRegistrationDto request) {
@@ -58,6 +64,9 @@ public class RegistrationService {
             patientProfileRepository.save(profile);
         }
 
+        // Trigger asynchronous welcome email and SMS notification
+        sendWelcomeEmail(user, request.getPhoneNumber());
+
         return UserResponseDto.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -67,5 +76,30 @@ public class RegistrationService {
                 .lastName(user.getLastName())
                 .doctorRegistrationNumber(user.getDoctorRegistrationNumber())
                 .build();
+    }
+
+    private void sendWelcomeEmail(User user, String phoneNumber) {
+        try {
+            Map<String, Object> notification = new java.util.HashMap<>();
+            notification.put("type", "USER_REGISTERED");
+            notification.put("recipientName", user.getFirstName() + " " + user.getLastName());
+            notification.put("recipientEmail", user.getEmail());
+            if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
+                notification.put("recipientPhone", phoneNumber);
+            }
+
+            webClientBuilder.build()
+                .post()
+                .uri("http://notification-service/api/notifications/send")
+                .bodyValue(notification)
+                .retrieve()
+                .bodyToMono(String.class)
+                .timeout(java.time.Duration.ofSeconds(5))
+                .doOnSuccess(r -> log.info("Welcome email triggered for registered user: {}", user.getEmail()))
+                .doOnError(e -> log.error("Failed to trigger welcome email for user: {}", user.getEmail(), e))
+                .subscribe(); // Async execution
+        } catch (Exception e) {
+            log.error("Error setting up welcome email notification for {}", user.getEmail(), e);
+        }
     }
 }

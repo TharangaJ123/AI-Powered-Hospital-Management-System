@@ -15,6 +15,12 @@ public class AppointmentRequestDto {
     private Long patientId;
     private Long doctorId;
     private String fullName;
+    private String email;
     private String phoneNumber;
     private LocalDateTime appointmentDate;
+    private String consultationType;
+    private String reason;
+    private String doctorNotes;
+    private String doctorName;
+    private String specialty;
 }

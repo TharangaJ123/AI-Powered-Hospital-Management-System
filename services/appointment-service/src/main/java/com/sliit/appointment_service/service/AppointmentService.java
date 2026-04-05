@@ -5,25 +5,37 @@ import com.sliit.appointment_service.dto.AppointmentResponseDto;
 import com.sliit.appointment_service.model.Appointment;
 import com.sliit.appointment_service.model.AppointmentStatus;
 import com.sliit.appointment_service.repository.AppointmentRepository;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Mono;
 
 import static org.springframework.http.HttpStatus.CONFLICT;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
-@RequiredArgsConstructor
 public class AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
+    private final WebClient.Builder webClientBuilder;
+
+    public AppointmentService(AppointmentRepository appointmentRepository, WebClient.Builder webClientBuilder) {
+        this.appointmentRepository = appointmentRepository;
+        this.webClientBuilder = webClientBuilder;
+    }
 
     /** Create and save a new appointment with BOOKED status */
     @Transactional
     public AppointmentResponseDto bookAppointment(AppointmentRequestDto request) {
+        log.info("=== BOOK APPOINTMENT: Received request for patientId={}, doctorId={} ===",
+                request.getPatientId(), request.getDoctorId());
+
         Long resolvedDoctorId = resolveDoctorId(request.getDoctorId());
         if (request.getPatientId() != null) {
             boolean duplicateExists = appointmentRepository.existsByPatientIdAndDoctorIdAndAppointmentDateAndStatus(
@@ -40,15 +52,120 @@ public class AppointmentService {
 
         Appointment appointment = Appointment.builder()
                 .patientId(request.getPatientId())
-            .doctorId(resolvedDoctorId)
+                .doctorId(resolvedDoctorId)
                 .fullName(request.getFullName())
+                .email(request.getEmail())
                 .phoneNumber(request.getPhoneNumber())
                 .appointmentDate(request.getAppointmentDate())
                 .status(AppointmentStatus.BOOKED)
+                .consultationType(request.getConsultationType())
+                .reason(request.getReason())
+                .doctorNotes(request.getDoctorNotes())
+                .doctorName(request.getDoctorName())
+                .specialty(request.getSpecialty())
                 .build();
 
         appointment = appointmentRepository.save(appointment);
+        log.info("=== BOOK APPOINTMENT: Saved appointment ID={}, now triggering notification ===", appointment.getId());
+        
+        // Trigger Email Notification
+        try {
+            sendAppointmentSummaryNotification(appointment);
+        } catch (Exception e) {
+            log.error("Failed to send notification for appointment {}: {}", appointment.getId(), e.getMessage());
+        }
+
         return mapToResponseDto(appointment);
+    }
+
+    private void sendAppointmentSummaryNotification(Appointment appointment) {
+        log.info("=== NOTIFICATION TRIGGER: Starting for appointment ID={} ===", appointment.getId());
+
+        try {
+            // Use data already available in the appointment - no blocking calls needed
+            String recipientName = appointment.getFullName() != null ? appointment.getFullName() : "Patient";
+            String recipientEmail = appointment.getEmail() != null && !appointment.getEmail().isEmpty() ? appointment.getEmail() : "patient@example.com"; 
+            String doctorName = appointment.getDoctorName() != null ? appointment.getDoctorName() : "Specialist";
+            String specialty = appointment.getSpecialty() != null ? appointment.getSpecialty() : "General";
+
+            // Try to enrich with patient email if not provided in appointment (with timeout to prevent hanging)
+            try {
+                if ((appointment.getEmail() == null || appointment.getEmail().isEmpty()) && appointment.getPatientId() != null && appointment.getPatientId() != 0) {
+                    Map profile = webClientBuilder.build()
+                        .get()
+                        .uri("http://user-management/api/patients/" + appointment.getPatientId() + "/profile")
+                        .retrieve()
+                        .bodyToMono(Map.class)
+                        .timeout(java.time.Duration.ofSeconds(5))
+                        .onErrorReturn(java.util.Collections.emptyMap())
+                        .block();
+
+                    if (profile != null && profile.containsKey("email") && profile.get("email") != null) {
+                        recipientEmail = (String) profile.get("email");
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Could not fetch patient email, using fallback: {}", e.getMessage());
+            }
+
+            // Try to enrich with doctor details (with timeout)
+            try {
+                if (appointment.getDoctorId() != null && appointment.getDoctorId() != 0) {
+                    Map doctorProfile = webClientBuilder.build()
+                        .get()
+                        .uri("http://doctor-management/api/doctors/profiles/" + appointment.getDoctorId())
+                        .retrieve()
+                        .bodyToMono(Map.class)
+                        .timeout(java.time.Duration.ofSeconds(5))
+                        .onErrorReturn(java.util.Collections.emptyMap())
+                        .block();
+
+                    if (doctorProfile != null) {
+                        if (doctorProfile.containsKey("firstName")) {
+                            doctorName = doctorProfile.get("firstName") + " " + doctorProfile.getOrDefault("lastName", "");
+                        }
+                        if (doctorProfile.containsKey("specialization")) {
+                            specialty = (String) doctorProfile.get("specialization");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Could not fetch doctor details, using fallback: {}", e.getMessage());
+            }
+
+            // Build the notification payload — ensure no null values for required fields
+            Map<String, Object> notification = new java.util.HashMap<>();
+            notification.put("type", "APPOINTMENT_BOOKED");
+            notification.put("recipientName", recipientName);
+            notification.put("recipientEmail", recipientEmail);
+            notification.put("recipientPhone", appointment.getPhoneNumber() != null ? appointment.getPhoneNumber() : "");
+            notification.put("appointmentId", "APT-" + appointment.getId());
+            notification.put("patientName", recipientName);
+            notification.put("doctorName", doctorName);
+            notification.put("specialty", specialty);
+            notification.put("appointmentDate", appointment.getAppointmentDate().toLocalDate().toString());
+            notification.put("appointmentTime", appointment.getAppointmentDate().toLocalTime().toString());
+            notification.put("consultationType", appointment.getConsultationType() != null ? appointment.getConsultationType() : "General Booking");
+            notification.put("reason", appointment.getReason() != null ? appointment.getReason() : "Direct Booking");
+            notification.put("doctorNotes", appointment.getDoctorNotes() != null ? appointment.getDoctorNotes() : "None");
+
+            log.info("=== NOTIFICATION CALL: Sending to notification-service for appointment {} | email={} ===",
+                    appointment.getId(), recipientEmail);
+
+            webClientBuilder.build()
+                .post()
+                .uri("http://notification-service/api/notifications/send")
+                .bodyValue(notification)
+                .retrieve()
+                .bodyToMono(String.class)
+                .timeout(java.time.Duration.ofSeconds(10))
+                .doOnSuccess(response -> log.info("=== NOTIFICATION SUCCESS for appointment {}: {} ===", appointment.getId(), response))
+                .doOnError(error -> log.error("=== NOTIFICATION FAILED for appointment {}: {} ===", appointment.getId(), error.getMessage()))
+                .subscribe();
+
+        } catch (Exception e) {
+            log.error("=== NOTIFICATION ERROR: Failed to build/send notification: {} ===", e.getMessage(), e);
+        }
     }
 
     /** Update an existing appointment's details */
@@ -61,7 +178,10 @@ public class AppointmentService {
         appointment.setPatientId(request.getPatientId());
         appointment.setDoctorId(resolveDoctorId(request.getDoctorId()));
         appointment.setFullName(request.getFullName());
+        appointment.setEmail(request.getEmail());
         appointment.setPhoneNumber(request.getPhoneNumber());
+        appointment.setDoctorName(request.getDoctorName());
+        appointment.setSpecialty(request.getSpecialty());
 
         appointment = appointmentRepository.save(appointment);
         return mapToResponseDto(appointment);
@@ -126,17 +246,18 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
 
-
-
     private AppointmentResponseDto mapToResponseDto(Appointment appointment) {
         return AppointmentResponseDto.builder()
                 .id(appointment.getId())
                 .patientId(appointment.getPatientId())
                 .doctorId(appointment.getDoctorId())
-            .fullName(appointment.getFullName())
-            .phoneNumber(appointment.getPhoneNumber())
+                .fullName(appointment.getFullName())
+                .email(appointment.getEmail())
+                .phoneNumber(appointment.getPhoneNumber())
                 .appointmentDate(appointment.getAppointmentDate())
                 .status(appointment.getStatus())
+                .doctorName(appointment.getDoctorName())
+                .specialty(appointment.getSpecialty())
                 .build();
     }
 

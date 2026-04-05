@@ -79,11 +79,12 @@ const HeroSlide = ({ image, title, subtitle, ctaText, onPrimaryClick }) => (
   </div>
 )
 
-const Home = ({ onBookAppointment }) => {
+const Home = ({ onBookAppointment, user }) => {
   const navigate = useNavigate()
   const [activeSlide, setActiveSlide] = useState(0)
   const [bookingForm, setBookingForm] = useState({
     fullName: '',
+    email: '',
     phone: '',
     specialty: '',
     date: '',
@@ -125,6 +126,16 @@ const Home = ({ onBookAppointment }) => {
     }
   }
 
+  useEffect(() => {
+    if (user) {
+      setBookingForm(prev => ({
+        ...prev,
+        fullName: user.name || '',
+        email: user.email || '',
+      }))
+    }
+  }, [user])
+
   const handleBookingInputChange = (event) => {
     const { name, value } = event.target
     setBookingForm((prev) => ({ ...prev, [name]: value }))
@@ -154,8 +165,11 @@ const Home = ({ onBookAppointment }) => {
           patientId,
           doctorId,
           fullName: bookingForm.fullName,
+          email: bookingForm.email,
           phoneNumber: bookingForm.phone,
-          appointmentDate: `${bookingForm.date}T${bookingForm.time}:00`
+          appointmentDate: `${bookingForm.date}T${bookingForm.time}:00`,
+          reason: "Quick Booking via Home Page",
+          consultationType: (bookingForm.specialty || "General") + " Consultation"
         })
       })
 
@@ -436,6 +450,20 @@ const Home = ({ onBookAppointment }) => {
                   required
                   className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0066cc]"
                   placeholder="Enter your full name"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label htmlFor="email" className="text-sm font-bold text-slate-700">Email Address</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={bookingForm.email}
+                  onChange={handleBookingInputChange}
+                  required
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#0066cc]"
+                  placeholder="Enter your email"
                 />
               </div>
 
