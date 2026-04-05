@@ -4,7 +4,10 @@ com\sliit\hospitalManagementSystem\doctor_management\dto\AvailabilityScheduleDTO
 com\sliit\hospitalManagementSystem\doctor_management\model\DoctorStatus.class
 com\sliit\hospitalManagementSystem\doctor_management\controller\AvailabilityScheduleController.class
 com\sliit\hospitalManagementSystem\doctor_management\DoctorManagementApplication.class
+<<<<<<< HEAD
 com\sliit\hospitalManagementSystem\doctor_management\dto\NotificationRequest.class
+=======
+>>>>>>> 3e5fc803498a0e971ee5f9ddcb3a77fb7bda6eea
 com\sliit\hospitalManagementSystem\doctor_management\security\JwtUtils.class
 com\sliit\hospitalManagementSystem\doctor_management\service\PrescriptionService.class
 com\sliit\hospitalManagementSystem\doctor_management\repository\AppointmentRequestRepository.class
@@ -17,21 +20,37 @@ com\sliit\hospitalManagementSystem\doctor_management\service\DoctorProfileServic
 com\sliit\hospitalManagementSystem\doctor_management\model\Prescription$PrescriptionBuilder.class
 com\sliit\hospitalManagementSystem\doctor_management\controller\AppointmentRequestController.class
 com\sliit\hospitalManagementSystem\doctor_management\dto\TelemedicineSessionDTO.class
+<<<<<<< HEAD
 com\sliit\hospitalManagementSystem\doctor_management\config\WebClientConfig.class
 com\sliit\hospitalManagementSystem\doctor_management\repository\DoctorProfileRepository.class
 com\sliit\hospitalManagementSystem\doctor_management\security\UserDetailsServiceImpl.class
 com\sliit\hospitalManagementSystem\doctor_management\dto\NotificationRequest$NotificationType.class
+=======
+com\sliit\hospitalManagementSystem\doctor_management\repository\ReviewRepository.class
+com\sliit\hospitalManagementSystem\doctor_management\service\ReviewService.class
+com\sliit\hospitalManagementSystem\doctor_management\config\WebClientConfig.class
+com\sliit\hospitalManagementSystem\doctor_management\repository\DoctorProfileRepository.class
+com\sliit\hospitalManagementSystem\doctor_management\service\ReviewService$1.class
+com\sliit\hospitalManagementSystem\doctor_management\security\UserDetailsServiceImpl.class
+>>>>>>> 3e5fc803498a0e971ee5f9ddcb3a77fb7bda6eea
 com\sliit\hospitalManagementSystem\doctor_management\model\SessionStatus.class
 com\sliit\hospitalManagementSystem\doctor_management\model\DoctorLeave$DoctorLeaveBuilder.class
 com\sliit\hospitalManagementSystem\doctor_management\security\AuthTokenFilter.class
 com\sliit\hospitalManagementSystem\doctor_management\dto\PrescriptionDTO.class
+<<<<<<< HEAD
+=======
+com\sliit\hospitalManagementSystem\doctor_management\dto\ReviewDTO$ReviewDTOBuilder.class
+>>>>>>> 3e5fc803498a0e971ee5f9ddcb3a77fb7bda6eea
 com\sliit\hospitalManagementSystem\doctor_management\security\AuthEntryPointJwt.class
 com\sliit\hospitalManagementSystem\doctor_management\dto\AppointmentRequestDTO$AppointmentRequestDTOBuilder.class
 com\sliit\hospitalManagementSystem\doctor_management\model\LeaveStatus.class
 com\sliit\hospitalManagementSystem\doctor_management\model\AppointmentRequest$AppointmentRequestBuilder.class
 com\sliit\hospitalManagementSystem\doctor_management\model\DoctorProfile.class
 com\sliit\hospitalManagementSystem\doctor_management\dto\DoctorProfileDTO$DoctorProfileDTOBuilder.class
+<<<<<<< HEAD
 com\sliit\hospitalManagementSystem\doctor_management\dto\NotificationRequest$NotificationRequestBuilder.class
+=======
+>>>>>>> 3e5fc803498a0e971ee5f9ddcb3a77fb7bda6eea
 com\sliit\hospitalManagementSystem\doctor_management\model\AppointmentRequestStatus.class
 com\sliit\hospitalManagementSystem\doctor_management\model\Prescription.class
 com\sliit\hospitalManagementSystem\doctor_management\repository\AvailabilityScheduleRepository.class
@@ -44,11 +63,23 @@ com\sliit\hospitalManagementSystem\doctor_management\dto\TelemedicineSessionDTO$
 com\sliit\hospitalManagementSystem\doctor_management\model\DoctorProfile$DoctorProfileBuilder.class
 com\sliit\hospitalManagementSystem\doctor_management\model\AppointmentRequest.class
 com\sliit\hospitalManagementSystem\doctor_management\security\SecurityConfig.class
+<<<<<<< HEAD
 com\sliit\hospitalManagementSystem\doctor_management\controller\PrescriptionController.class
 com\sliit\hospitalManagementSystem\doctor_management\dto\PatientReportDTO$PatientReportDTOBuilder.class
 com\sliit\hospitalManagementSystem\doctor_management\repository\TelemedicineSessionRepository.class
 com\sliit\hospitalManagementSystem\doctor_management\dto\PatientReportDTO.class
 com\sliit\hospitalManagementSystem\doctor_management\service\PatientReportService.class
+=======
+com\sliit\hospitalManagementSystem\doctor_management\model\Review.class
+com\sliit\hospitalManagementSystem\doctor_management\controller\PrescriptionController.class
+com\sliit\hospitalManagementSystem\doctor_management\dto\PatientReportDTO$PatientReportDTOBuilder.class
+com\sliit\hospitalManagementSystem\doctor_management\repository\TelemedicineSessionRepository.class
+com\sliit\hospitalManagementSystem\doctor_management\model\Review$ReviewBuilder.class
+com\sliit\hospitalManagementSystem\doctor_management\dto\PatientReportDTO.class
+com\sliit\hospitalManagementSystem\doctor_management\controller\ReviewController.class
+com\sliit\hospitalManagementSystem\doctor_management\service\PatientReportService.class
+com\sliit\hospitalManagementSystem\doctor_management\dto\ReviewDTO.class
+>>>>>>> 3e5fc803498a0e971ee5f9ddcb3a77fb7bda6eea
 com\sliit\hospitalManagementSystem\doctor_management\model\TelemedicineSession.class
 com\sliit\hospitalManagementSystem\doctor_management\controller\DoctorProfileController.class
 com\sliit\hospitalManagementSystem\doctor_management\dto\DoctorProfileDTO.class

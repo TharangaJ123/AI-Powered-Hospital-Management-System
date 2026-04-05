@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\config\SecurityConfig.java
 D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\controller\TelemedicineController.java
 D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\dto\TelemedicineSessionResponse.java
@@ -7,3 +8,14 @@ D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemed
 D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\security\JwtUtils.java
 D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\service\TelemedicineService.java
 D:\3Y2S\DS\ai pwower hp m\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\TelemedicineServiceApplication.java
+=======
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\config\SecurityConfig.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\controller\TelemedicineController.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\dto\TelemedicineSessionResponse.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\model\TelemedicineSession.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\repository\TelemedicineSessionRepository.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\security\AuthTokenFilter.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\security\JwtUtils.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\service\TelemedicineService.java
+C:\Users\Govindi Tharshika\Desktop\DS\AI-Powered-Hospital-Management-System\services\telemedicine-service\src\main\java\com\sliit\telemedicine\TelemedicineServiceApplication.java
+>>>>>>> 3e5fc803498a0e971ee5f9ddcb3a77fb7bda6eea

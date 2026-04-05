@@ -1,0 +1,140 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: hospital-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+    networks:
+      - hospital-network
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  discovery-service:
+    build:
+      context: .
+      dockerfile: infrastructure/discovery-service/Dockerfile
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    networks:
+      - hospital-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: infrastructure/api-gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_SERVER=discovery-service
+    depends_on:
+      - discovery-service
+    networks:
+      - hospital-network
+
+  user-management:
+    build:
+      context: .
+      dockerfile: services/user-management/Dockerfile
+    container_name: user-management
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/user_db?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_SERVER=discovery-service
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    networks:
+      - hospital-network
+
+  doctor-management:
+    build:
+      context: .
+      dockerfile: services/doctor-management/Dockerfile
+    container_name: doctor-management
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/doctor_management_db?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_SERVER=discovery-service
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    networks:
+      - hospital-network
+
+  appointment-service:
+    build:
+      context: .
+      dockerfile: services/appointment-service/Dockerfile
+    container_name: appointment-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/appointment_db?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_SERVER=discovery-service
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    networks:
+      - hospital-network
+
+  telemedicine-service:
+    build:
+      context: .
+      dockerfile: services/telemedicine-service/Dockerfile
+    container_name: telemedicine-service
+    ports:
+      - "8086:8086"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/telemedicine_db?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    networks:
+      - hospital-network
+
+  ai-symptom-service:
+    build:
+      context: .
+      dockerfile: services/ai-symptom-service/Dockerfile
+    container_name: ai-symptom-service
+    ports:
+      - "8087:8087"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+    depends_on:
+      discovery-service:
+        condition: service_started
+    networks:
+      - hospital-network
+
+networks:
+  hospital-network:
+    driver: bridge
