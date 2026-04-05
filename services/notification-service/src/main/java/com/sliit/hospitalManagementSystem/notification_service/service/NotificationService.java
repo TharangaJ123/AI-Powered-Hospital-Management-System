@@ -92,8 +92,8 @@ public class NotificationService {
             log.error("Email delivery failed: {}", e.getMessage());
         }
 
-        Send SMS if phone number is provided
-        Send SMS disabled as per user request (limited credits)
+        // Send SMS if phone number is provided
+        // Send SMS disabled as per user request (limited credits)
         
         if (req.getRecipientPhone() != null && !req.getRecipientPhone().isEmpty() && smsBody != null) {
             try {
@@ -106,7 +106,7 @@ public class NotificationService {
         }
         
 
-        String summaryMessage = "Notification processed. Email: " + (emailSent ? "Sent" : "Failed") + ", SMS: Disabled";
+        String summaryMessage = "Notification processed. Email: " + (emailSent ? "Sent" : "Failed") + ", SMS: " + (smsSent ? "Sent" : (smsBody == null ? "Skipped" : "Failed"));
 
         return NotificationResponse.builder()
                 .emailSent(emailSent)
