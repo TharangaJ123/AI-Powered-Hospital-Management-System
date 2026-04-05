@@ -20,4 +20,6 @@ public class AppointmentResponseDto {
     private String phoneNumber;
     private LocalDateTime appointmentDate;
     private AppointmentStatus status;
+    private String doctorName;
+    private String specialty;
 }

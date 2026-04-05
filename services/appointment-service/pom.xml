@@ -6,9 +6,17 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>4.0.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/> 
 	</parent>
+
+	<!-- <parent>
+		<groupId>com.sliit.hospitalManagementSystem</groupId>
+		<artifactId>hospital-management-system</artifactId>
+		<version>1.0.0</version>
+		<relativePath>../../pom.xml</relativePath>
+	</parent> -->
 	<groupId>com.sliit</groupId>
+	<!-- <groupId>com.sliit.hospitalManagementSystem</groupId> -->
 	<artifactId>appointment-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name/>

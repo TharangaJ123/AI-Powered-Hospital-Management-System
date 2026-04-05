@@ -48,4 +48,10 @@ public class Appointment {
 
     @Column(name = "doctor_notes", columnDefinition = "TEXT")
     private String doctorNotes;
+
+    @Column(name = "doctor_name", length = 120)
+    private String doctorName;
+
+    @Column(name = "specialty", length = 100)
+    private String specialty;
 }

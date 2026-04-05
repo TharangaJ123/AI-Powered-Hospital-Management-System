@@ -131,6 +131,7 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
         name: signupData.name.trim(),
         email: signupData.email.trim(),
         password: signupData.password,
+        phoneNumber: signupData.phoneNumber,
         address: signupData.address.trim(),
         dateOfBirth: signupData.dateOfBirth,
         specialization: signupData.role === 'DOCTOR' ? signupData.specialization.trim() : null,

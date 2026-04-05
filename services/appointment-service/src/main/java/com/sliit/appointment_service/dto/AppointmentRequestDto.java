@@ -20,4 +20,6 @@ public class AppointmentRequestDto {
     private String consultationType;
     private String reason;
     private String doctorNotes;
+    private String doctorName;
+    private String specialty;
 }
