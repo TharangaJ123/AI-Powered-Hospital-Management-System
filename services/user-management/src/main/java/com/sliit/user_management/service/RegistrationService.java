@@ -11,6 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -46,6 +50,7 @@ public class RegistrationService {
                 .active(role != Role.DOCTOR)
                 .isVerified(role != Role.DOCTOR)
                 .doctorRegistrationNumber(role == Role.DOCTOR ? request.getDoctorRegistrationNumber() : null)
+                .specialization(role == Role.DOCTOR ? request.getSpecialization() : null)
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .build();
@@ -62,6 +67,12 @@ public class RegistrationService {
                     .dateOfBirth(request.getDateOfBirth())
                     .build();
             patientProfileRepository.save(profile);
+        } else if (role == Role.DOCTOR) {
+            try {
+                syncDoctorProfile(user, "PENDING_APPROVAL");
+            } catch (Exception e) {
+                System.err.println("Failed to create doctor profile during registration: " + e.getMessage());
+            }
         }
 
         // Trigger asynchronous welcome email and SMS notification
@@ -78,28 +89,44 @@ public class RegistrationService {
                 .build();
     }
 
-    private void sendWelcomeEmail(User user, String phoneNumber) {
-        try {
-            Map<String, Object> notification = new java.util.HashMap<>();
-            notification.put("type", "USER_REGISTERED");
-            notification.put("recipientName", user.getFirstName() + " " + user.getLastName());
-            notification.put("recipientEmail", user.getEmail());
-            if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
-                notification.put("recipientPhone", phoneNumber);
-            }
+    private void syncDoctorProfile(User user, String status) {
+        WebClient webClient = webClientBuilder.baseUrl("http://localhost:8085").build();
 
-            webClientBuilder.build()
-                .post()
-                .uri("http://notification-service/api/notifications/send")
-                .bodyValue(notification)
-                .retrieve()
-                .bodyToMono(String.class)
-                .timeout(java.time.Duration.ofSeconds(5))
-                .doOnSuccess(r -> log.info("Welcome email triggered for registered user: {}", user.getEmail()))
-                .doOnError(e -> log.error("Failed to trigger welcome email for user: {}", user.getEmail(), e))
-                .subscribe(); // Async execution
-        } catch (Exception e) {
-            log.error("Error setting up welcome email notification for {}", user.getEmail(), e);
+        Map<String, Object> profileData = new java.util.HashMap<>();
+        profileData.put("userId", user.getId());
+        profileData.put("firstName", user.getFirstName());
+        profileData.put("lastName", user.getLastName());
+        profileData.put("email", user.getEmail());
+        profileData.put("specialization", user.getSpecialization());
+        profileData.put("licenseNumber", user.getDoctorRegistrationNumber());
+        profileData.put("status", status);
+
+        try {
+            Map<String, Object> existingProfile = webClient.get()
+                    .uri("/api/doctors/profiles/user/{userId}", user.getId())
+                    .retrieve()
+                    .bodyToMono(new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {})
+                    .block();
+
+            if (existingProfile != null && existingProfile.get("id") != null) {
+                Number profileId = (Number) existingProfile.get("id");
+                webClient.put()
+                        .uri("/api/doctors/profiles/{id}", profileId.longValue())
+                        .bodyValue(profileData)
+                        .retrieve()
+                        .bodyToMono(Object.class)
+                        .block();
+                return;
+            }
+        } catch (WebClientResponseException.NotFound ignored) {
+            // Profile does not exist yet, so create it below.
         }
+
+        webClient.post()
+                .uri("/api/doctors/profiles")
+                .bodyValue(profileData)
+                .retrieve()
+                .bodyToMono(Object.class)
+                .block();
     }
 }

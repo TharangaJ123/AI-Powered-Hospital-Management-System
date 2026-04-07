@@ -23,7 +23,6 @@ public class DoctorProfileController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<DoctorProfileDTO> createProfile(@Valid @RequestBody DoctorProfileDTO dto) {
         DoctorProfileDTO created = doctorProfileService.createProfile(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);

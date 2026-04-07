@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.*;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +29,8 @@ public class AiSymptomService {
         if ("YOUR_GEMINI_API_KEY".equals(apiKey) || apiKey == null || apiKey.isEmpty()) {
             return SymptomCheckResponse.builder()
                     .diagnosis("Health analysis system is currently offline.")
-                    .recommendations("Please configure a valid GEMINI_API_KEY to enable AI assistance. Contact system administration for support.")
+                    .clinicalCondition("System Configuration Issue")
+                    .recommendations(Collections.singletonList("Please configure a valid GEMINI_API_KEY to enable AI assistance. Contact system administration for support."))
                     .recommendedSpecialties(Collections.singletonList("General Practice"))
                     .urgencyLevel("MEDIUM")
                     .build();
@@ -46,7 +48,7 @@ public class AiSymptomService {
 
             String responseBody = webClientBuilder.build()
                     .post()
-                    .uri(Objects.requireNonNull(apiUrl, "Gemini API URL must not be null"))
+                    .uri(Objects.requireNonNull(apiUrl, "Gemini API URL must be configured"))
                     .header("x-goog-api-key", apiKey)
                     .bodyValue(geminiRequest)
                     .retrieve()
@@ -68,7 +70,8 @@ public class AiSymptomService {
             System.err.println("AI Service Error: " + e.getMessage());
             return SymptomCheckResponse.builder()
                     .diagnosis("AI analysis service is temporarily unavailable.")
-                    .recommendations("The backend was unable to communicate with the AI engine. Please verify the API key and network connection.")
+                    .clinicalCondition("API Connection Failure")
+                    .recommendations(Collections.singletonList("The backend was unable to communicate with the AI engine. Please verify the API key and network connection."))
                     .recommendedSpecialties(Collections.singletonList("General Practice"))
                     .urgencyLevel("MEDIUM")
                     .build();
@@ -76,14 +79,22 @@ public class AiSymptomService {
     }
 
     private String buildPrompt(SymptomCheckRequest request) {
-        return "As a medical assistant AI, analyze these symptoms: " + request.getSymptoms() + ". " +
-                (request.getAdditionalInfo() != null ? "Additional Info: " + request.getAdditionalInfo() : "") +
-                "\nReturn the response in strictly JSON format with exactly these four keys: " +
-                "'diagnosis' (a short preliminary suggestion), " +
-                "'recommendations' (advice followed by list of steps), " +
-                "'recommendedSpecialties' (list of strings for doctor types like Cardiology, Neurology, etc.), " +
-                "'urgencyLevel' (LOW, MEDIUM, HIGH, or EMERGENCY). " +
-                "Do not include any other text except the JSON.";
+        StringBuilder prompt = new StringBuilder("As a medical assistant AI, analyze the following patient data:\n");
+        prompt.append("- Age: ").append(request.getAge()).append("\n");
+        prompt.append("- Gender: ").append(request.getGender()).append("\n");
+        prompt.append("- Symptoms: ").append(request.getSymptoms()).append("\n");
+        if (request.getMedicalHistory() != null && !request.getMedicalHistory().isEmpty()) {
+            prompt.append("- Medical History (Current/Hidden diseases): ").append(request.getMedicalHistory()).append("\n");
+        }
+        
+        prompt.append("\nReturn the response in strictly JSON format with exactly these five keys: ")
+              .append("'diagnosis' (a short preliminary suggestion using simple, non-medical language that anyone can understand), ")
+              .append("'clinicalCondition' (the formal medical/clinical name of the suspected condition), ")
+              .append("'recommendations' (a JSON array of short, actionable strings/steps), ")
+              .append("'recommendedSpecialties' (a JSON array of strings for doctor types like Cardiology, Neurology, etc.), ")
+              .append("'urgencyLevel' (LOW, MEDIUM, HIGH, or EMERGENCY). ")
+              .append("Do not include any other text except the JSON.");
+        return prompt.toString();
     }
 
     private SymptomCheckResponse parseGeminiResponse(String body) {
@@ -110,9 +121,20 @@ public class AiSymptomService {
                 }
             }
 
+            List<String> recommendations = new ArrayList<>();
+            if (responseJson.has("recommendations")) {
+                JsonNode recsNode = responseJson.get("recommendations");
+                if (recsNode.isArray()) {
+                    recsNode.forEach(node -> recommendations.add(node.asText()));
+                } else if (recsNode.isTextual()) {
+                    recommendations.add(recsNode.asText());
+                }
+            }
+
             return SymptomCheckResponse.builder()
                     .diagnosis(responseJson.path("diagnosis").asText("Assessment complete"))
-                    .recommendations(responseJson.path("recommendations").asText("Please follow standard healthcare protocols."))
+                    .clinicalCondition(responseJson.path("clinicalCondition").asText("Not specified"))
+                    .recommendations(recommendations.isEmpty() ? Collections.singletonList("Please follow standard healthcare protocols.") : recommendations)
                     .recommendedSpecialties(specialties.isEmpty() ? Collections.singletonList("General Practitioner") : specialties)
                     .urgencyLevel(responseJson.path("urgencyLevel").asText("MEDIUM"))
                     .build();
@@ -120,7 +142,8 @@ public class AiSymptomService {
             System.err.println("Gemini Parsing Error: " + e.getMessage() + " | Body: " + body);
             return SymptomCheckResponse.builder()
                     .diagnosis("Partial analysis completed.")
-                    .recommendations("The AI assistant had trouble formatting the result. Please try again or consult a doctor directly.")
+                    .clinicalCondition("Analysis Error")
+                    .recommendations(Collections.singletonList("The AI assistant had trouble formatting the result. Please try again or consult a doctor directly."))
                     .recommendedSpecialties(Collections.singletonList("General Practice"))
                     .urgencyLevel("HIGH")
                     .build();

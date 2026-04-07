@@ -1,28 +1,39 @@
-const API_BASE = import.meta.env.VITE_API_URL || '/api'
+import axios from 'axios';
+
+const API_GATEWAY_URL = 'http://localhost:8099/api/telemedicine/sessions';
+
+const getAuthHeader = (token) => ({
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
 
 export const createTelemedicineSession = async (appointmentId, token) => {
-  const response = await fetch(`${API_BASE}/telemedicine/sessions/${appointmentId}`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` }
-  })
-  if (!response.ok) throw new Error('Failed to create telemedicine session')
-  return response.json()
-}
+  try {
+    const response = await axios.post(`${API_GATEWAY_URL}/${appointmentId}`, {}, getAuthHeader(token));
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to create video session');
+  }
+};
 
-export const joinTelemedicineSession = async (appointmentId, token) => {
-  const response = await fetch(`${API_BASE}/telemedicine/sessions/${appointmentId}/join`, {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${token}` }
-  })
-  if (!response.ok) throw new Error('Failed to join telemedicine session. The doctor might not have started it yet.')
-  return response.json()
-}
+export const getTelemedicineSession = async (appointmentId, token) => {
+  try {
+    const response = await axios.get(`${API_GATEWAY_URL}/${appointmentId}/join`, getAuthHeader(token));
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 404) {
+      return null;
+    }
+    throw new Error(error.response?.data?.message || 'Failed to fetch video session');
+  }
+};
 
 export const completeTelemedicineSession = async (appointmentId, token) => {
-  const response = await fetch(`${API_BASE}/telemedicine/sessions/${appointmentId}/complete`, {
-    method: 'PUT',
-    headers: { Authorization: `Bearer ${token}` }
-  })
-  if (!response.ok) throw new Error('Failed to complete telemedicine session')
-  return response.json()
-}
+  try {
+    const response = await axios.put(`${API_GATEWAY_URL}/${appointmentId}/complete`, {}, getAuthHeader(token));
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to complete video session');
+  }
+};
