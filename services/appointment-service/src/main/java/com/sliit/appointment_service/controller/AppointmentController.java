@@ -2,6 +2,7 @@ package com.sliit.appointment_service.controller;
 
 import com.sliit.appointment_service.dto.AppointmentRequestDto;
 import com.sliit.appointment_service.dto.AppointmentResponseDto;
+import com.sliit.appointment_service.dto.AvailabilityCheckResponseDto;
 import com.sliit.appointment_service.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -44,6 +46,14 @@ public class AppointmentController {
     @GetMapping("/{id}")
     public ResponseEntity<AppointmentResponseDto> getAppointmentStatus(@PathVariable Long id) {
         return ResponseEntity.ok(appointmentService.getAppointmentStatus(id));
+    }
+
+    @GetMapping("/availability")
+    public ResponseEntity<AvailabilityCheckResponseDto> checkDoctorAvailability(
+            @RequestParam Long doctorId,
+            @RequestParam LocalDate date
+    ) {
+        return ResponseEntity.ok(appointmentService.checkDoctorAvailability(doctorId, date));
     }
     
     // Mark an appointment as COMPLETED when the visit is finished

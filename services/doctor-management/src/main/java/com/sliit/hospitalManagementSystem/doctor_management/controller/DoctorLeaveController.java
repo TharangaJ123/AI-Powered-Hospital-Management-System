@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/doctor-leaves")
+@RequestMapping("/api/doctors/leaves")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class DoctorLeaveController {
@@ -29,7 +29,7 @@ public class DoctorLeaveController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<DoctorLeave> updateLeaveStatus(@PathVariable("id") Long id, @RequestParam LeaveStatus status) {
+    public ResponseEntity<DoctorLeave> updateLeaveStatus(@PathVariable("id") @org.springframework.lang.NonNull Long id, @RequestParam LeaveStatus status) {
         return doctorLeaveRepository.findById(id)
                 .map(leave -> {
                     leave.setStatus(status);

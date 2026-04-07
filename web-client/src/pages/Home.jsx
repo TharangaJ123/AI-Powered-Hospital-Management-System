@@ -15,7 +15,9 @@ import {
   ChevronRight,
   FlaskConical,
   CreditCard,
-  History
+  History,
+  Truck,
+  Clock
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useState, useEffect, useRef } from 'react'
@@ -27,7 +29,8 @@ const specialties = [
   { name: 'Paediatrics', icon: Baby, desc: 'Comprehensive healthcare for infants, children, and teenagers.' },
   { name: 'Laboratory', icon: FlaskConical, desc: 'Precise and timely diagnostic testing and analysis.' },
   { name: 'Radiology', icon: Microscope, desc: 'High-tech imaging for accurate internal diagnostics.' },
-  { name: 'Orthopaedics', icon: Activity, desc: 'Leading-edge bone, joint, and muscle care.' }
+  { name: 'Orthopaedics', icon: Activity, desc: 'Leading-edge bone, joint, and muscle care.' },
+  { name: 'Ambulance', icon: Truck, desc: '24/7 high-speed life support emergency response fleet.' }
 ]
 
 const specialtyToDoctorId = {
@@ -36,7 +39,8 @@ const specialtyToDoctorId = {
   Paediatrics: 3,
   Laboratory: 4,
   Radiology: 5,
-  Orthopaedics: 6
+  Orthopaedics: 6,
+  Ambulance: 7
 }
 
 const HeroSlide = ({ image, title, subtitle, ctaText, onPrimaryClick }) => (
@@ -205,8 +209,8 @@ const Home = ({ onBookAppointment }) => {
           {[
             { icon: Calendar, label: 'Book Appointment', bg: 'bg-white hover:bg-slate-50' },
             { icon: Search, label: 'Find a Doctor', bg: 'bg-white hover:bg-slate-50' },
+            { icon: Truck, label: 'Ambulance Support', bg: 'bg-white hover:bg-slate-50' },
             { icon: History, label: 'Medical History', bg: 'bg-white hover:bg-slate-50' },
-            { icon: CreditCard, label: 'Pay Online', bg: 'bg-white hover:bg-slate-50' },
             { icon: PhoneCall, label: 'Emergency Help', bg: 'bg-[#e53e3e] text-white hover:bg-red-700' }
           ].map((item, idx) => (
             <button
@@ -329,6 +333,75 @@ const Home = ({ onBookAppointment }) => {
                     transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
                     className="h-full bg-gradient-to-r from-blue-600 to-[#00a69c]"
                   ></motion.div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Ambulance Section */}
+      <section className="section-padding bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-[#e53e3e]/[0.03] border border-red-100 rounded-[4rem] p-12 md:p-20 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-red-500/5 rounded-full blur-[120px] -mr-96 -mt-96 group-hover:bg-red-500/10 transition-all duration-1000"></div>
+            
+            <div className="grid lg:grid-cols-2 gap-20 items-center relative z-10">
+              <div className="order-2 lg:order-1 relative">
+                <div className="absolute -inset-6 bg-red-500/10 rounded-[3rem] blur-2xl animate-pulse"></div>
+                <img 
+                  src="/amb.png" 
+                  className="relative w-full h-auto object-contain transform group-hover:scale-105 transition-all duration-700" 
+                  alt="High-Speed Ambulance Service" 
+                />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] border-2 border-red-500/5 rounded-full animate-spin-slow"></div>
+              </div>
+
+              <div className="order-1 lg:order-2 space-y-8">
+                <div className="inline-flex items-center space-x-3 px-5 py-2 bg-red-500/10 border border-red-500/20 rounded-full text-[#e53e3e] text-xs font-black uppercase tracking-widest">
+                  <span className="w-2 h-2 bg-[#e53e3e] rounded-full animate-ping"></span>
+                  <span>Emergency Response Unit (ERU)</span>
+                </div>
+                
+                <h2 className="text-5xl md:text-6xl font-black text-[#002d5a] leading-[1.1]">
+                  Life-Link <br/>
+                  <span className="text-[#e53e3e]">Ambulance</span> Fleet
+                </h2>
+                
+                <p className="text-slate-600 text-lg leading-relaxed font-medium">
+                  Our state-of-the-art ambulance fleet acts as a mobile ICU, equipped with high-performance ventilators, defibrillators, and advanced life-support monitoring systems. 
+                  <span className="block mt-4 text-[#002d5a] font-bold">Guaranteed arrival within 10-15 minutes across any city location.</span>
+                </p>
+
+                <div className="grid sm:grid-cols-2 gap-8 py-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-10 h-10 bg-white rounded-xl shadow-lg flex items-center justify-center text-[#e53e3e] flex-shrink-0">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-black text-[#002d5a] text-sm uppercase tracking-tight">24/7 Rapid Reach</h4>
+                      <p className="text-slate-500 text-xs mt-1 font-medium">Strategic dispatch units across the city.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-4">
+                    <div className="w-10 h-10 bg-white rounded-xl shadow-lg flex items-center justify-center text-[#e53e3e] flex-shrink-0">
+                      <ShieldCheck className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-black text-[#002d5a] text-sm uppercase tracking-tight">ICU Standard</h4>
+                      <p className="text-slate-500 text-xs mt-1 font-medium">Certified paramedics on every dispatch.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-6">
+                  <a 
+                    href="tel:1344"
+                    className="inline-flex items-center space-x-4 bg-[#e53e3e] text-white px-10 py-5 rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-2xl shadow-red-500/40 hover:bg-[#c53030] hover:scale-105 active:scale-95 transition-all group"
+                  >
+                    <PhoneCall className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                    <span>Emergency Hotline: 1344</span>
+                  </a>
                 </div>
               </div>
             </div>

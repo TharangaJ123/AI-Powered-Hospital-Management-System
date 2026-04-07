@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CircleAlert, LoaderCircle, ShieldCheck, X } from 'lucide-react'
+import { DOCTOR_SPECIALTIES } from '../constants/specialties'
 
 const EMPTY_LOGIN = {
   email: '',
@@ -17,6 +18,7 @@ const EMPTY_SIGNUP = {
   address: '',
   dateOfBirth: '',
   specialization: '',
+  doctorRegistrationNumber: '',
 }
 
 const ROLE_OPTIONS = ['PATIENT', 'DOCTOR', 'ADMIN']
@@ -83,6 +85,20 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
       if (dob > today) return 'Date of Birth cannot be in the future.'
     }
 
+    if (signupData.role === 'DOCTOR') {
+      if (!signupData.specialization) {
+        return 'Please select your specialization.'
+      }
+
+      if (!DOCTOR_SPECIALTIES.some((specialty) => specialty.id === signupData.specialization)) {
+        return 'Please select a valid specialization from the list.'
+      }
+
+      if (!signupData.doctorRegistrationNumber.trim()) {
+        return 'Please enter your medical registration number.'
+      }
+    }
+
     return ''
   }
 
@@ -133,6 +149,7 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
         address: signupData.address.trim(),
         dateOfBirth: signupData.dateOfBirth,
         specialization: signupData.role === 'DOCTOR' ? signupData.specialization.trim() : null,
+        doctorRegistrationNumber: signupData.role === 'DOCTOR' ? signupData.doctorRegistrationNumber.trim() : null,
       })
       setSignupData(EMPTY_SIGNUP)
     } catch (submitError) {
@@ -257,7 +274,12 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
                 <select
                   id="signup-role"
                   value={signupData.role}
-                  onChange={(event) => setSignupData((prev) => ({ ...prev, role: event.target.value }))}
+                  onChange={(event) => setSignupData((prev) => ({
+                    ...prev,
+                    role: event.target.value,
+                    specialization: event.target.value === 'DOCTOR' ? prev.specialization : '',
+                    doctorRegistrationNumber: event.target.value === 'DOCTOR' ? prev.doctorRegistrationNumber : '',
+                  }))}
                   className="auth-input"
                   required
                 >
@@ -361,18 +383,37 @@ const AuthModal = ({ mode, onClose, onLogin, onSignup }) => {
                 </>
               )}
               {signupData.role === 'DOCTOR' && (
-                <div>
-                  <label htmlFor="signup-specialization" className="auth-label">Specialization</label>
-                  <input
-                    id="signup-specialization"
-                    type="text"
-                    value={signupData.specialization}
-                    onChange={(event) => setSignupData((prev) => ({ ...prev, specialization: event.target.value }))}
-                    className="auth-input"
-                    placeholder="e.g. Cardiology, Pediatrics"
-                    required
-                  />
-                </div>
+                <>
+                  <div>
+                    <label htmlFor="signup-specialization" className="auth-label">Specialization</label>
+                    <select
+                      id="signup-specialization"
+                      value={signupData.specialization}
+                      onChange={(event) => setSignupData((prev) => ({ ...prev, specialization: event.target.value }))}
+                      className="auth-input"
+                      required
+                    >
+                      <option value="">Select your specialization</option>
+                      {DOCTOR_SPECIALTIES.map((specialty) => (
+                        <option key={specialty.id} value={specialty.id}>
+                          {specialty.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="signup-reg-no" className="auth-label">Medical Registration No.</label>
+                    <input
+                      id="signup-reg-no"
+                      type="text"
+                      value={signupData.doctorRegistrationNumber}
+                      onChange={(event) => setSignupData((prev) => ({ ...prev, doctorRegistrationNumber: event.target.value }))}
+                      className="auth-input"
+                      placeholder="Reg-XXXXX"
+                      required
+                    />
+                  </div>
+                </>
               )}
               <button type="submit" className="btn-secondary w-full justify-center" disabled={isLoading}>
                 {isLoading ? (

@@ -33,4 +33,12 @@ public class User {
 
     @Builder.Default
     private boolean isVerified = false;
+
+    @Column(unique = true)
+    private String doctorRegistrationNumber;
+
+    private String specialization;
+
+    private String firstName;
+    private String lastName;
 }

@@ -24,8 +24,10 @@ import {
   updateDoctorProfile
 } from './services/doctors'
 import Doctors from './pages/Doctors'
+import Services from './pages/Services'
 import DoctorDetail from './pages/DoctorDetail'
 import SymptomChecker from './pages/SymptomChecker'
+import VideoConsultation from './pages/VideoConsultation'
 
 function App() {
   const navigate = useNavigate()
@@ -216,7 +218,16 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutUs />} />
-        <Route path="/contact" element={<Contact />} />
+        <Route 
+          path="/contact" 
+          element={
+            <Contact 
+              user={session?.user} 
+              patientProfile={patientProfile} 
+            />
+          } 
+        />
+        <Route path="/services" element={<Services />} />
         <Route path="/admin" element={<AdminDashboard token={session?.token} />} />
         <Route
           path="/profile"
@@ -228,6 +239,7 @@ function App() {
               profileError={profileError}
               isSavingProfile={isSavingProfile}
               onSavePatientProfile={handlePatientProfileSave}
+              doctorProfile={doctorProfile}
               onSaveDoctorProfile={handleDoctorProfileSave}
               onLoginClick={() => handleOpenAuth('login')}
               onSignupClick={() => handleOpenAuth('signup')}
@@ -246,6 +258,10 @@ function App() {
               onLoginClick={() => handleOpenAuth('login')}
             />
           )}
+        />
+        <Route 
+          path="/telemedicine/:appointmentId" 
+          element={<VideoConsultation user={session?.user} token={session?.token} />} 
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

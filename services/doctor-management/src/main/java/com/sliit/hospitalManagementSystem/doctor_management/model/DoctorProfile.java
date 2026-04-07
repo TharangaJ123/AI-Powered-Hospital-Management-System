@@ -41,7 +41,7 @@ public class DoctorProfile {
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
-    @Column(name = "profile_photo_url")
+    @Column(name = "profile_photo_url", columnDefinition = "TEXT")
     private String profilePhotoUrl;
 
     @Column(name = "consultation_fee")

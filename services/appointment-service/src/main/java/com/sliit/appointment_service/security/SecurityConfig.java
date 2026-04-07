@@ -26,6 +26,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
                 auth.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/appointments").permitAll()
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/appointments/availability").permitAll()
                     .requestMatchers("/api/appointments/**").authenticated()
                     .anyRequest().permitAll()
             );
