@@ -18,6 +18,8 @@ public class AppointmentResponseDto {
     private Long doctorId;
     private String fullName;
     private String phoneNumber;
+    private String doctorSummary;
+    private String patientNotes;
     private LocalDateTime appointmentDate;
     private AppointmentStatus status;
 }

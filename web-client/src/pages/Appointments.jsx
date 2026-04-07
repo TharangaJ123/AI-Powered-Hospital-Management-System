@@ -125,6 +125,18 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    if (!user) {
+      alert('Please log in as a patient to book an appointment.')
+      onLoginClick?.()
+      return
+    }
+
+    const resolvedPatientId = patientProfile?.id ?? user?.id
+    if (!resolvedPatientId) {
+      alert('Unable to determine patient profile. Please complete your profile and try again.')
+      return
+    }
+
     if (availabilityError) {
       alert(availabilityError)
       return
@@ -161,12 +173,11 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
       const appointmentDate = new Date(`${formData.date}T${formData.timeSlot}:00`).toISOString()
       
       const payload = {
-        patientId: (user && patientProfile) ? patientProfile.id : (user ? user.id : null),
+        patientId: resolvedPatientId,
         doctorId: parseInt(formData.doctorId.replace('dr_', '')),
         appointmentDate: appointmentDate,
-        // Store name/phone only for guest bookings
-        fullName: user ? null : formData.fullName,
-        phoneNumber: user ? null : formData.phoneNumber,
+        fullName: null,
+        phoneNumber: null,
       }
 
       await createAppointment(payload)

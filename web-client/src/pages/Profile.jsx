@@ -5,7 +5,17 @@ import { motion, AnimatePresence } from 'framer-motion'
 import PatientProfileCard from '../components/PatientProfileCard'
 import DoctorProfileCard from '../components/DoctorProfileCard'
 import { getAllDoctors, requestDoctorLeave, getDoctorLeaves } from '../services/doctors'
-import { getAppointmentsByPatient, getAppointmentsByDoctor, updateAppointment, cancelAppointment, completeAppointment } from '../services/appointments'
+import {
+  getAppointmentsByPatient,
+  getAppointmentsByDoctor,
+  updateAppointment,
+  cancelAppointment,
+  completeAppointment,
+  getAppointmentHistoryByPatient,
+  getAppointmentHistoryByDoctor,
+  updateDoctorSummary,
+  updatePatientNotes,
+} from '../services/appointments'
 import { createTelemedicineSession, getTelemedicineSession } from '../services/telemedicine'
 import { getContactFormsByUser } from '../services/contact'
 
@@ -29,6 +39,10 @@ const Profile = ({
   const [rescheduleData, setRescheduleData] = useState({ id: null, date: '' })
   const [isUpdating, setIsUpdating] = useState(false)
   const [activeTab, setActiveTab] = useState('profile')
+  const [appointmentHistory, setAppointmentHistory] = useState([])
+  const [historyDrafts, setHistoryDrafts] = useState({})
+  const [isSavingHistory, setIsSavingHistory] = useState(false)
+  const [historySaveMessage, setHistorySaveMessage] = useState(null)
   const [contactForms, setContactForms] = useState([])
   const [isLoadingContacts, setIsLoadingContacts] = useState(false)
   const [leaves, setLeaves] = useState([])
@@ -95,28 +109,103 @@ const Profile = ({
     if (user.role === 'DOCTOR' && !doctorProfile?.id) return
 
     setIsLoadingAppointments(true)
+    setIsLoadingContacts(true)
     try {
       if (user.role === 'PATIENT' && patientProfile?.id) {
-        const [appsData, docsData, contactsData] = await Promise.all([
+        const [appsResult, docsResult, contactsResult, historyResult] = await Promise.allSettled([
           getAppointmentsByPatient(patientProfile.id, token),
           getAllDoctors(),
-          getContactFormsByUser(patientProfile.id, token)
+          getContactFormsByUser(patientProfile.id, token),
+          getAppointmentHistoryByPatient(patientProfile.id, token)
         ])
-        setAppointments(appsData)
-        setDoctors(docsData)
-        setContactForms(contactsData)
+
+        if (appsResult.status === 'fulfilled') {
+          setAppointments(appsResult.value)
+        } else {
+          throw appsResult.reason
+        }
+
+        if (docsResult.status === 'fulfilled') {
+          setDoctors(docsResult.value)
+        } else {
+          throw docsResult.reason
+        }
+
+        if (contactsResult.status === 'fulfilled') {
+          setContactForms(contactsResult.value)
+        } else {
+          setContactForms([])
+          setAppointmentError(contactsResult.reason?.message || 'Contact forms are temporarily unavailable.')
+        }
+
+        if (historyResult.status === 'fulfilled') {
+          setAppointmentHistory(historyResult.value)
+        } else {
+          setAppointmentHistory([])
+        }
       } else if (user.role === 'DOCTOR' && doctorProfile?.id) {
-        const [appsData, leavesData] = await Promise.all([
+        const [appsData, leavesData, historyData] = await Promise.all([
           getAppointmentsByDoctor(doctorProfile.id, token),
-          getDoctorLeaves(doctorProfile.id, token)
+          getDoctorLeaves(doctorProfile.id, token),
+          getAppointmentHistoryByDoctor(doctorProfile.id, token)
         ])
         setAppointments(appsData)
         setLeaves(leavesData)
+        setAppointmentHistory(historyData)
       }
     } catch (err) {
       setAppointmentError(err.message || 'Failed to load dashboard data')
     } finally {
       setIsLoadingAppointments(false)
+      setIsLoadingContacts(false)
+    }
+  }
+
+  const getHistoryDraft = (appointmentId, field, currentValue = '') => {
+    const key = `${appointmentId}:${field}`
+    if (Object.prototype.hasOwnProperty.call(historyDrafts, key)) {
+      return historyDrafts[key]
+    }
+    return currentValue || ''
+  }
+
+  const handleHistoryDraftChange = (appointmentId, field, value) => {
+    const key = `${appointmentId}:${field}`
+    setHistoryDrafts(prev => ({
+      ...prev,
+      [key]: value,
+    }))
+  }
+
+  const handleSavePatientNotes = async (appointmentId, text) => {
+    if (!token) return
+    setIsSavingHistory(true)
+    setHistorySaveMessage(null)
+    try {
+      const updated = await updatePatientNotes(appointmentId, text, token)
+      setAppointmentHistory(prev => prev.map(app => (app.id === updated.id ? updated : app)))
+      setHistorySaveMessage({ type: 'success', text: 'Patient notes saved successfully.' })
+    } catch (err) {
+      setAppointmentError(err.message || 'Failed to update patient notes.')
+      setHistorySaveMessage({ type: 'error', text: err.message || 'Failed to update patient notes.' })
+    } finally {
+      setIsSavingHistory(false)
+    }
+  }
+
+  const handleSaveDoctorSummary = async (appointmentId, text) => {
+    if (!token) return
+    setIsSavingHistory(true)
+    setHistorySaveMessage(null)
+    try {
+      const updated = await updateDoctorSummary(appointmentId, text, token)
+      setAppointmentHistory(prev => prev.map(app => (app.id === updated.id ? updated : app)))
+      setHistorySaveMessage({ type: 'success', text: 'Doctor summary saved successfully.' })
+    } catch (err) {
+      setAppointmentError(err.message || 'Failed to update doctor summary.')
+      setHistorySaveMessage({ type: 'error', text: err.message || 'Failed to update doctor summary.' })
+    } finally {
+      setIsSavingHistory(false)
     }
   }
   const handleAction = async (actionFn, appointmentId) => {
@@ -300,6 +389,14 @@ const Profile = ({
                 Appointments
               </button>
               <button
+                onClick={() => setActiveTab('history')}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                  activeTab === 'history' ? 'bg-white text-[#0066cc] shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                History
+              </button>
+              <button
                 onClick={() => setActiveTab('support')}
                 className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
                   activeTab === 'support' ? 'bg-white text-[#0066cc] shadow-sm' : 'text-slate-500 hover:text-slate-800'
@@ -437,6 +534,73 @@ const Profile = ({
                   ))}
                 </div>
               )}
+                </div>
+              )}
+
+              {activeTab === 'history' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6">
+                  <div>
+                    <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                      <Clock className="w-6 h-6 text-[#0066cc]" />
+                      Appointment History
+                    </h2>
+                    <p className="text-sm text-slate-500 mt-1">Past appointments with doctor summaries and your personal notes.</p>
+                  </div>
+
+                  {historySaveMessage && (
+                    <div className={`p-3 rounded-xl text-sm font-medium border ${historySaveMessage.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                      {historySaveMessage.text}
+                    </div>
+                  )}
+
+                  {(appointmentHistory || []).length === 0 ? (
+                    <div className="text-center py-12 rounded-xl border border-dashed border-slate-200">
+                      <Clock className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                      <p className="text-slate-500 text-sm">No past appointments available yet.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {appointmentHistory.map((app) => (
+                        <div key={app.id} className="rounded-2xl border border-slate-200 p-5 bg-slate-50/40">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-bold text-slate-900">{getDoctorName(app.doctorId)}</h4>
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(app.status)}`}>
+                              {app.status}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-slate-500 mb-4">
+                            {new Date(app.appointmentDate).toLocaleString()}
+                          </p>
+
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div className="rounded-xl border border-slate-200 bg-white p-4">
+                              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 mb-2">Doctor Summary</p>
+                              <p className="text-sm text-slate-700 whitespace-pre-wrap">{app.doctorSummary || 'No summary added yet.'}</p>
+                            </div>
+
+                            <div className="rounded-xl border border-slate-200 bg-white p-4">
+                              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 mb-2">My Notes</p>
+                              <textarea
+                                value={getHistoryDraft(app.id, 'patientNotes', app.patientNotes)}
+                                onChange={(e) => handleHistoryDraftChange(app.id, 'patientNotes', e.target.value)}
+                                rows={3}
+                                className="w-full rounded-lg border border-slate-200 p-2 text-sm outline-none focus:ring-1 focus:ring-[#0066cc]"
+                                placeholder="Add your notes about this visit..."
+                              />
+                              <button
+                                onClick={() => handleSavePatientNotes(app.id, getHistoryDraft(app.id, 'patientNotes', app.patientNotes))}
+                                disabled={isSavingHistory}
+                                className="mt-2 px-3 py-1.5 rounded-lg bg-[#0066cc] text-white text-xs font-bold hover:bg-[#004d99] disabled:opacity-50"
+                              >
+                                {isSavingHistory ? 'Saving...' : 'Save Notes'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -640,6 +804,17 @@ const Profile = ({
               <span>Patient Consultations</span>
             </button>
             <button
+              onClick={() => setActiveTab('history')}
+              className={`flex items-center space-x-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${
+                activeTab === 'history' 
+                ? 'bg-[#002d5a] text-white shadow-xl scale-105' 
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+              }`}
+            >
+              <Calendar className={`w-4 h-4 ${activeTab === 'history' ? 'text-blue-300' : 'text-slate-400'}`} />
+              <span>History</span>
+            </button>
+            <button
               onClick={() => setActiveTab('leaves')}
               className={`flex items-center space-x-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${
                 activeTab === 'leaves' 
@@ -788,6 +963,74 @@ const Profile = ({
                 </div>
               </>
             )}
+          </motion.div>
+        ) : activeTab === 'history' ? (
+          <motion.div
+            key="history"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="pb-20"
+          >
+            <div className="rounded-[2.5rem] border border-slate-200 bg-white shadow-sm p-8 md:p-12 overflow-hidden space-y-6">
+              <div>
+                <h2 className="text-3xl font-black text-[#002d5a] flex items-center gap-4">
+                  <Clock className="w-10 h-10 text-[#0066cc]" />
+                  Consultation History
+                </h2>
+                <p className="text-slate-500 mt-2 font-medium text-lg">Review past appointments and save post-visit summaries.</p>
+              </div>
+
+              {historySaveMessage && (
+                <div className={`p-4 rounded-2xl text-sm font-medium border ${historySaveMessage.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                  {historySaveMessage.text}
+                </div>
+              )}
+
+              {(appointmentHistory || []).length === 0 ? (
+                <div className="text-center py-20 rounded-[3.5rem] border-2 border-dashed border-slate-100 bg-slate-50/50">
+                  <Clock className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                  <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No past consultations found</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {appointmentHistory.map((app) => (
+                    <div key={app.id} className="rounded-3xl border border-slate-100 p-6 bg-white shadow-sm">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-extrabold text-[#002d5a]">Patient ID: {app.patientId}</p>
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getStatusColor(app.status)}`}>
+                          {app.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mb-4">{new Date(app.appointmentDate).toLocaleString()}</p>
+
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Doctor Summary</label>
+                      <textarea
+                        rows={4}
+                        value={getHistoryDraft(app.id, 'doctorSummary', app.doctorSummary)}
+                        onChange={(e) => handleHistoryDraftChange(app.id, 'doctorSummary', e.target.value)}
+                        className="mt-2 w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+                        placeholder="Add diagnosis notes, treatment plan, and follow-up recommendations..."
+                      />
+
+                      <label className="block mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Patient Notes</label>
+                      <p className="mt-1 text-sm text-slate-600 whitespace-pre-wrap min-h-[40px]">
+                        {app.patientNotes || 'No patient notes added.'}
+                      </p>
+
+                      <button
+                        onClick={() => handleSaveDoctorSummary(app.id, getHistoryDraft(app.id, 'doctorSummary', app.doctorSummary))}
+                        disabled={isSavingHistory}
+                        className="mt-4 px-4 py-2 rounded-xl bg-[#002d5a] text-white text-xs font-black uppercase tracking-widest hover:bg-[#003d7a] disabled:opacity-50"
+                      >
+                        {isSavingHistory ? 'Saving...' : 'Save Summary'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </motion.div>
         ) : (
               <motion.div

@@ -26,7 +26,11 @@ export const getContactFormsByUser = async (patientId, token) => {
       'Authorization': `Bearer ${token}`
     }
   })
-  if (!response.ok) throw new Error('Failed to fetch user contact forms')
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    const message = errorBody?.message || `Failed to fetch user contact forms (HTTP ${response.status})`
+    throw new Error(message)
+  }
   return response.json()
 }
 

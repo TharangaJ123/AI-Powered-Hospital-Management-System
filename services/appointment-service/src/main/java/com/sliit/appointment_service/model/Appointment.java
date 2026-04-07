@@ -32,6 +32,12 @@ public class Appointment {
     @Column(name = "phone_number", nullable = true, length = 20)
     private String phoneNumber;
 
+    @Column(name = "doctor_summary", columnDefinition = "TEXT")
+    private String doctorSummary;
+
+    @Column(name = "patient_notes", columnDefinition = "TEXT")
+    private String patientNotes;
+
 
     @Column(name = "appointment_date", nullable = false)
     private LocalDateTime appointmentDate;

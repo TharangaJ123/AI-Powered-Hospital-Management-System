@@ -44,6 +44,22 @@ export const getAppointmentsByPatient = async (patientId, token) => {
   }
 }
 
+export const getAppointmentHistoryByPatient = async (patientId, token) => {
+  const response = await fetch(`${API_BASE}/appointments/patient/${patientId}/history`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || 'Failed to fetch appointment history')
+  }
+
+  return response.json()
+}
+
 export const getAllAppointments = async (token) => {
   try {
     const response = await fetch(`${API_BASE}/appointments`, {
@@ -114,6 +130,58 @@ export const getAppointmentsByDoctor = async (doctorId, token) => {
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}))
     throw new Error(errorBody.message || 'Failed to fetch doctor appointments.')
+  }
+
+  return response.json()
+}
+
+export const getAppointmentHistoryByDoctor = async (doctorId, token) => {
+  const response = await fetch(`${API_BASE}/appointments/doctor/${doctorId}/history`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    throw new Error(errorBody.message || 'Failed to fetch doctor appointment history.')
+  }
+
+  return response.json()
+}
+
+export const updateDoctorSummary = async (id, text, token) => {
+  const response = await fetch(`${API_BASE}/appointments/${id}/doctor-summary`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ text }),
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    throw new Error(errorBody.message || 'Failed to update doctor summary.')
+  }
+
+  return response.json()
+}
+
+export const updatePatientNotes = async (id, text, token) => {
+  const response = await fetch(`${API_BASE}/appointments/${id}/patient-notes`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ text }),
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    throw new Error(errorBody.message || 'Failed to update patient notes.')
   }
 
   return response.json()

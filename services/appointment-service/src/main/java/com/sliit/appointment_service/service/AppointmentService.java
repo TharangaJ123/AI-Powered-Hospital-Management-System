@@ -13,7 +13,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +33,10 @@ public class AppointmentService {
     /** Create and save a new appointment with BOOKED status */
     @Transactional
     public AppointmentResponseDto bookAppointment(AppointmentRequestDto request) {
+        if (request.getPatientId() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "patientId is required to book an appointment.");
+        }
+
         Long resolvedDoctorId = resolveDoctorId(request.getDoctorId());
 
         validateDoctorAvailabilityForDate(resolvedDoctorId, request.getAppointmentDate());
@@ -129,11 +135,41 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
 
+    public List<AppointmentResponseDto> getAppointmentHistoryByPatient(Long patientId) {
+        return appointmentRepository
+                .findByPatientIdAndAppointmentDateBeforeOrderByAppointmentDateDesc(patientId, LocalDateTime.now())
+                .stream()
+                .map(this::mapToResponseDto)
+                .collect(Collectors.toList());
+    }
+
     /** Fetch all appointments scheduled for a specific doctor */
     public List<AppointmentResponseDto> getAppointmentsByDoctor(Long doctorId) {
         return appointmentRepository.findByDoctorId(doctorId).stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    public List<AppointmentResponseDto> getAppointmentHistoryByDoctor(Long doctorId) {
+        return appointmentRepository
+                .findByDoctorIdAndAppointmentDateBeforeOrderByAppointmentDateDesc(doctorId, LocalDateTime.now())
+                .stream()
+                .map(this::mapToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public AppointmentResponseDto updateDoctorSummary(Long id, String summary) {
+        Appointment appointment = getPastAppointmentOrThrow(id);
+        appointment.setDoctorSummary(summary);
+        return mapToResponseDto(appointmentRepository.save(appointment));
+    }
+
+    @Transactional
+    public AppointmentResponseDto updatePatientNotes(Long id, String notes) {
+        Appointment appointment = getPastAppointmentOrThrow(id);
+        appointment.setPatientNotes(notes);
+        return mapToResponseDto(appointmentRepository.save(appointment));
     }
 
     public AvailabilityCheckResponseDto checkDoctorAvailability(Long doctorId, LocalDate date) {
@@ -163,9 +199,22 @@ public class AppointmentService {
                 .doctorId(appointment.getDoctorId())
             .fullName(appointment.getFullName())
             .phoneNumber(appointment.getPhoneNumber())
+                .doctorSummary(appointment.getDoctorSummary())
+                .patientNotes(appointment.getPatientNotes())
                 .appointmentDate(appointment.getAppointmentDate())
                 .status(appointment.getStatus())
                 .build();
+    }
+
+    private Appointment getPastAppointmentOrThrow(Long id) {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Appointment not found with id: " + id));
+
+        if (appointment.getAppointmentDate() == null || !appointment.getAppointmentDate().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(BAD_REQUEST, "Summary/notes can be updated only for past appointments.");
+        }
+
+        return appointment;
     }
 
     private Long resolveDoctorId(Long doctorId) {

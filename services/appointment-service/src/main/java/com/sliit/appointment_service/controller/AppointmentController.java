@@ -2,6 +2,7 @@ package com.sliit.appointment_service.controller;
 
 import com.sliit.appointment_service.dto.AppointmentRequestDto;
 import com.sliit.appointment_service.dto.AppointmentResponseDto;
+import com.sliit.appointment_service.dto.AppointmentTextUpdateDto;
 import com.sliit.appointment_service.dto.AvailabilityCheckResponseDto;
 import com.sliit.appointment_service.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
@@ -85,11 +86,35 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getAppointmentsByPatient(patientId));
     }
 
+    @GetMapping("/patient/{patientId}/history")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<List<AppointmentResponseDto>> getAppointmentHistoryByPatient(@PathVariable Long patientId) {
+        return ResponseEntity.ok(appointmentService.getAppointmentHistoryByPatient(patientId));
+    }
+
     // Retrieve all appointments scheduled for a specific doctor
     @GetMapping("/doctor/{doctorId}")
     @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<List<AppointmentResponseDto>> getAppointmentsByDoctor(@PathVariable Long doctorId) {
         return ResponseEntity.ok(appointmentService.getAppointmentsByDoctor(doctorId));
+    }
+
+    @GetMapping("/doctor/{doctorId}/history")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<List<AppointmentResponseDto>> getAppointmentHistoryByDoctor(@PathVariable Long doctorId) {
+        return ResponseEntity.ok(appointmentService.getAppointmentHistoryByDoctor(doctorId));
+    }
+
+    @PutMapping("/{id}/doctor-summary")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<AppointmentResponseDto> updateDoctorSummary(@PathVariable Long id, @RequestBody AppointmentTextUpdateDto request) {
+        return ResponseEntity.ok(appointmentService.updateDoctorSummary(id, request.getText()));
+    }
+
+    @PutMapping("/{id}/patient-notes")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
+    public ResponseEntity<AppointmentResponseDto> updatePatientNotes(@PathVariable Long id, @RequestBody AppointmentTextUpdateDto request) {
+        return ResponseEntity.ok(appointmentService.updatePatientNotes(id, request.getText()));
     }
 
 
