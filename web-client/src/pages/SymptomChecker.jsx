@@ -17,20 +17,23 @@ import { checkSymptoms } from '../services/aiService'
 
 const SymptomChecker = () => {
   const [symptoms, setSymptoms] = useState('')
+  const [age, setAge] = useState('')
+  const [gender, setGender] = useState('Male')
+  const [medicalHistory, setMedicalHistory] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!symptoms.trim()) return
+    if (!symptoms.trim() || !age) return
 
     setLoading(true)
     setError(null)
     setResult(null)
 
     try {
-      const data = await checkSymptoms(symptoms)
+      const data = await checkSymptoms({ symptoms, age: parseInt(age), gender, medicalHistory })
       setResult(data)
     } catch (err) {
       setError(err.message)
@@ -81,6 +84,52 @@ const SymptomChecker = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 space-y-6">
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-[#0066cc]" />
+                    Age
+                  </label>
+                  <input 
+                    type="number"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    className="w-full bg-slate-50 rounded-xl px-4 py-3 border border-slate-100 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 outline-none transition-all font-bold text-slate-700"
+                    placeholder="25"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#0066cc]" />
+                    Gender
+                  </label>
+                  <select 
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    className="w-full bg-slate-50 rounded-xl px-4 py-3 border border-slate-100 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 outline-none transition-all font-bold text-slate-700"
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <Stethoscope className="w-4 h-4 text-[#0066cc]" />
+                  Medical History
+                </label>
+                <textarea 
+                  value={medicalHistory}
+                  onChange={(e) => setMedicalHistory(e.target.value)}
+                  className="w-full h-24 bg-slate-50 rounded-2xl p-4 border border-slate-100 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 outline-none transition-all font-medium leading-relaxed text-slate-700"
+                  placeholder="Mention current diseases (e.g. Hypertension, Diabetes) or hidden conditions..."
+                />
+              </div>
+
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <Brain className="w-4 h-4 text-[#0066cc]" />
@@ -89,7 +138,7 @@ const SymptomChecker = () => {
                 <textarea 
                   value={symptoms}
                   onChange={(e) => setSymptoms(e.target.value)}
-                  className="w-full h-40 bg-slate-50 rounded-2xl p-6 border border-slate-100 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 outline-none transition-all font-medium leading-relaxed text-slate-700"
+                  className="w-full h-32 bg-slate-50 rounded-2xl p-6 border border-slate-100 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 outline-none transition-all font-medium leading-relaxed text-slate-700"
                   placeholder="e.g. I have a persistent headache for 3 days and some dizziness..."
                   required
                 />
@@ -97,7 +146,7 @@ const SymptomChecker = () => {
 
               <button 
                 type="submit"
-                disabled={loading || !symptoms.trim()}
+                disabled={loading || !symptoms.trim() || !age}
                 className="w-full flex items-center justify-center space-x-3 bg-[#002d5a] text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/20 active:scale-95 transition-all disabled:opacity-50"
               >
                 {loading ? (
@@ -219,10 +268,15 @@ const SymptomChecker = () => {
 
                   {/* Diagnosis */}
                   <div className="space-y-3">
-                    <h3 className="text-lg font-black text-[#002d5a] uppercase tracking-widest flex items-center gap-2">
-                      <Brain className="w-4 h-4 text-[#0066cc]" />
-                      Preliminary Assessment
-                    </h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <h3 className="text-lg font-black text-[#002d5a] uppercase tracking-widest flex items-center gap-2">
+                        <Brain className="w-4 h-4 text-[#0066cc]" />
+                        Preliminary Assessment
+                      </h3>
+                      <span className="inline-block px-3 py-1 bg-slate-100 border border-slate-200 rounded-full text-[9px] font-black text-slate-500 uppercase tracking-tighter">
+                        Clinical: {result.clinicalCondition}
+                      </span>
+                    </div>
                     <p className="text-slate-600 text-lg leading-relaxed font-bold italic">
                       "{result.diagnosis}"
                     </p>
@@ -231,10 +285,15 @@ const SymptomChecker = () => {
                   {/* Recommendations */}
                   <div className="space-y-4">
                      <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Recommended Actions</h3>
-                     <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100">
-                        <p className="text-slate-600 text-sm font-medium leading-relaxed">
-                          {result.recommendations}
-                        </p>
+                     <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100 space-y-3">
+                        {result.recommendations.map((rec, i) => (
+                          <div key={i} className="flex gap-3">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#0066cc] mt-1.5 flex-shrink-0" />
+                            <p className="text-slate-600 text-sm font-medium leading-relaxed">
+                              {rec}
+                            </p>
+                          </div>
+                        ))}
                      </div>
                   </div>
 

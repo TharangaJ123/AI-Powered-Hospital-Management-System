@@ -5,5 +5,7 @@ import lombok.Data;
 @Data
 public class SymptomCheckRequest {
     private String symptoms;
-    private String additionalInfo; // age, gender, duration
+    private int age;
+    private String gender;
+    private String medicalHistory; // any hidden or current diseases
 }
