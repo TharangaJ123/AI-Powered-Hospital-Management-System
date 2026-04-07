@@ -1,13 +1,13 @@
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
-export const checkSymptoms = async (symptoms, additionalInfo = '') => {
+export const checkSymptoms = async (requestData) => {
   try {
     const response = await fetch(`${API_BASE}/ai/check-symptoms`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ symptoms, additionalInfo }),
+      body: JSON.stringify(requestData),
     })
 
     if (!response.ok) {

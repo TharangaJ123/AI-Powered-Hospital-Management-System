@@ -42,3 +42,9 @@ web-client/.env.local
 
 # Temporary files
 eureka_apps.json
+
+# Sensitive files
+.env
+.env.*
+application-secrets.properties
+**/resources/application-secrets.properties

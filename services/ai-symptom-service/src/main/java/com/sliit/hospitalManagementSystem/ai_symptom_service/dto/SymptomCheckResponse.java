@@ -13,7 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 public class SymptomCheckResponse {
     private String diagnosis;
-    private String recommendations;
+    private String clinicalCondition;
+    private List<String> recommendations;
     private List<String> recommendedSpecialties;
     private String urgencyLevel; // e.g., LOW, MEDIUM, HIGH, EMERGENCY
 }
