@@ -29,7 +29,7 @@ public class DoctorLeaveController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<DoctorLeave> updateLeaveStatus(@PathVariable("id") Long id, @RequestParam LeaveStatus status) {
+    public ResponseEntity<DoctorLeave> updateLeaveStatus(@PathVariable("id") @org.springframework.lang.NonNull Long id, @RequestParam LeaveStatus status) {
         return doctorLeaveRepository.findById(id)
                 .map(leave -> {
                     leave.setStatus(status);

@@ -27,6 +27,7 @@ import Doctors from './pages/Doctors'
 import Services from './pages/Services'
 import DoctorDetail from './pages/DoctorDetail'
 import SymptomChecker from './pages/SymptomChecker'
+import VideoConsultation from './pages/VideoConsultation'
 
 function App() {
   const navigate = useNavigate()
@@ -257,6 +258,10 @@ function App() {
               onLoginClick={() => handleOpenAuth('login')}
             />
           )}
+        />
+        <Route 
+          path="/telemedicine/:appointmentId" 
+          element={<VideoConsultation user={session?.user} token={session?.token} />} 
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

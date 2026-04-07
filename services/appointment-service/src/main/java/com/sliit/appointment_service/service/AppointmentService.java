@@ -226,6 +226,7 @@ public class AppointmentService {
             return startDate;
         }
 
+        @SuppressWarnings("unused")
         public void setStartDate(LocalDate startDate) {
             this.startDate = startDate;
         }
@@ -234,6 +235,7 @@ public class AppointmentService {
             return endDate;
         }
 
+        @SuppressWarnings("unused")
         public void setEndDate(LocalDate endDate) {
             this.endDate = endDate;
         }
@@ -242,6 +244,7 @@ public class AppointmentService {
             return status;
         }
 
+        @SuppressWarnings("unused")
         public void setStatus(String status) {
             this.status = status;
         }

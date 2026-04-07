@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Stethoscope, MessageSquare } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Stethoscope, Video, MessageSquare } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PatientProfileCard from '../components/PatientProfileCard'
 import DoctorProfileCard from '../components/DoctorProfileCard'
 import { getAllDoctors, requestDoctorLeave, getDoctorLeaves } from '../services/doctors'
 import { getAppointmentsByPatient, getAppointmentsByDoctor, updateAppointment, cancelAppointment, completeAppointment } from '../services/appointments'
+import { createTelemedicineSession, getTelemedicineSession } from '../services/telemedicine'
 import { getContactFormsByUser } from '../services/contact'
 
 const Profile = ({
@@ -19,6 +21,7 @@ const Profile = ({
   doctorProfile,
   onSaveDoctorProfile,
 }) => {
+  const navigate = useNavigate()
   const [appointments, setAppointments] = useState([])
   const [doctors, setDoctors] = useState([])
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(false)
@@ -166,6 +169,19 @@ const Profile = ({
     } finally {
       setIsRequestingLeave(false)
     }
+  }
+
+  const handleStartTelemedicine = async (appointmentId) => {
+    try {
+      await createTelemedicineSession(appointmentId, token)
+      navigate(`/telemedicine/${appointmentId}`)
+    } catch (err) {
+      setAppointmentError(err.message)
+    }
+  }
+
+  const handleJoinTelemedicine = (appointmentId) => {
+    navigate(`/telemedicine/${appointmentId}`)
   }
 
   const getDoctorName = (doctorId) => {
@@ -403,6 +419,15 @@ const Profile = ({
                               >
                                 <Calendar className="w-3.5 h-3.5" />
                                 Reschedule
+                              </button>
+                            )}
+                            {['BOOKED', 'SCHEDULED', 'ACCEPTED'].includes(app?.status?.toUpperCase()) && (
+                              <button
+                                onClick={() => handleJoinTelemedicine(app.id)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-xs font-bold hover:bg-green-600 hover:text-white transition-all shadow-sm shadow-green-200/50"
+                              >
+                                <Video className="w-3.5 h-3.5" />
+                                Join Video
                               </button>
                             )}
                           </div>
@@ -846,6 +871,15 @@ const Profile = ({
                                  className="flex-1 py-4 bg-[#00a69c] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#008d84] transition-all shadow-xl shadow-cyan-500/20 active:scale-95"
                                >
                                  Complete Visit
+                               </button>
+                             )}
+                             {['BOOKED', 'ACCEPTED', 'PENDING'].includes(app.status?.toUpperCase()) && (
+                               <button 
+                                 onClick={() => handleStartTelemedicine(app.id)}
+                                 className="flex-1 py-4 bg-[#002d5a] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#003d7a] transition-all shadow-xl shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2"
+                               >
+                                 <Video className="w-4 h-4 text-blue-300" />
+                                 Start Session
                                </button>
                              )}
                              {['PENDING', 'SCHEDULED'].includes(app.status?.toUpperCase()) && (

@@ -128,7 +128,7 @@ public class AdminService {
             Map<String, Object> existingProfile = webClient.get()
                     .uri("/api/doctors/profiles/user/{userId}", user.getId())
                     .retrieve()
-                    .bodyToMono(Map.class)
+                    .bodyToMono(new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {})
                     .block();
 
             if (existingProfile != null && existingProfile.get("id") != null) {

@@ -32,7 +32,8 @@ public class TelemedicineService {
 
     public TelemedicineSessionResponse getJoinSessionDetails(@NonNull Long appointmentId) {
         TelemedicineSession session = sessionRepository.findByAppointmentId(appointmentId)
-                .orElseThrow(() -> new RuntimeException("Session not found for appointment " + appointmentId));
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Session not found for appointment " + appointmentId));
 
         return TelemedicineSessionResponse.builder()
                 .roomName(session.getRoomName())
