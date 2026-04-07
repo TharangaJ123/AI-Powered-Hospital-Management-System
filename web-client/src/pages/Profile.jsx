@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Stethoscope, Video } from 'lucide-react'
-import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Stethoscope, MessageSquare } from 'lucide-react'
+import { Calendar, Clock, User as UserIcon, BadgeCheck, Loader2, ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Stethoscope, Video, MessageSquare } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PatientProfileCard from '../components/PatientProfileCard'
 import DoctorProfileCard from '../components/DoctorProfileCard'
