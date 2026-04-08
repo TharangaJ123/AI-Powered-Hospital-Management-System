@@ -5,14 +5,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "users")
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "user_type")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class User {
+@SuperBuilder
+public abstract class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,11 +36,6 @@ public class User {
 
     @Builder.Default
     private boolean isVerified = false;
-
-    @Column(unique = true)
-    private String doctorRegistrationNumber;
-
-    private String specialization;
 
     private String firstName;
     private String lastName;
