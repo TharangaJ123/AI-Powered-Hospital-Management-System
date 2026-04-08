@@ -22,7 +22,7 @@ public class MedicalDocument {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
-    private PatientProfile patient;
+    private Patient patient;
 
     private String documentName;
     private String documentUrl;
