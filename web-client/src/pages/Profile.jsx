@@ -843,7 +843,7 @@ const Profile = ({
                           <div className="space-y-6 flex-grow">
                             <div>
                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Scheduled Patient</p>
-                              <h4 className="text-2xl font-black text-[#002d5a] tracking-tight">{app.patientName}</h4>
+                              <h4 className="text-2xl font-black text-[#002d5a] tracking-tight">{app.fullName || app.patientName}</h4>
                             </div>
 
                             <div className="grid grid-cols-2 gap-6 pt-6 border-t border-slate-50">
