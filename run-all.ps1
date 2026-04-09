@@ -50,7 +50,7 @@ Start-Process powershell -ArgumentList '-Command cd services/ai-symptom-service;
 >>>>>>> 3ec894ba2531e1c2ab82a4bc6db87029564598f0
 
 Write-Host 'Starting Contact Service...' -ForegroundColor Cyan
-Start-Process powershell -ArgumentList '-Command cd services/contact-service; mvn spring-boot:run -Dspring-boot.run.jvmArguments=\"-Xmx256m -Xms256m\"' -NoNewWindow
+Start-Process powershell -ArgumentList '-Command cd services/contact-service; .\mvnw spring-boot:run -Dspring-boot.run.jvmArguments=\"-Xmx256m -Xms256m\"' -NoNewWindow
 
 Write-Host 'Starting Web Client...' -ForegroundColor Cyan
 Start-Process powershell -ArgumentList '-Command cd web-client; npm run dev -- --host' -NoNewWindow

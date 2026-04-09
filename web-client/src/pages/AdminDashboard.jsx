@@ -92,16 +92,16 @@ const AdminDashboard = ({ token }) => {
     setError(null)
     try {
       const [allApps, allDocs, allUsers, allLeaves, ops, allContacts] = await Promise.all([
-        getAllAppointments(token),
-        getAllDoctors(),
-        getAllUsers(token),
-        getAllDoctorLeaves(token),
+        getAllAppointments(token).catch(() => []),
+        getAllDoctors().catch(() => []),
+        getAllUsers(token).catch(() => []),
+        getAllDoctorLeaves(token).catch(() => []),
         getPlatformOperations(token).catch(() => null),
-        getAllContactForms(token)
+        getAllContactForms(token).catch(() => [])
       ])
 
-      const patientUsers = allUsers.filter(u => u.role === 'PATIENT')
-      const pendingDocs = allUsers.filter(u => u.role === 'DOCTOR' && !u.active)
+      const patientUsers = (allUsers || []).filter(u => u.role === 'PATIENT')
+      const pendingDocs = (allUsers || []).filter(u => u.role === 'DOCTOR' && !u.active)
       
       setDashboardStats({
         appointments: allApps,

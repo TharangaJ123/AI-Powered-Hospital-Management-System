@@ -28,6 +28,7 @@ import Services from './pages/Services'
 import DoctorDetail from './pages/DoctorDetail'
 import SymptomChecker from './pages/SymptomChecker'
 import VideoConsultation from './pages/VideoConsultation'
+import AdminLogin from './pages/AdminLogin'
 
 function App() {
   const navigate = useNavigate()
@@ -228,7 +229,17 @@ function App() {
           } 
         />
         <Route path="/services" element={<Services />} />
-        <Route path="/admin" element={<AdminDashboard token={session?.token} />} />
+        <Route path="/admin-login" element={<AdminLogin setSession={setSession} />} />
+        <Route 
+          path="/admin" 
+          element={
+            session?.user?.role === 'ADMIN' ? (
+              <AdminDashboard token={session?.token} />
+            ) : (
+              <Navigate to="/admin-login" replace />
+            )
+          } 
+        />
         <Route
           path="/profile"
           element={(

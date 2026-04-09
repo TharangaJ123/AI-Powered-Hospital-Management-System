@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_GATEWAY_URL = 'http://localhost:8099/api/telemedicine/sessions';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const API_GATEWAY_URL = `${API_BASE}/telemedicine/sessions`;
 
 const getAuthHeader = (token) => ({
   headers: {

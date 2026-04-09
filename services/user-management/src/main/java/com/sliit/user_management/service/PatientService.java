@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 public class PatientService {
 
     private final UserRepository userRepository;
-    private final PatientProfileRepository patientProfileRepository;
     private final MedicalDocumentRepository medicalDocumentRepository;
     private final MedicalHistoryRepository medicalHistoryRepository;
     private final PrescriptionRepository prescriptionRepository;
@@ -44,65 +43,59 @@ public class PatientService {
             throw new RuntimeException("Email already taken");
         }
         
-        User user = User.builder()
+        Patient patient = Patient.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.PATIENT)
                 .active(true)
-                .build();
-        user = userRepository.save(user);
-
-        PatientProfile profile = PatientProfile.builder()
-                .user(user)
+                .isVerified(true) // Patients are auto-verified in this simplified flow
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())
                 .dateOfBirth(request.getDateOfBirth())
                 .build();
-        patientProfileRepository.save(profile);
+                
+        patient = userRepository.save(patient);
 
         return UserResponseDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .active(user.isActive())
+                .id(patient.getId())
+                .email(patient.getEmail())
+                .role(patient.getRole())
+                .active(patient.isActive())
+                .firstName(patient.getFirstName())
+                .lastName(patient.getLastName())
                 .build();
     }
 
-    /**
-     * Retrieves the profile details of a patient using their associated user ID.
-     * 
-     * @param userId the ID of the user linked to the patient profile
-     * @return the retrieved PatientProfileDto
-     * @throws RuntimeException if the profile cannot be found
-     */
     public PatientProfileDto getProfile(Long userId) {
-        PatientProfile profile = patientProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
-        return mapToDto(profile);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (!(user instanceof Patient)) {
+            throw new RuntimeException("Specified user is not a patient");
+        }
+        
+        return mapToDto((Patient) user);
     }
 
-    /**
-     * Updates an existing patient profile with newly provided details.
-     * 
-     * @param userId the ID of the user linked to the patient profile
-     * @param request the updated profile details
-     * @return the updated PatientProfileDto
-     * @throws RuntimeException if the profile cannot be found
-     */
     @Transactional
     public PatientProfileDto updateProfile(Long userId, PatientProfileDto request) {
-        PatientProfile profile = patientProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
                 
-        profile.setFirstName(request.getFirstName());
-        profile.setLastName(request.getLastName());
-        profile.setPhoneNumber(request.getPhoneNumber());
-        profile.setAddress(request.getAddress());
-        profile.setDateOfBirth(request.getDateOfBirth());
+        if (!(user instanceof Patient)) {
+            throw new RuntimeException("Specified user is not a patient");
+        }
         
-        return mapToDto(patientProfileRepository.save(profile));
+        Patient patient = (Patient) user;
+        patient.setFirstName(request.getFirstName());
+        patient.setLastName(request.getLastName());
+        patient.setPhoneNumber(request.getPhoneNumber());
+        patient.setAddress(request.getAddress());
+        patient.setDateOfBirth(request.getDateOfBirth());
+        
+        return mapToDto(userRepository.save(patient));
     }
 
     /**
@@ -115,11 +108,15 @@ public class PatientService {
      */
     @Transactional
     public MedicalDocumentDto uploadDocument(Long patientId, MedicalDocumentDto request) {
-        PatientProfile profile = patientProfileRepository.findById(patientId)
+        User user = userRepository.findById(patientId)
                 .orElseThrow(() -> new RuntimeException("Patient not found"));
+        
+        if (!(user instanceof Patient)) {
+             throw new RuntimeException("User is not a patient");
+        }
                 
         MedicalDocument doc = MedicalDocument.builder()
-                .patient(profile)
+                .patient((Patient) user)
                 .documentName(request.getDocumentName())
                 .documentUrl(request.getDocumentUrl())
                 .build();
@@ -128,7 +125,7 @@ public class PatientService {
         
         return MedicalDocumentDto.builder()
                 .id(doc.getId())
-                .patientId(profile.getId())
+                .patientId(user.getId())
                 .documentName(doc.getDocumentName())
                 .documentUrl(doc.getDocumentUrl())
                 .uploadedAt(doc.getUploadedAt())
@@ -194,10 +191,10 @@ public class PatientService {
 
 
 
-    private PatientProfileDto mapToDto(PatientProfile p) {
+    private PatientProfileDto mapToDto(Patient p) {
         return PatientProfileDto.builder()
                 .id(p.getId())
-                .userId(p.getUser().getId())
+                .userId(p.getId())
                 .firstName(p.getFirstName())
                 .lastName(p.getLastName())
                 .phoneNumber(p.getPhoneNumber())

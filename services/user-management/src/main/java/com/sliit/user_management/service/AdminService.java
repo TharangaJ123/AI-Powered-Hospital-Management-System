@@ -34,17 +34,26 @@ public class AdminService {
      */
     public List<UserResponseDto> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(u -> UserResponseDto.builder()
-                        .id(u.getId())
-                        .email(u.getEmail())
-                        .role(u.getRole())
-                        .active(u.isActive())
-                        .firstName(u.getFirstName())
-                        .lastName(u.getLastName())
-                        .doctorRegistrationNumber(u.getDoctorRegistrationNumber())
-                        .specialization(u.getSpecialization())
-                        .build())
+                .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    private UserResponseDto mapToResponseDto(User user) {
+        UserResponseDto.UserResponseDtoBuilder builder = UserResponseDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .active(user.isActive())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName());
+
+        if (user instanceof com.sliit.user_management.model.Doctor) {
+            com.sliit.user_management.model.Doctor doctor = (com.sliit.user_management.model.Doctor) user;
+            builder.doctorRegistrationNumber(doctor.getDoctorRegistrationNumber());
+            builder.specialization(doctor.getSpecialization());
+        }
+
+        return builder.build();
     }
 
     /**
@@ -62,15 +71,7 @@ public class AdminService {
         user.setActive(isActive);
         user = userRepository.save(user);
         
-        return UserResponseDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .active(user.isActive())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .specialization(user.getSpecialization())
-                .build();
+        return mapToResponseDto(user);
     }
 
     /**
@@ -92,24 +93,14 @@ public class AdminService {
         user.setActive(true);
         user = userRepository.save(user);
 
-        // Synchronize with doctor-management service to create or activate the profile
+        // Synchronize with doctor-management service
         try {
             syncDoctorProfile(user, "ACTIVE");
         } catch (Exception e) {
-            // Log error but don't fail verification
-            System.err.println("Failed to sync doctor profile in doctor-management service: " + e.getMessage());
+            System.err.println("Failed to sync doctor profile: " + e.getMessage());
         }
         
-        return UserResponseDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .active(user.isActive())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .doctorRegistrationNumber(user.getDoctorRegistrationNumber())
-                .specialization(user.getSpecialization())
-                .build();
+        return mapToResponseDto(user);
     }
 
     private void syncDoctorProfile(User user, String status) {
@@ -120,8 +111,13 @@ public class AdminService {
         profileData.put("firstName", user.getFirstName());
         profileData.put("lastName", user.getLastName());
         profileData.put("email", user.getEmail());
-        profileData.put("specialization", user.getSpecialization());
-        profileData.put("licenseNumber", user.getDoctorRegistrationNumber());
+        
+        if (user instanceof com.sliit.user_management.model.Doctor) {
+            com.sliit.user_management.model.Doctor doctor = (com.sliit.user_management.model.Doctor) user;
+            profileData.put("specialization", doctor.getSpecialization());
+            profileData.put("licenseNumber", doctor.getDoctorRegistrationNumber());
+        }
+        
         profileData.put("status", status);
 
         try {

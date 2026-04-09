@@ -1,47 +1,36 @@
-import axios from 'axios';
+const API_GW_URL = (import.meta.env.VITE_API_URL || '/api') + '/reviews';
 
-const API_URL = 'http://localhost:8082/api/reviews'; // doctor-management service
+export const createReview = async (reviewData, token) => {
+    const res = await fetch(`${API_GW_URL}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(reviewData)
+    });
+    if (!res.ok) throw new Error('Failed to submit review');
+    return res.json();
+};
 
-export const submitReview = async (reviewData, token) => {
-    try {
-        const response = await axios.post(API_URL, reviewData, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || error.message;
-    }
+export const getDoctorStats = async (doctorId) => {
+    const res = await fetch(`${API_GW_URL}/doctor/${doctorId}/stats`);
+    if (!res.ok) return { averageRating: 0.0, totalReviews: 0 };
+    return res.json();
 };
 
 export const getDoctorReviews = async (doctorId) => {
-    try {
-        const response = await axios.get(`${API_URL}/doctor/${doctorId}`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || error.message;
-    }
+    const res = await fetch(`${API_GW_URL}/doctor/${doctorId}`);
+    if (!res.ok) return [];
+    return res.json();
 };
 
-export const getDoctorAverageRating = async (doctorId) => {
-    try {
-        const response = await axios.get(`${API_URL}/doctor/${doctorId}/average`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || error.message;
-    }
-};
-
-export const deleteReview = async (reviewId, token) => {
-    try {
-        const response = await axios.delete(`${API_URL}/${reviewId}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || error.message;
-    }
+export const getPatientReviews = async (patientId, token) => {
+    const res = await fetch(`${API_GW_URL}/patient/${patientId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    if (!res.ok) return [];
+    return res.json();
 };

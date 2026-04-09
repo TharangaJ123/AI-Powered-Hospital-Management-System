@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { Stethoscope, Star, MapPin, Clock, MessageCircle, Video } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { getDoctorStats } from '../services/reviews'
 
 const DoctorCard = ({ doctor }) => {
   const {
@@ -21,6 +23,16 @@ const DoctorCard = ({ doctor }) => {
   const fullName = `Dr. ${firstName} ${lastName}`
   const displayImage = profilePhotoUrl || `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=0D8ABC&color=fff&size=128`
 
+  const [stats, setStats] = useState({ averageRating: 0, totalReviews: 0 })
+
+  useEffect(() => {
+    let mounted = true
+    getDoctorStats(id).then(data => {
+      if (mounted && data) setStats(data)
+    }).catch(console.error)
+    return () => { mounted = false }
+  }, [id])
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
@@ -34,12 +46,11 @@ const DoctorCard = ({ doctor }) => {
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-        
+
         {/* Status Badge */}
         <div className="absolute top-4 left-4">
-          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md ${
-            status === 'APPROVED' ? 'bg-green-500/80 text-white' : 'bg-amber-500/80 text-white'
-          }`}>
+          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md ${status === 'APPROVED' ? 'bg-green-500/80 text-white' : 'bg-amber-500/80 text-white'
+            }`}>
             {status}
           </span>
         </div>
@@ -90,7 +101,9 @@ const DoctorCard = ({ doctor }) => {
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase">Rating</p>
-              <p className="text-xs font-bold text-[#002d5a]">{averageRating?.toFixed(1) || 'New'} ({reviewCount || 0})</p>
+              <p className="text-xs font-bold text-[#002d5a]">
+                {stats.averageRating > 0 ? `${stats.averageRating.toFixed(1)} (${stats.totalReviews})` : 'New'}
+              </p>
             </div>
           </div>
         </div>
@@ -102,7 +115,7 @@ const DoctorCard = ({ doctor }) => {
 
       {/* Actions */}
       <div className="p-6 pt-0 mt-auto">
-        <Link 
+        <Link
           to={`/doctors/${id}`}
           className="flex items-center justify-center space-x-2 w-full py-4 bg-[#002d5a] text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#003d7a] transition-all shadow-xl shadow-blue-900/10 active:scale-95"
         >

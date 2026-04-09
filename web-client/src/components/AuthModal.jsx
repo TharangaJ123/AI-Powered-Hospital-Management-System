@@ -21,7 +21,7 @@ const EMPTY_SIGNUP = {
   doctorRegistrationNumber: '',
 }
 
-const ROLE_OPTIONS = ['PATIENT', 'DOCTOR', 'ADMIN']
+const ROLE_OPTIONS = ['PATIENT', 'DOCTOR']
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
