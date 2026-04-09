@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { Stethoscope, Star, MapPin, Clock, MessageCircle, Video } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { getDoctorStats } from '../services/reviews'
 
 const DoctorCard = ({ doctor }) => {
   const {
@@ -18,6 +20,16 @@ const DoctorCard = ({ doctor }) => {
 
   const fullName = `Dr. ${firstName} ${lastName}`
   const displayImage = profilePhotoUrl || `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=0D8ABC&color=fff&size=128`
+
+  const [stats, setStats] = useState({ averageRating: 0, totalReviews: 0 })
+
+  useEffect(() => {
+    let mounted = true
+    getDoctorStats(id).then(data => {
+      if (mounted && data) setStats(data)
+    }).catch(console.error)
+    return () => { mounted = false }
+  }, [id])
 
   return (
     <motion.div
@@ -88,7 +100,9 @@ const DoctorCard = ({ doctor }) => {
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase">Rating</p>
-              <p className="text-xs font-bold text-[#002d5a]">4.9 (120+)</p>
+              <p className="text-xs font-bold text-[#002d5a]">
+                {stats.averageRating > 0 ? `${stats.averageRating.toFixed(1)} (${stats.totalReviews})` : 'New'}
+              </p>
             </div>
           </div>
         </div>

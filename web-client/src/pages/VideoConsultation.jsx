@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTelemedicineSession, completeTelemedicineSession } from '../services/telemedicine';
+import { completeAppointment } from '../services/appointments';
 import { Loader2, PhoneOff, Video, MessageSquare, Monitor, XCircle, ShieldCheck, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -108,6 +109,7 @@ const VideoConsultation = ({ user, token }) => {
     if (user.role === 'DOCTOR') {
       try {
         await completeTelemedicineSession(appointmentId, token);
+        await completeAppointment(appointmentId, token);
       } catch (err) {
         console.error('Failed to complete session on server:', err);
       }

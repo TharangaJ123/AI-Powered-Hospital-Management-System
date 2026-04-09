@@ -8,6 +8,8 @@ import { getAllDoctors, requestDoctorLeave, getDoctorLeaves } from '../services/
 import { getAppointmentsByPatient, getAppointmentsByDoctor, updateAppointment, cancelAppointment, completeAppointment } from '../services/appointments'
 import { createTelemedicineSession, getTelemedicineSession } from '../services/telemedicine'
 import { getContactFormsByUser } from '../services/contact'
+import { createReview } from '../services/reviews'
+import { Star, X } from 'lucide-react'
 
 const Profile = ({
   user,
@@ -38,6 +40,27 @@ const Profile = ({
     endDate: '',
     reason: ''
   })
+  const [reviewModalOpen, setReviewModalOpen] = useState(false)
+  const [reviewData, setReviewData] = useState({ appointmentId: null, doctorId: null, rating: 5, comment: '' })
+
+  const handleSubmitReview = async () => {
+    if (!reviewData.appointmentId || !reviewData.doctorId || !patientProfile?.id) return
+    setIsUpdating(true)
+    try {
+      await createReview({
+        appointmentId: reviewData.appointmentId,
+        doctorId: parseInt(String(reviewData.doctorId).replace('dr_', '')),
+        patientId: patientProfile.id,
+        rating: reviewData.rating,
+        comment: reviewData.comment
+      }, token)
+      setReviewModalOpen(false)
+    } catch(err) {
+      setAppointmentError(err.message)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
 
   const canReschedule = (date) => {
     if (!date) return false
@@ -428,6 +451,18 @@ const Profile = ({
                               >
                                 <Video className="w-3.5 h-3.5" />
                                 Join Video
+                              </button>
+                            )}
+                            {['COMPLETED'].includes(app?.status?.toUpperCase()) && (
+                              <button
+                                onClick={() => {
+                                  setReviewData({ appointmentId: app.id, doctorId: app.doctorId, rating: 5, comment: '' })
+                                  setReviewModalOpen(true)
+                                }}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 text-xs font-bold hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+                              >
+                                <Star className="w-3.5 h-3.5" />
+                                Leave Review
                               </button>
                             )}
                           </div>
@@ -901,6 +936,61 @@ const Profile = ({
         </AnimatePresence>
         </div>
       )}
+      {/* Review Modal */}
+      <AnimatePresence>
+        {reviewModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl relative"
+            >
+              <button 
+                onClick={() => setReviewModalOpen(false)}
+                className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              
+              <h2 className="text-2xl font-black text-[#002d5a] mb-2">Rate Your Visit</h2>
+              <p className="text-sm text-slate-500 font-medium mb-8">Share your experience to help others find the best care.</p>
+              
+              <div className="flex items-center justify-center gap-2 mb-8">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setReviewData({ ...reviewData, rating: star })}
+                    className={`p-2 transition-transform hover:scale-110 ${star <= reviewData.rating ? 'text-amber-400' : 'text-slate-200'}`}
+                  >
+                    <Star className={`w-10 h-10 ${star <= reviewData.rating ? 'fill-amber-400' : ''}`} />
+                  </button>
+                ))}
+              </div>
+              
+              <div className="space-y-4 mb-8">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Comments</label>
+                <textarea
+                  value={reviewData.comment}
+                  onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
+                  placeholder="How was the doctor's bedside manner?"
+                  rows="4"
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium text-slate-600 resize-none"
+                />
+              </div>
+              
+              <button
+                onClick={handleSubmitReview}
+                disabled={isUpdating || !reviewData.comment.trim()}
+                className="w-full py-5 bg-[#002d5a] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#003d7a] transition-all shadow-xl shadow-blue-900/10 active:scale-95 disabled:opacity-50"
+              >
+                {isUpdating ? 'Submitting...' : 'Submit Feedback'}
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   )
 }
