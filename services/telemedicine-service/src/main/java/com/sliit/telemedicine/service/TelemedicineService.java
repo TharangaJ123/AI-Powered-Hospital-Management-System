@@ -11,6 +11,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@org.springframework.transaction.annotation.Transactional
 public class TelemedicineService {
 
     private final TelemedicineSessionRepository sessionRepository;
@@ -18,15 +19,19 @@ public class TelemedicineService {
 
     @SuppressWarnings("null")
     public TelemedicineSession createOrGetSession(@NonNull Long appointmentId) {
+        System.out.println("DEBUG: Creating/Getting session for appointment: " + appointmentId);
         return sessionRepository.findByAppointmentId(appointmentId)
                 .orElseGet(() -> {
+                    System.out.println("DEBUG: No session found, creating new one...");
                     String roomName = "hospital-mgmt-" + appointmentId + "-" + UUID.randomUUID().toString().substring(0, 8);
                     TelemedicineSession session = TelemedicineSession.builder()
                             .appointmentId(appointmentId)
                             .roomName(roomName)
                             .status(TelemedicineSession.SessionStatus.CREATED)
                             .build();
-                    return sessionRepository.save(session);
+                    TelemedicineSession saved = sessionRepository.save(session);
+                    System.out.println("DEBUG: Successfully saved session ID: " + saved.getId());
+                    return saved;
                 });
     }
 

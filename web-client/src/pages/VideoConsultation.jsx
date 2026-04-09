@@ -157,7 +157,7 @@ const VideoConsultation = ({ user, token }) => {
   }
 
   return (
-    <div className="flex-grow flex flex-col bg-[#000b1a] overflow-hidden relative">
+    <div className="fixed inset-0 z-[9999] flex flex-col bg-[#000b1a] overflow-hidden">
       {/* Dynamic Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full animate-pulse" />
