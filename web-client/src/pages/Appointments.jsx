@@ -1,5 +1,5 @@
 import { Calendar, Clock, User, MapPin, ArrowLeft, Phone, CheckCircle, BadgeCheck, Stethoscope } from 'lucide-react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { createAppointment, checkDoctorAvailabilityByDate } from '../services/appointments'
 import { getAllDoctors, getDoctorLeaves } from '../services/doctors'
@@ -7,6 +7,7 @@ import { getAllDoctors, getDoctorLeaves } from '../services/doctors'
 const Appointments = ({ user, patientProfile, onLoginClick }) => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const location = useLocation()
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -124,6 +125,30 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
     checkAvailability()
   }, [formData.doctorId, formData.date])
 
+  // Handle payment success
+  useEffect(() => {
+    if (location.state?.paymentSuccess) {
+      setIsSuccess(true)
+      // Clear the location state to prevent showing success again on refresh
+      window.history.replaceState({}, document.title)
+      
+      // Reset form after 5 seconds
+      setTimeout(() => {
+        setIsSuccess(false)
+        setFormData({
+          fullName: user?.name || '',
+          email: user?.email || '',
+          phoneNumber: patientProfile?.phoneNumber || '',
+          speciality: '',
+          doctorId: '',
+          date: '',
+          timeSlot: '',
+          reason: '',
+        })
+      }, 5000)
+    }
+  }, [location.state, user, patientProfile])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -156,44 +181,26 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
       }
     }
 
-    setIsSubmitting(true)
-
-    try {
-      // Combine date and time
-      const appointmentDate = new Date(`${formData.date}T${formData.timeSlot}:00`).toISOString()
-
-      const payload = {
-        patientId: (user && patientProfile) ? patientProfile.id : (user ? user.id : null),
-        doctorId: parseInt(formData.doctorId.replace('dr_', '')),
-        appointmentDate: appointmentDate,
-        fullName: formData.fullName,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        reason: formData.reason,
-        consultationType: formData.speciality + " Consultation"
-      }
-
-      await createAppointment(payload)
-      setIsSuccess(true)
-
-      // Reset form after 3 seconds or on navigation
-      setTimeout(() => {
-        setIsSuccess(false)
-        setFormData({
-          fullName: user?.name || '',
-          phoneNumber: patientProfile?.phoneNumber || '',
-          speciality: '',
-          doctorId: '',
-          date: '',
-          timeSlot: '',
-          reason: '',
-        })
-      }, 5000)
-    } catch (error) {
-      alert('Error booking appointment: ' + error.message)
-    } finally {
-      setIsSubmitting(false)
+    // Get selected doctor details
+    const selectedDoctor = filteredDoctors.find(d => d.id.toString() === numericDoctorId.toString())
+    
+    // Prepare appointment details for payment page
+    const appointmentDetails = {
+      fullName: formData.fullName,
+      email: formData.email,
+      phoneNumber: formData.phoneNumber,
+      doctorName: selectedDoctor ? `${selectedDoctor.firstName} ${selectedDoctor.lastName}` : 'Selected Doctor',
+      doctorId: numericDoctorId,
+      speciality: formData.speciality,
+      date: formData.date,
+      timeSlot: formData.timeSlot,
+      reason: formData.reason,
+      consultationType: formData.speciality + " Consultation",
+      patientId: (user && patientProfile) ? patientProfile.id : (user ? user.id : null),
     }
+
+    // Navigate to payment page with appointment details
+    navigate('/payment', { state: { appointmentDetails } })
   }
 
   if (isSuccess) {
@@ -203,9 +210,9 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
             <CheckCircle className="w-12 h-12" />
           </div>
-          <h2 className="text-3xl font-bold text-slate-800 mb-4">Booking Confirmed!</h2>
+          <h2 className="text-3xl font-bold text-slate-800 mb-4">Payment & Booking Confirmed!</h2>
           <p className="text-slate-600 mb-8">
-            Your appointment has been successfully scheduled. You will receive a confirmation message shortly.
+            Your payment was successful and appointment has been scheduled. You will receive a confirmation message shortly.
           </p>
           <button
             onClick={() => navigate('/')}

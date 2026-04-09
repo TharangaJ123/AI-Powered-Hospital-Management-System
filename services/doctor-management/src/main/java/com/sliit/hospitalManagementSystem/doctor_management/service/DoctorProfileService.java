@@ -4,8 +4,6 @@ import com.sliit.hospitalManagementSystem.doctor_management.dto.DoctorProfileDTO
 import com.sliit.hospitalManagementSystem.doctor_management.model.DoctorProfile;
 import com.sliit.hospitalManagementSystem.doctor_management.model.DoctorStatus;
 import com.sliit.hospitalManagementSystem.doctor_management.repository.DoctorProfileRepository;
-import com.sliit.hospitalManagementSystem.doctor_management.repository.ReviewRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -13,11 +11,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class DoctorProfileService {
 
     private final DoctorProfileRepository doctorProfileRepository;
-    private final ReviewRepository reviewRepository;
+
+    public DoctorProfileService(DoctorProfileRepository doctorProfileRepository) {
+        this.doctorProfileRepository = doctorProfileRepository;
+    }
 
     @SuppressWarnings("null")
     public DoctorProfileDTO createProfile(DoctorProfileDTO dto) {
@@ -125,8 +125,6 @@ public class DoctorProfileService {
                 .consultationFee(profile.getConsultationFee())
                 .isAvailableForTelemedicine(profile.getIsAvailableForTelemedicine())
                 .status(profile.getStatus() != null ? profile.getStatus().name() : null)
-                .averageRating(reviewRepository.findAverageRatingByDoctorId(profile.getId()))
-                .reviewCount(reviewRepository.findByDoctorIdOrderByCreatedAtDesc(profile.getId()).size())
                 .build();
     }
 

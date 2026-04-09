@@ -29,6 +29,9 @@ import DoctorDetail from './pages/DoctorDetail'
 import SymptomChecker from './pages/SymptomChecker'
 import VideoConsultation from './pages/VideoConsultation'
 import AdminLogin from './pages/AdminLogin'
+import Payment from './pages/Payment'
+import PaymentSuccess from './pages/PaymentSuccess'
+import PaymentCancel from './pages/PaymentCancel'
 
 function App() {
   const navigate = useNavigate()
@@ -55,6 +58,9 @@ function App() {
       }
 
       try {
+        console.log('Loading patient profile for user:', session.user)
+        console.log('User ID:', session.user.id, 'Type:', typeof session.user.id)
+        
         const profile = await getPatientProfile({
           userId: session.user.id,
           token: session.token,
@@ -62,7 +68,15 @@ function App() {
         setPatientProfile(profile)
         setProfileError('')
       } catch (error) {
-        setProfileError(error.message || 'Unable to load patient profile.')
+        console.error('Patient profile error:', error)
+        // Don't block the app if patient profile fails - user can still book appointments
+        setPatientProfile(null)
+        setProfileError('') // Clear error so app continues
+        
+        // Only show error in development
+        if (import.meta.env.DEV) {
+          console.warn('Patient profile loading failed, but continuing without it. Error:', error.message)
+        }
       }
     }
 
@@ -273,6 +287,18 @@ function App() {
         <Route 
           path="/telemedicine/:appointmentId" 
           element={<VideoConsultation user={session?.user} token={session?.token} />} 
+        />
+        <Route 
+          path="/payment" 
+          element={<Payment session={session} />} 
+        />
+        <Route 
+          path="/payment/success" 
+          element={<PaymentSuccess session={session} />} 
+        />
+        <Route 
+          path="/payment/cancel" 
+          element={<PaymentCancel />} 
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

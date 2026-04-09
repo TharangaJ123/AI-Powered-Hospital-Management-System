@@ -200,7 +200,6 @@ public class PatientService {
                 .phoneNumber(p.getPhoneNumber())
                 .address(p.getAddress())
                 .dateOfBirth(p.getDateOfBirth())
-                .email(p.getUser() != null ? p.getUser().getEmail() : null)
                 .build();
     }
 }

@@ -1,31 +1,7 @@
-# Hospital Management System - Backend Startup Script
-# This script starts all microservices in the correct order.
+# Hospital Management System - Startup Script
+# This script starts all services and the web client in the correct order.
 
 Write-Host 'Starting Discovery Service (Eureka)...' -ForegroundColor Cyan
-Start-Process powershell -ArgumentList '-Command cd infrastructure/discovery-service; .\mvnw spring-boot:run'
-
-Write-Host 'Starting API Gateway...' -ForegroundColor Cyan
-Start-Process powershell -ArgumentList '-Command cd infrastructure/api-gateway; .\mvnw spring-boot:run'
-
-Write-Host 'Starting User Management...' -ForegroundColor Cyan
-Start-Process powershell -ArgumentList '-Command cd services/user-management; .\mvnw spring-boot:run'
-
-Write-Host 'Starting Doctor Management...' -ForegroundColor Cyan
-Start-Process powershell -ArgumentList '-Command cd services/doctor-management; .\mvnw spring-boot:run'
-
-Write-Host 'Starting Appointment Service...' -ForegroundColor Cyan
-Start-Process powershell -ArgumentList '-Command cd services/appointment-service; .\mvnw spring-boot:run'
-
-Write-Host 'Starting Telemedicine Service...' -ForegroundColor Cyan
-Start-Process powershell -ArgumentList '-Command cd services/telemedicine-service; .\mvnw spring-boot:run'
-
-Write-Host 'Starting AI Symptom Service...' -ForegroundColor Cyan
-Start-Process powershell -ArgumentList '-Command cd services/ai-symptom-service; .\mvnw spring-boot:run'
-
-Write-Host 'Starting Notification Service...' -ForegroundColor Cyan
-Start-Process powershell -ArgumentList '-Command cd services/notification-service; .\mvnw spring-boot:run'
-
-=======
 Start-Process powershell -ArgumentList '-Command cd infrastructure/discovery-service; .\mvnw spring-boot:run -Dspring-boot.run.jvmArguments=\"-Xmx256m -Xms256m\"' -NoNewWindow
 Start-Sleep -Seconds 15
 
@@ -47,7 +23,6 @@ Start-Process powershell -ArgumentList '-Command cd services/telemedicine-servic
 
 Write-Host 'Starting AI Symptom Service...' -ForegroundColor Cyan
 Start-Process powershell -ArgumentList '-Command cd services/ai-symptom-service; .\mvnw spring-boot:run -Dspring-boot.run.jvmArguments=\"-Xmx256m -Xms256m\"' -NoNewWindow
->>>>>>> 3ec894ba2531e1c2ab82a4bc6db87029564598f0
 
 Write-Host 'Starting Contact Service...' -ForegroundColor Cyan
 Start-Process powershell -ArgumentList '-Command cd services/contact-service; .\mvnw spring-boot:run -Dspring-boot.run.jvmArguments=\"-Xmx256m -Xms256m\"' -NoNewWindow

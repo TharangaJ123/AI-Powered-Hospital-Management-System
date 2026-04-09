@@ -1,11 +1,12 @@
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
-export const createAppointment = async (appointmentData) => {
+export const createAppointment = async (appointmentData, token) => {
   try {
     const response = await fetch(`${API_BASE}/appointments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(appointmentData),
     })
