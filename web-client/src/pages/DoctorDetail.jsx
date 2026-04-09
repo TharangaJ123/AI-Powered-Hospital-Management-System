@@ -22,12 +22,15 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { getDoctorById } from '../services/doctors'
 import { getAppointmentsByDoctor } from '../services/appointments'
+import { getDoctorStats, getDoctorReviews } from '../services/reviews'
 
 const DoctorDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const [doctor, setDoctor] = useState(null)
   const [appointments, setAppointments] = useState([])
+  const [stats, setStats] = useState({ averageRating: 0.0, totalReviews: 0 })
+  const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -49,6 +52,15 @@ const DoctorDetail = () => {
         if (token) {
           const appts = await getAppointmentsByDoctor(id, token)
           setAppointments(appts.filter(a => ['APPROVED', 'SCHEDULED', 'COMPLETED'].includes(a.status)))
+        }
+
+        try {
+          const fetchedStats = await getDoctorStats(id)
+          const fetchedReviews = await getDoctorReviews(id)
+          setStats(fetchedStats)
+          setReviews(fetchedReviews)
+        } catch (reviewErr) {
+          console.warn('Could not fetch doctor reviews:', reviewErr)
         }
       } catch (apptErr) {
         console.warn('Could not fetch doctor schedule:', apptErr)
@@ -186,7 +198,9 @@ const DoctorDetail = () => {
               </div>
               <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg text-center space-y-2 group hover:border-[#0066cc] transition-all">
                 <Star className="w-8 h-8 text-amber-400 mx-auto group-hover:rotate-12 transition-transform" />
-                <h4 className="text-2xl font-black text-[#002d5a]">4.9</h4>
+                <h4 className="text-2xl font-black text-[#002d5a]">
+                  {stats.averageRating > 0 ? stats.averageRating.toFixed(1) : 'New'}
+                </h4>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Avg Rating</p>
               </div>
             </div>
@@ -330,6 +344,39 @@ const DoctorDetail = () => {
                     <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                     <p className="text-slate-500 font-bold">No active appointments scheduled.</p>
                     <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">Ready for new bookings</p>
+                 </div>
+               )}
+            </div>
+
+            {/* Patient Reviews Section */}
+            <div className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-xl space-y-8 mt-10">
+               <div className="flex justify-between items-center">
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-black text-[#002d5a]">Patient Reviews</h3>
+                    <p className="text-slate-500 text-sm font-medium">Feedback from verified patients</p>
+                  </div>
+                  <div className="bg-amber-50 px-4 py-2 rounded-xl border border-amber-100">
+                    <span className="text-amber-600 font-black text-xs uppercase tracking-widest">{stats.totalReviews} Reviews</span>
+                  </div>
+               </div>
+
+               {reviews.length > 0 ? (
+                 <div className="space-y-6">
+                   {reviews.map((review, idx) => (
+                     <div key={idx} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 relative shadow-sm">
+                        <div className="flex items-center gap-1 mb-3">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-300'}`} />
+                          ))}
+                        </div>
+                        <p className="font-medium text-slate-700 italic">"{review.comment}"</p>
+                     </div>
+                   ))}
+                 </div>
+               ) : (
+                 <div className="text-center py-12 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200">
+                    <MessageCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <p className="text-slate-500 font-bold">No reviews yet.</p>
                  </div>
                )}
             </div>
