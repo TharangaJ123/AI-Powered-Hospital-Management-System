@@ -2,6 +2,7 @@ com\sliit\hospitalManagementSystem\payment_service\dto\PaymentStatusResponse.cla
 com\sliit\hospitalManagementSystem\payment_service\config\PayHereProperties.class
 com\sliit\hospitalManagementSystem\payment_service\dto\PayHereNotifyRequest.class
 com\sliit\hospitalManagementSystem\payment_service\dto\PaymentInitiationResponse$PaymentInitiationResponseBuilder.class
+com\sliit\payment_service\controller\PaymentController.class
 com\sliit\hospitalManagementSystem\payment_service\controller\PaymentController.class
 com\sliit\hospitalManagementSystem\payment_service\model\PaymentRecord$PaymentRecordBuilder.class
 com\sliit\hospitalManagementSystem\payment_service\model\PaymentRecord.class
