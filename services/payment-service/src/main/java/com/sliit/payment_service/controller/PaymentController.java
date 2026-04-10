@@ -41,7 +41,7 @@ public class PaymentController {
             String orderId = request.get("order_id");
             String amount = request.get("amount");
             String currency = request.get("currency");
-            String merchantSecret = "NDc3NjI5MzY5NDk3ODU4NzY1NTcwNjU1MjA4MDM2NzE4NjU1NzA=";
+            String merchantSecret = "pw";
             
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] secretHash = md.digest(merchantSecret.getBytes());

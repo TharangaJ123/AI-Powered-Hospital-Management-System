@@ -114,13 +114,27 @@ public class PayHereService {
 	}
 
 	private String generateCheckoutHash(String orderId, String amount) {
-		String merchantSecretHash = md5(payHereProperties.getMerchantSecret()).toUpperCase();
-		String plain = payHereProperties.getMerchantId()
-				+ orderId
-				+ amount
-				+ payHereProperties.getCurrency()
-				+ merchantSecretHash;
-		return md5(plain).toUpperCase();
+		// PayHere hash format: MD5(merchant_id + order_id + amount + currency + MD5(merchant_secret))
+		// Ensure amount has exactly 2 decimal places
+		String formattedAmount = formatAmount(new BigDecimal(amount));
+		String merchantSecret = payHereProperties.getMerchantSecret();
+		String merchantSecretHash = md5(merchantSecret).toUpperCase();
+		String plain = payHereProperties.getMerchantId() + orderId + formattedAmount + payHereProperties.getCurrency() + merchantSecretHash;
+		String finalHash = md5(plain).toUpperCase();
+		
+		// Debug logging
+		System.out.println("=== PAYHERE HASH GENERATION DEBUG ===");
+		System.out.println("Merchant ID: " + payHereProperties.getMerchantId());
+		System.out.println("Order ID: " + orderId);
+		System.out.println("Amount: " + formattedAmount);
+		System.out.println("Currency: " + payHereProperties.getCurrency());
+		System.out.println("Merchant Secret: " + merchantSecret);
+		System.out.println("Merchant Secret Hash: " + merchantSecretHash);
+		System.out.println("Plain String: " + plain);
+		System.out.println("Final Hash: " + finalHash);
+		System.out.println("=====================================");
+		
+		return finalHash;
 	}
 
 	private String generateNotificationSignature(PayHereNotifyRequest notifyRequest) {

@@ -8,12 +8,12 @@ function generateNotificationSignature(merchantId, orderId, amount, currency, st
 }
 
 // Your PayHere configuration
-const merchantId = '1210001';
+const merchantId = '1235079';
 const orderId = 'MED-2024-002';
 const amount = '2500.00';
 const currency = 'LKR';
 const statusCode = '2';
-const merchantSecret = 'NDc3NjI5MzY5NDk3ODU4NzY1NTcwNjU1MjA4MDM2NzE4NjU1NzA=';
+const merchantSecret = 'pw';
 
 // Generate the signature
 const signature = generateNotificationSignature(merchantId, orderId, amount, currency, statusCode, merchantSecret);
