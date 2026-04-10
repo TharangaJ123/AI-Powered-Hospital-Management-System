@@ -13,7 +13,7 @@ const orderId = 'MED-2024-002';
 const amount = '2500.00';
 const currency = 'LKR';
 const statusCode = '2';
-const merchantSecret = 'NDEwNTA3NjY4NzExMzY2MDA4MTAxNDIwNzc2MTExMzczNDM5ODM3';
+const merchantSecret = 'pw';
 
 // Generate the signature
 const signature = generateNotificationSignature(merchantId, orderId, amount, currency, statusCode, merchantSecret);
