@@ -277,12 +277,12 @@ public class EmailService {
                   .ftr{background:#f4f7fb;text-align:center;padding:14px;font-size:12px;color:#999}
                 </style></head><body>
                 <div class="wrap">
-                  <div class="hdr">Appointment Cancelled \u2013 OminiHealth</div>
+                  <div class="hdr">Appointment Cancelled \u2013 OmniHealth</div>
                   <div class="body">
                     <p>Dear <strong>%s</strong>,</p>
                     <p>Your appointment (<strong>%s</strong>) with <strong>Dr. %s</strong>
                        on <strong>%s at %s</strong> has been cancelled.</p>
-                    <p>Please rebook via the OminiHealth portal if needed.</p>
+                    <p>Please rebook via the OmniHealth portal if needed.</p>
                   </div>
                   <div class="ftr">This is an automated message. Please do not reply.</div>
                 </div></body></html>
@@ -302,13 +302,13 @@ public class EmailService {
                   .ftr{background:#f4f7fb;text-align:center;padding:14px;font-size:12px;color:#999}
                 </style></head><body>
                 <div class="wrap">
-                  <div class="hdr">Consultation Completed \u2013 OminiHealth</div>
+                  <div class="hdr">Consultation Completed \u2013 OmniHealth</div>
                   <div class="body">
                     <p>Dear <strong>%s</strong>,</p>
                     <p>Your telemedicine consultation (<strong>%s</strong>) with <strong>Dr. %s</strong>
                        on <strong>%s</strong> is now complete.</p>
                     <p>Your prescription and medical summary are available in your patient portal.</p>
-                    <p>Thank you for using OminiHealth. Stay healthy!</p>
+                    <p>Thank you for using OmniHealth. Stay healthy!</p>
                   </div>
                   <div class="ftr">This is an automated message. Please do not reply.</div>
                 </div></body></html>
@@ -316,37 +316,137 @@ public class EmailService {
     }
     public String buildUserRegisteredBody(String recipientName, String email) {
         return """
-                <!DOCTYPE html><html><head><meta charset="UTF-8"/>
+                <!DOCTYPE html>
+                <html>
+                <head>
+                <meta charset="UTF-8"/>
                 <style>
-                  body{font-family:Arial,sans-serif;background:#f4f7fb;margin:0;padding:0}
-                  .wrap{max-width:600px;margin:40px auto;background:#fff;border-radius:8px;
-                        box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden}
-                  .hdr{background:#1a73e8;padding:24px;text-align:center;color:#fff;font-size:20px}
-                  .body{padding:28px;color:#333}
-                  .row{margin-bottom:12px; display: flex; align-items: baseline;}
-                  .lbl{font-weight:bold;color:#555;width:150px; flex-shrink: 0;}
-                  .val{color: #222;}
-                  .badge{background:#e8f0fe;color:#1a73e8;border-radius:4px;padding:2px 8px;font-size:13px; font-weight: bold;}
-                  .ftr{background:#f4f7fb;text-align:center;padding:14px;font-size:12px;color:#999}
-                  .section-title{border-bottom: 2px solid #eef2f7; padding-bottom: 8px; margin-bottom: 16px; color: #1a73e8; font-weight: bold; text-transform: uppercase; font-size: 14px;}
-                </style></head><body>
+                  body{
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                    background: linear-gradient(135deg, #eef2ff, #f4f7fb);
+                    margin:0;
+                    padding:0
+                  }
+                  .wrap{
+                    max-width:600px;
+                    margin:40px auto;
+                    background:#fff;
+                    border-radius:12px;
+                    box-shadow:0 8px 20px rgba(0,0,0,.08);
+                    overflow:hidden
+                  }
+                  .hdr{
+                    background: linear-gradient(135deg, #1a73e8, #4facfe);
+                    padding:28px;
+                    text-align:center;
+                    color:#fff
+                  }
+                  .hdr h1{
+                    margin:0;
+                    font-size:22px;
+                    letter-spacing:0.5px
+                  }
+                  .body{
+                    padding:30px;
+                    color:#333;
+                    line-height:1.6
+                  }
+                  .highlight{
+                    color:#1a73e8;
+                    font-weight:bold
+                  }
+                  .row{
+                    margin-bottom:12px;
+                    display:flex;
+                    align-items:baseline;
+                  }
+                  .lbl{
+                    font-weight:bold;
+                    color:#555;
+                    width:160px;
+                  }
+                  .val{
+                    color:#222;
+                  }
+                  .badge{
+                    background:#e8f0fe;
+                    color:#1a73e8;
+                    border-radius:20px;
+                    padding:4px 12px;
+                    font-size:12px;
+                    font-weight:bold;
+                  }
+                  .card{
+                    background:#f8fbff;
+                    border-radius:8px;
+                    padding:16px;
+                    margin-top:10px;
+                  }
+                  .cta{
+                    text-align:center;
+                    margin-top:24px;
+                  }
+                  .btn{
+                    display:inline-block;
+                    background:#1a73e8;
+                    color:#fff;
+                    padding:12px 22px;
+                    border-radius:6px;
+                    text-decoration:none;
+                    font-weight:bold;
+                    transition:0.3s;
+                  }
+                  .btn:hover{
+                    background:#0c5ed7;
+                  }
+                  .ftr{
+                    background:#f4f7fb;
+                    text-align:center;
+                    padding:16px;
+                    font-size:12px;
+                    color:#888
+                  }
+                </style>
+                </head>
+                
+                <body>
                 <div class="wrap">
-                  <div class="hdr">Welcome to OminiHealth!</div>
+                
+                  <div class="hdr">
+                    <h1>🏥 Welcome to OmniHealth</h1>
+                  </div>
+                
                   <div class="body">
                     <p>Dear <strong>%s</strong>,</p>
-                    <p>Welcome to the <strong>OminiHealth Hospital Management System</strong>. Your registration is complete, and your account has been successfully created.</p>
-                    
-                    <div class="section-title">Account Details</div>
-                    <div class="row"><span class="lbl">Account Name:</span><span class="val">%s</span></div>
-                    <div class="row"><span class="lbl">Registered Email:</span><span class="val">%s</span></div>
-                    <div class="row"><span class="lbl">Status:</span><span class="badge">Active</span></div>
-                    
-                    <p style="margin-top:24px; padding: 12px; background: #e8f0fe; border-radius: 6px; color: #1a73e8; font-size: 14px;">
-                      <strong>Next Steps:</strong> You can now log into your Web Portal to book appointments, view prescriptions, or consult with our professionals.
-                    </p>
+                
+                <p>
+                  Welcome to the <span class="highlight">OmniHealth Hospital Management System</span>.
+                  Your registration is complete, and your account has been successfully created.
+                </p>
+                
+                <div class="card">
+                  <div class="row"><span class="lbl">Account Name:</span><span class="val">%s</span></div>
+                  <div class="row"><span class="lbl">Registered Email:</span><span class="val">%s</span></div>
+                  <div class="row"><span class="lbl">Account Status:</span><span class="badge">Active</span></div>
+                </div>
+                
+               <p style="margin-top:10px;">
+  If you need any assistance, our support team is always ready to help.<br>
+  Stay healthy !
+</p>
+                
+                 <p style="margin-top:24px; padding: 12px; background: #e8f0fe; border-radius: 6px; color: #1a73e8; font-size: 14px;">
+                                      <strong>Next Steps:</strong> You can now log into your Web Portal to book appointments, view prescriptions, or consult with our professionals.
+                                    </p>
+                                  </div>
+                                  <div class="ftr" style="margin-top:-40px;">This is an automated message from OmniHealth. Please do not reply.</div>
                   </div>
-                  <div class="ftr">This is an automated message from OminiHealth. Please do not reply.</div>
-                </div></body></html>
+                
+                  
+                
+                </div>
+                </body>
+                </html>
                 """.formatted(recipientName, recipientName, email);
     }
 
@@ -370,10 +470,10 @@ public class EmailService {
                   .highlight{background:#f0f7ff;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #1a73e8}
                 </style></head><body>
                 <div class="wrap">
-                  <div class="hdr">Payment Successful \u2013 OminiHealth</div>
+                  <div class="hdr">Payment Successful \u2013 OmniHealth</div>
                   <div class="body">
                     <p>Dear <strong>%s</strong>,</p>
-                    <p>Your payment has been <strong>successfully processed</strong>. Thank you for choosing OminiHealth for your healthcare needs.</p>
+                    <p>Your payment has been <strong>successfully processed</strong>. Thank you for choosing OmniHealth for your healthcare needs.</p>
                     
                     <div class="highlight">
                       <p style="margin:0; color:#1a73e8; font-weight:bold;">Payment Confirmation</p>
@@ -394,10 +494,10 @@ public class EmailService {
                     </p>
                     
                     <p style="margin-top:16px; text-align: center; color: #666; font-size: 14px;">
-                      Need help? Contact our support team at support@ominihealth.com
+                      Need help? Contact our support team at support@OmniHealth.com
                     </p>
                   </div>
-                  <div class="ftr">This is an automated message from OminiHealth Hospital Management System. Please do not reply.</div>
+                  <div class="ftr">This is an automated message from OmniHealth Hospital Management System. Please do not reply.</div>
                 </div></body></html>
                 """.formatted(recipientName, orderId, paymentId, amount, date, items);
     }
@@ -422,7 +522,7 @@ public class EmailService {
                   .highlight{background:#fef2f2;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #d93025}
                 </style></head><body>
                 <div class="wrap">
-                  <div class="hdr">Payment Failed \u2013 OminiHealth</div>
+                  <div class="hdr">Payment Failed \u2013 OmniHealth</div>
                   <div class="body">
                     <p>Dear <strong>%s</strong>,</p>
                     <p>We encountered an issue while processing your payment. The transaction could not be completed successfully.</p>
@@ -449,10 +549,10 @@ public class EmailService {
                     </p>
                     
                     <p style="margin-top:16px; text-align: center; color: #666; font-size: 14px;">
-                      Need assistance? Contact our support team at support@ominihealth.com or call our helpline.
+                      Need assistance? Contact our support team at support@OmniHealth.com or call our helpline.
                     </p>
                   </div>
-                  <div class="ftr">This is an automated message from OminiHealth Hospital Management System. Please do not reply.</div>
+                  <div class="ftr">This is an automated message from OmniHealth Hospital Management System. Please do not reply.</div>
                 </div></body></html>
                 """.formatted(recipientName, orderId, amount, date, errorMessage);
     }
