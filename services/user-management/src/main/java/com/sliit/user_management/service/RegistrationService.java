@@ -85,6 +85,9 @@ public class RegistrationService {
         // Database එකට user ව save කිරීම
         user = userRepository.save(user);
 
+        // Send Welcome email & SMS notification asynchronously
+        sendRegistrationNotification(user);
+
         // Doctor කෙනෙක් නම්, Profile sync එක safely කරමු
         if (role == Role.DOCTOR) {
             try {
@@ -160,5 +163,27 @@ public class RegistrationService {
                 .retrieve()
                 .bodyToMono(Object.class)
                 .block();
+    }
+
+    private void sendRegistrationNotification(User user) {
+        WebClient webClient = webClientBuilder.baseUrl("http://localhost:8085").build();
+        Map<String, Object> request = new java.util.HashMap<>();
+        request.put("type", "USER_REGISTERED");
+        request.put("recipientName", user.getFirstName() + " " + user.getLastName());
+        request.put("recipientEmail", user.getEmail());
+        
+        if (user instanceof com.sliit.user_management.model.Patient) {
+            request.put("recipientPhone", ((com.sliit.user_management.model.Patient) user).getPhoneNumber());
+        }
+
+        webClient.post()
+                .uri("/api/notifications/send")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .subscribe(
+                        success -> System.out.println("Registration notification sent asynchronously for: " + user.getEmail()),
+                        error -> System.err.println("Failed to send registration notification: " + error.getMessage())
+                );
     }
 }

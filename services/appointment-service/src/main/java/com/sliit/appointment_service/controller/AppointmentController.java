@@ -51,9 +51,10 @@ public class AppointmentController {
     @GetMapping("/availability")
     public ResponseEntity<AvailabilityCheckResponseDto> checkDoctorAvailability(
             @RequestParam Long doctorId,
-            @RequestParam LocalDate date
+            @RequestParam LocalDate date,
+            @RequestParam(required = false) String time
     ) {
-        return ResponseEntity.ok(appointmentService.checkDoctorAvailability(doctorId, date));
+        return ResponseEntity.ok(appointmentService.checkDoctorAvailability(doctorId, date, time));
     }
     
     // Mark an appointment as COMPLETED when the visit is finished

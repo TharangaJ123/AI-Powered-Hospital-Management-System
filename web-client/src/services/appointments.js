@@ -1,11 +1,12 @@
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
-export const createAppointment = async (appointmentData) => {
+export const createAppointment = async (appointmentData, token) => {
   try {
     const response = await fetch(`${API_BASE}/appointments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(appointmentData),
     })
@@ -119,8 +120,9 @@ export const getAppointmentsByDoctor = async (doctorId, token) => {
   return response.json()
 }
 
-export const checkDoctorAvailabilityByDate = async (doctorId, date) => {
-  const response = await fetch(`${API_BASE}/appointments/availability?doctorId=${doctorId}&date=${date}`, {
+export const checkDoctorAvailabilityByDate = async (doctorId, date, time = '') => {
+  const timeQuery = time ? `&time=${time}` : '';
+  const response = await fetch(`${API_BASE}/appointments/availability?doctorId=${doctorId}&date=${date}${timeQuery}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

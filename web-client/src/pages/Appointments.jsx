@@ -1,14 +1,17 @@
 import { Calendar, Clock, User, MapPin, ArrowLeft, Phone, CheckCircle, BadgeCheck, Stethoscope } from 'lucide-react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { createAppointment, checkDoctorAvailabilityByDate } from '../services/appointments'
+// import { createAppointment, checkDoctorAvailabilityByDate } from '../services/appointments'
+import { checkDoctorAvailabilityByDate } from '../services/appointments'
 import { getAllDoctors, getDoctorLeaves } from '../services/doctors'
 
 const Appointments = ({ user, patientProfile, onLoginClick }) => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const location = useLocation()
   const [formData, setFormData] = useState({
     fullName: '',
+    email: '',
     phoneNumber: '',
     speciality: searchParams.get('specialty') || '',
     doctorId: searchParams.get('doctorId') ? `dr_${searchParams.get('doctorId')}` : '',
@@ -27,6 +30,7 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
       setFormData(prev => ({
         ...prev,
         fullName: user.name || '',
+        email: user.email || '',
         phoneNumber: patientProfile?.phoneNumber || '',
       }))
     }
@@ -37,7 +41,7 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
       try {
         const data = await getAllDoctors()
         setDoctorsList(data)
-        
+
         // If doctorId was provided in URL, make sure speciality is also set if missing
         const urlDoctorId = searchParams.get('doctorId')
         if (urlDoctorId && !formData.speciality) {
@@ -55,7 +59,7 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
   }, [searchParams])
 
   const specialities = [...new Set(doctorsList.map(d => d.specialization))].filter(Boolean).sort()
-  const filteredDoctors = doctorsList.filter(d => 
+  const filteredDoctors = doctorsList.filter(d =>
     !formData.speciality || d.specialization === formData.speciality
   )
 
@@ -74,7 +78,7 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
       [name]: value,
     }))
 
-    if (name === 'date' || name === 'doctorId' || name === 'speciality') {
+    if (name === 'date' || name === 'doctorId' || name === 'speciality' || name === 'timeSlot') {
       setAvailabilityError('')
     }
   }
@@ -110,8 +114,12 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
           return
         }
 
-        const result = await checkDoctorAvailabilityByDate(numericDoctorId, formData.date)
-        setAvailabilityError(result?.available ? '' : (result?.message || 'Doctor is not available on this day.'))
+        if (formData.timeSlot) {
+          const result = await checkDoctorAvailabilityByDate(numericDoctorId, formData.date, formData.timeSlot)
+          setAvailabilityError(result?.available ? '' : (result?.message || 'Doctor is not available at this time.'))
+        } else {
+          setAvailabilityError('')
+        }
       } catch (error) {
         setAvailabilityError(error.message || 'Unable to validate doctor availability right now.')
       } finally {
@@ -120,7 +128,31 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
     }
 
     checkAvailability()
-  }, [formData.doctorId, formData.date])
+  }, [formData.doctorId, formData.date, formData.timeSlot])
+
+  // Handle payment success
+  useEffect(() => {
+    if (location.state?.paymentSuccess) {
+      setIsSuccess(true)
+      // Clear the location state to prevent showing success again on refresh
+      window.history.replaceState({}, document.title)
+
+      // Reset form after 5 seconds
+      setTimeout(() => {
+        setIsSuccess(false)
+        setFormData({
+          fullName: user?.name || '',
+          email: user?.email || '',
+          phoneNumber: patientProfile?.phoneNumber || '',
+          speciality: '',
+          doctorId: '',
+          date: '',
+          timeSlot: '',
+          reason: '',
+        })
+      }, 5000)
+    }
+  }, [location.state, user, patientProfile])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -154,42 +186,27 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
       }
     }
 
-    setIsSubmitting(true)
+    // Get selected doctor details
+    const selectedDoctor = filteredDoctors.find(d => d.id.toString() === numericDoctorId.toString())
 
-    try {
-      // Combine date and time
-      const appointmentDate = new Date(`${formData.date}T${formData.timeSlot}:00`).toISOString()
-      
-      const payload = {
-        patientId: (user && patientProfile) ? patientProfile.id : (user ? user.id : null),
-        doctorId: parseInt(formData.doctorId.replace('dr_', '')),
-        appointmentDate: appointmentDate,
-        // Store name/phone only for guest bookings
-        fullName: user ? null : formData.fullName,
-        phoneNumber: user ? null : formData.phoneNumber,
-      }
-
-      await createAppointment(payload)
-      setIsSuccess(true)
-      
-      // Reset form after 3 seconds or on navigation
-      setTimeout(() => {
-        setIsSuccess(false)
-        setFormData({
-          fullName: user?.name || '',
-          phoneNumber: patientProfile?.phoneNumber || '',
-          speciality: '',
-          doctorId: '',
-          date: '',
-          timeSlot: '',
-          reason: '',
-        })
-      }, 5000)
-    } catch (error) {
-      alert('Error booking appointment: ' + error.message)
-    } finally {
-      setIsSubmitting(false)
+    // Prepare appointment details for payment page
+    const appointmentDetails = {
+      fullName: formData.fullName,
+      email: formData.email,
+      phoneNumber: formData.phoneNumber,
+      doctorName: selectedDoctor ? `${selectedDoctor.firstName} ${selectedDoctor.lastName}` : 'Selected Doctor',
+      doctorId: numericDoctorId,
+      specialty: selectedDoctor?.specialization || '',
+      date: formData.date,
+      timeSlot: formData.timeSlot,
+      reason: formData.reason,
+      consultationType: selectedDoctor?.specialization + " Consultation - In-Person",
+      patientId: (user && patientProfile) ? patientProfile.id : (user ? user.id : null),
     }
+
+    // IMPORTANT: "Confirm Appointment" only navigates to payment page
+    // Appointments are created ONLY after successful payment in PaymentSuccess.jsx
+    navigate('/payment', { state: { appointmentDetails } })
   }
 
   if (isSuccess) {
@@ -199,9 +216,9 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
             <CheckCircle className="w-12 h-12" />
           </div>
-          <h2 className="text-3xl font-bold text-slate-800 mb-4">Booking Confirmed!</h2>
+          <h2 className="text-3xl font-bold text-slate-800 mb-4">Payment & Booking Confirmed!</h2>
           <p className="text-slate-600 mb-8">
-            Your appointment has been successfully scheduled. You will receive a confirmation message shortly.
+            Your payment was successful and appointment has been scheduled. You will receive a confirmation message shortly.
           </p>
           <button
             onClick={() => navigate('/')}
@@ -257,8 +274,8 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
               <h2 className="text-xl font-extrabold text-slate-800">Patient Details</h2>
               <p className="text-sm text-slate-500 mt-1">We use these details for confirmation and clinic coordination.</p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Full Name */}
               <div>
                 <label className="auth-label">
@@ -272,6 +289,23 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
                   onChange={handleInputChange}
                   required
                   placeholder="Enter your full name"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/10 outline-none transition-all"
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="auth-label">
+                  <span className="w-5 h-5 flex items-center justify-center font-bold">@</span>
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Enter your email"
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/10 outline-none transition-all"
                 />
               </div>
@@ -428,8 +462,8 @@ const Appointments = ({ user, patientProfile, onLoginClick }) => {
               <Clock className="w-5 h-5" />
             </div>
             <p className="text-sm text-slate-600 leading-relaxed">
-              <strong>Pre-Appointment Info:</strong> Please arrive 15 minutes before your scheduled time. 
-              Bring any relevant medical history or current prescriptions with you. 
+              <strong>Pre-Appointment Info:</strong> Please arrive 15 minutes before your scheduled time.
+              Bring any relevant medical history or current prescriptions with you.
               For cancellations, please notify us at least 24 hours in advance.
             </p>
           </div>

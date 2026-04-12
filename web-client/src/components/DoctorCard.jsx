@@ -15,7 +15,9 @@ const DoctorCard = ({ doctor }) => {
     consultationFee,
     isAvailableForTelemedicine,
     profilePhotoUrl,
-    status
+    status,
+    averageRating,
+    reviewCount
   } = doctor
 
   const fullName = `Dr. ${firstName} ${lastName}`
@@ -44,12 +46,11 @@ const DoctorCard = ({ doctor }) => {
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-        
+
         {/* Status Badge */}
         <div className="absolute top-4 left-4">
-          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md ${
-            status === 'APPROVED' ? 'bg-green-500/80 text-white' : 'bg-amber-500/80 text-white'
-          }`}>
+          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md ${status === 'APPROVED' ? 'bg-green-500/80 text-white' : 'bg-amber-500/80 text-white'
+            }`}>
             {status}
           </span>
         </div>
@@ -114,7 +115,7 @@ const DoctorCard = ({ doctor }) => {
 
       {/* Actions */}
       <div className="p-6 pt-0 mt-auto">
-        <Link 
+        <Link
           to={`/doctors/${id}`}
           className="flex items-center justify-center space-x-2 w-full py-4 bg-[#002d5a] text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#003d7a] transition-all shadow-xl shadow-blue-900/10 active:scale-95"
         >

@@ -55,7 +55,7 @@ const Profile = ({
         comment: reviewData.comment
       }, token)
       setReviewModalOpen(false)
-    } catch(err) {
+    } catch (err) {
       setAppointmentError(err.message)
     } finally {
       setIsUpdating(false)
@@ -308,25 +308,22 @@ const Profile = ({
             <div className="flex items-center bg-slate-100 p-1.5 rounded-2xl w-fit mb-8 border border-slate-200">
               <button
                 onClick={() => setActiveTab('profile')}
-                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                  activeTab === 'profile' ? 'bg-white text-[#0066cc] shadow-sm' : 'text-slate-500 hover:text-slate-800'
-                }`}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'profile' ? 'bg-white text-[#0066cc] shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                  }`}
               >
                 Profile
               </button>
               <button
                 onClick={() => setActiveTab('appointments')}
-                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                  activeTab === 'appointments' ? 'bg-white text-[#0066cc] shadow-sm' : 'text-slate-500 hover:text-slate-800'
-                }`}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'appointments' ? 'bg-white text-[#0066cc] shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                  }`}
               >
                 Appointments
               </button>
               <button
                 onClick={() => setActiveTab('support')}
-                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                  activeTab === 'support' ? 'bg-white text-[#0066cc] shadow-sm' : 'text-slate-500 hover:text-slate-800'
-                }`}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'support' ? 'bg-white text-[#0066cc] shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                  }`}
               >
                 Support Inquiries
               </button>
@@ -335,143 +332,143 @@ const Profile = ({
             <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 overflow-hidden">
               {activeTab === 'profile' && (
                 <div className="animate-in fade-in slide-in-from-bottom-4">
-                   <h3 className="text-lg font-black text-slate-900 mb-6">General Information</h3>
-                   <p className="text-slate-500 text-sm">Please update your profile information in the card above.</p>
+                  <h3 className="text-lg font-black text-slate-900 mb-6">General Information</h3>
+                  <p className="text-slate-500 text-sm">Please update your profile information in the card above.</p>
                 </div>
               )}
 
               {activeTab === 'appointments' && (
                 <div className="animate-in fade-in slide-in-from-bottom-4">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                    <Calendar className="w-6 h-6 text-[#0066cc]" />
-                    My Appointments
-                  </h2>
-                  <p className="text-sm text-slate-500 mt-1">Track and manage your scheduled hospital visits.</p>
-                </div>
-              </div>
-
-              {isLoadingAppointments ? (
-                <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-                  <Loader2 className="w-10 h-10 animate-spin mb-4 text-[#0066cc]" />
-                  <p className="text-sm">Fetching your history...</p>
-                </div>
-              ) : appointmentError ? (
-                <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
-                  <p>{appointmentError}</p>
-                </div>
-              ) : (appointments || []).length === 0 ? (
-                <div className="text-center py-12 rounded-xl border border-dashed border-slate-200">
-                  <Calendar className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-                  <h3 className="text-slate-900 font-semibold italic">No appointments found</h3>
-                  <p className="text-slate-500 text-sm mt-1">When you book a consultation, it will appear here.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {(appointments || []).map((app) => (
-                    <div key={app?.id} className="relative group rounded-2xl border border-slate-200 p-5 hover:border-[#0066cc]/40 hover:shadow-md transition-all">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-2 rounded-xl bg-slate-50 text-slate-400">
-                          <Calendar className="w-5 h-5" />
-                        </div>
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(app.status)}`}>
-                          {app.status}
-                        </span>
-                      </div>
-
-                      <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                        <UserIcon className="w-4 h-4 text-[#0066cc]" />
-                        {getDoctorName(app.doctorId)}
-                      </h4>
-
-                      <div className="mt-4 space-y-2 text-sm text-slate-600">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-slate-400" />
-                          <span>{new Date(app.appointmentDate).toLocaleDateString(undefined, {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-slate-400" />
-                          <span>{new Date(app.appointmentDate).toLocaleTimeString(undefined, {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}</span>
-                        </div>
-                      </div>
-
-                      <div className="mt-5 pt-4 border-t border-slate-100">
-                        {rescheduleData.id === app.id ? (
-                          <div className="flex flex-col gap-3">
-                            <input
-                              type="datetime-local"
-                              className="w-full text-xs p-2 rounded-lg border border-slate-200 outline-none focus:ring-1 focus:ring-[#0066cc]"
-                              value={rescheduleData.date}
-                              onChange={(e) => setRescheduleData({ ...rescheduleData, date: e.target.value })}
-                            />
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => handleReschedule(app.id)}
-                                disabled={isUpdating}
-                                className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-[#0066cc] text-white hover:bg-[#004d99] disabled:opacity-50"
-                              >
-                                {isUpdating ? 'Saving...' : 'Confirm'}
-                              </button>
-                              <button
-                                onClick={() => setRescheduleData({ id: null, date: '' })}
-                                className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-400"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5 text-[#0066cc] text-xs font-semibold">
-                              <BadgeCheck className="w-4 h-4" />
-                              Verified
-                            </div>
-                            {['PENDING', 'SCHEDULED', 'BOOKED'].includes(app?.status?.toUpperCase()) && canReschedule(app?.appointmentDate) && (
-                              <button
-                                onClick={() => setRescheduleData({ id: app.id, date: app.appointmentDate })}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066cc]/10 text-[#0066cc] text-xs font-bold hover:bg-[#0066cc] hover:text-white transition-all"
-                              >
-                                <Calendar className="w-3.5 h-3.5" />
-                                Reschedule
-                              </button>
-                            )}
-                            {['BOOKED', 'SCHEDULED', 'ACCEPTED'].includes(app?.status?.toUpperCase()) && (
-                              <button
-                                onClick={() => handleJoinTelemedicine(app.id)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-xs font-bold hover:bg-green-600 hover:text-white transition-all shadow-sm shadow-green-200/50"
-                              >
-                                <Video className="w-3.5 h-3.5" />
-                                Join Video
-                              </button>
-                            )}
-                            {['COMPLETED'].includes(app?.status?.toUpperCase()) && (
-                              <button
-                                onClick={() => {
-                                  setReviewData({ appointmentId: app.id, doctorId: app.doctorId, rating: 5, comment: '' })
-                                  setReviewModalOpen(true)
-                                }}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 text-xs font-bold hover:bg-amber-500 hover:text-white transition-all shadow-sm"
-                              >
-                                <Star className="w-3.5 h-3.5" />
-                                Leave Review
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                        <Calendar className="w-6 h-6 text-[#0066cc]" />
+                        My Appointments
+                      </h2>
+                      <p className="text-sm text-slate-500 mt-1">Track and manage your scheduled hospital visits.</p>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+
+                  {isLoadingAppointments ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                      <Loader2 className="w-10 h-10 animate-spin mb-4 text-[#0066cc]" />
+                      <p className="text-sm">Fetching your history...</p>
+                    </div>
+                  ) : appointmentError ? (
+                    <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+                      <p>{appointmentError}</p>
+                    </div>
+                  ) : (appointments || []).length === 0 ? (
+                    <div className="text-center py-12 rounded-xl border border-dashed border-slate-200">
+                      <Calendar className="w-12 h-12 text-slate-200 mx-auto mb-3" />
+                      <h3 className="text-slate-900 font-semibold italic">No appointments found</h3>
+                      <p className="text-slate-500 text-sm mt-1">When you book a consultation, it will appear here.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {(appointments || []).map((app) => (
+                        <div key={app?.id} className="relative group rounded-2xl border border-slate-200 p-5 hover:border-[#0066cc]/40 hover:shadow-md transition-all">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-2 rounded-xl bg-slate-50 text-slate-400">
+                              <Calendar className="w-5 h-5" />
+                            </div>
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(app.status)}`}>
+                              {app.status}
+                            </span>
+                          </div>
+
+                          <h4 className="font-bold text-slate-900 flex items-center gap-2">
+                            <UserIcon className="w-4 h-4 text-[#0066cc]" />
+                            {getDoctorName(app.doctorId)}
+                          </h4>
+
+                          <div className="mt-4 space-y-2 text-sm text-slate-600">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-slate-400" />
+                              <span>{new Date(app.appointmentDate).toLocaleDateString(undefined, {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-slate-400" />
+                              <span>{new Date(app.appointmentDate).toLocaleTimeString(undefined, {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}</span>
+                            </div>
+                          </div>
+
+                          <div className="mt-5 pt-4 border-t border-slate-100">
+                            {rescheduleData.id === app.id ? (
+                              <div className="flex flex-col gap-3">
+                                <input
+                                  type="datetime-local"
+                                  className="w-full text-xs p-2 rounded-lg border border-slate-200 outline-none focus:ring-1 focus:ring-[#0066cc]"
+                                  value={rescheduleData.date}
+                                  onChange={(e) => setRescheduleData({ ...rescheduleData, date: e.target.value })}
+                                />
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleReschedule(app.id)}
+                                    disabled={isUpdating}
+                                    className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-[#0066cc] text-white hover:bg-[#004d99] disabled:opacity-50"
+                                  >
+                                    {isUpdating ? 'Saving...' : 'Confirm'}
+                                  </button>
+                                  <button
+                                    onClick={() => setRescheduleData({ id: null, date: '' })}
+                                    className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-400"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5 text-[#0066cc] text-xs font-semibold">
+                                  <BadgeCheck className="w-4 h-4" />
+                                  Verified
+                                </div>
+                                {['PENDING', 'SCHEDULED', 'BOOKED'].includes(app?.status?.toUpperCase()) && canReschedule(app?.appointmentDate) && (
+                                  <button
+                                    onClick={() => setRescheduleData({ id: app.id, date: app.appointmentDate })}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0066cc]/10 text-[#0066cc] text-xs font-bold hover:bg-[#0066cc] hover:text-white transition-all"
+                                  >
+                                    <Calendar className="w-3.5 h-3.5" />
+                                    Reschedule
+                                  </button>
+                                )}
+                                {['BOOKED', 'SCHEDULED', 'ACCEPTED'].includes(app?.status?.toUpperCase()) && (
+                                  <button
+                                    onClick={() => handleJoinTelemedicine(app.id)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-xs font-bold hover:bg-green-600 hover:text-white transition-all shadow-sm shadow-green-200/50"
+                                  >
+                                    <Video className="w-3.5 h-3.5" />
+                                    Join Video
+                                  </button>
+                                )}
+                                {['COMPLETED'].includes(app?.status?.toUpperCase()) && (
+                                  <button
+                                    onClick={() => {
+                                      setReviewData({ appointmentId: app.id, doctorId: app.doctorId, rating: 5, comment: '' })
+                                      setReviewModalOpen(true)
+                                    }}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 text-xs font-bold hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+                                  >
+                                    <Star className="w-3.5 h-3.5" />
+                                    Leave Review
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -503,13 +500,12 @@ const Profile = ({
                               </span>
                               <h3 className="text-xl font-black text-slate-900">{form.subject}</h3>
                             </div>
-                            <span className={`h-fit px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                              form.status === 'REPLIED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                            }`}>
+                            <span className={`h-fit px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${form.status === 'REPLIED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                              }`}>
                               {form.status || 'PENDING'}
                             </span>
                           </div>
-                          
+
                           <div className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm mb-6 text-slate-600 italic font-medium">
                             "{form.message}"
                           </div>
@@ -654,33 +650,30 @@ const Profile = ({
           <div className="flex items-center bg-slate-100 p-2 rounded-[2rem] w-fit mb-12 border border-slate-200 shadow-inner">
             <button
               onClick={() => setActiveTab('profile')}
-              className={`flex items-center space-x-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${
-                activeTab === 'profile' 
-                ? 'bg-[#002d5a] text-white shadow-xl scale-105' 
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
-              }`}
+              className={`flex items-center space-x-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'profile'
+                  ? 'bg-[#002d5a] text-white shadow-xl scale-105'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+                }`}
             >
               <UserIcon className={`w-4 h-4 ${activeTab === 'profile' ? 'text-blue-300' : 'text-slate-400'}`} />
               <span>Clinical Profile</span>
             </button>
             <button
               onClick={() => setActiveTab('appointments')}
-              className={`flex items-center space-x-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${
-                activeTab === 'appointments' 
-                ? 'bg-[#002d5a] text-white shadow-xl scale-105' 
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
-              }`}
+              className={`flex items-center space-x-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'appointments'
+                  ? 'bg-[#002d5a] text-white shadow-xl scale-105'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+                }`}
             >
               <Clock className={`w-4 h-4 ${activeTab === 'appointments' ? 'text-blue-300' : 'text-slate-400'}`} />
               <span>Patient Consultations</span>
             </button>
             <button
               onClick={() => setActiveTab('leaves')}
-              className={`flex items-center space-x-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${
-                activeTab === 'leaves' 
-                ? 'bg-[#002d5a] text-white shadow-xl scale-105' 
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
-              }`}
+              className={`flex items-center space-x-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'leaves'
+                  ? 'bg-[#002d5a] text-white shadow-xl scale-105'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+                }`}
             >
               <Calendar className={`w-4 h-4 ${activeTab === 'leaves' ? 'text-blue-300' : 'text-slate-400'}`} />
               <span>Manage Leaves</span>
@@ -718,10 +711,10 @@ const Profile = ({
                       <Stethoscope className="w-10 h-10" />
                     </div>
                     <div className="space-y-2">
-                       <h2 className="text-3xl font-black text-[#002d5a]">Profile Incomplete</h2>
-                       <p className="text-slate-500 font-medium max-w-md mx-auto">You must first complete your professional clinical profile before you can manage leaves or consultations.</p>
+                      <h2 className="text-3xl font-black text-[#002d5a]">Profile Incomplete</h2>
+                      <p className="text-slate-500 font-medium max-w-md mx-auto">You must first complete your professional clinical profile before you can manage leaves or consultations.</p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setActiveTab('profile')}
                       className="px-10 py-4 bg-[#002d5a] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#003d7a] transition-all shadow-xl"
                     >
@@ -731,100 +724,98 @@ const Profile = ({
                 ) : (
                   <>
                     {/* Leave Request Form */}
-                <div className="bg-white rounded-[3rem] p-10 md:p-16 border border-slate-100 shadow-xl space-y-10">
-                  <div className="space-y-2">
-                    <h2 className="text-3xl font-black text-[#002d5a]">Request Time-Off</h2>
-                    <p className="text-slate-500 font-medium">Submit your leave request for administrative approval.</p>
-                  </div>
+                    <div className="bg-white rounded-[3rem] p-10 md:p-16 border border-slate-100 shadow-xl space-y-10">
+                      <div className="space-y-2">
+                        <h2 className="text-3xl font-black text-[#002d5a]">Request Time-Off</h2>
+                        <p className="text-slate-500 font-medium">Submit your leave request for administrative approval.</p>
+                      </div>
 
-                  <form onSubmit={handleRequestLeave} className="grid md:grid-cols-2 gap-8 items-end">
-                    <div className="space-y-4">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Start Date</label>
-                      <input 
-                        type="date" 
-                        required
-                        value={leaveForm.startDate}
-                        onChange={(e) => setLeaveForm({...leaveForm, startDate: e.target.value})}
-                        className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-bold text-[#002d5a]"
-                      />
-                    </div>
-                    <div className="space-y-4">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">End Date</label>
-                      <input 
-                        type="date" 
-                        required
-                        value={leaveForm.endDate}
-                        onChange={(e) => setLeaveForm({...leaveForm, endDate: e.target.value})}
-                        className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-bold text-[#002d5a]"
-                      />
-                    </div>
-                    <div className="md:col-span-2 space-y-4">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Reason (Optional)</label>
-                      <textarea 
-                        value={leaveForm.reason}
-                        onChange={(e) => setLeaveForm({...leaveForm, reason: e.target.value})}
-                        placeholder="Clinical conferences, personal reasons, etc."
-                        rows="3"
-                        className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium text-slate-600 resize-none"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <button 
-                        type="submit"
-                        disabled={isRequestingLeave}
-                        className="w-full md:w-fit px-12 py-5 bg-[#002d5a] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#003d7a] transition-all shadow-xl shadow-blue-900/10 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isRequestingLeave ? 'Submitting Request...' : 'Submit Leave Request'}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-
-                {/* Leaves History */}
-                <div className="space-y-6">
-                  <h3 className="text-xl font-black text-[#002d5a] px-2">Leave History & Status</h3>
-                  {leaves.length > 0 ? (
-                    <div className="grid gap-4">
-                      {leaves.map((leave, i) => (
-                        <div key={leave.id || i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md transition-shadow">
-                          <div className="flex items-center space-x-6">
-                             <div className={`p-4 rounded-2xl ${
-                               leave.status === 'APPROVED' ? 'bg-green-50 text-green-600' : 
-                               leave.status === 'REJECTED' ? 'bg-red-50 text-red-600' : 
-                               'bg-amber-50 text-amber-600'
-                             }`}>
-                               <Calendar className="w-6 h-6" />
-                             </div>
-                             <div>
-                                <p className="text-lg font-extrabold text-[#002d5a]">
-                                  {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
-                                </p>
-                                <p className="text-sm text-slate-500 font-medium">{leave.reason || 'No reason provided'}</p>
-                             </div>
-                          </div>
-                          <div className="flex items-center space-x-4">
-                             <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                               leave.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 
-                               leave.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 
-                               'bg-amber-100 text-amber-700'
-                             }`}>
-                               {leave.status}
-                             </span>
-                          </div>
+                      <form onSubmit={handleRequestLeave} className="grid md:grid-cols-2 gap-8 items-end">
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Start Date</label>
+                          <input
+                            type="date"
+                            required
+                            value={leaveForm.startDate}
+                            onChange={(e) => setLeaveForm({ ...leaveForm, startDate: e.target.value })}
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-bold text-[#002d5a]"
+                          />
                         </div>
-                      ))}
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">End Date</label>
+                          <input
+                            type="date"
+                            required
+                            value={leaveForm.endDate}
+                            onChange={(e) => setLeaveForm({ ...leaveForm, endDate: e.target.value })}
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-bold text-[#002d5a]"
+                          />
+                        </div>
+                        <div className="md:col-span-2 space-y-4">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Reason (Optional)</label>
+                          <textarea
+                            value={leaveForm.reason}
+                            onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
+                            placeholder="Clinical conferences, personal reasons, etc."
+                            rows="3"
+                            className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium text-slate-600 resize-none"
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <button
+                            type="submit"
+                            disabled={isRequestingLeave}
+                            className="w-full md:w-fit px-12 py-5 bg-[#002d5a] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#003d7a] transition-all shadow-xl shadow-blue-900/10 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isRequestingLeave ? 'Submitting Request...' : 'Submit Leave Request'}
+                          </button>
+                        </div>
+                      </form>
                     </div>
-                  ) : (
-                    <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem]">
-                       <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                       <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No leave requests found</p>
+
+                    {/* Leaves History */}
+                    <div className="space-y-6">
+                      <h3 className="text-xl font-black text-[#002d5a] px-2">Leave History & Status</h3>
+                      {leaves.length > 0 ? (
+                        <div className="grid gap-4">
+                          {leaves.map((leave, i) => (
+                            <div key={leave.id || i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md transition-shadow">
+                              <div className="flex items-center space-x-6">
+                                <div className={`p-4 rounded-2xl ${leave.status === 'APPROVED' ? 'bg-green-50 text-green-600' :
+                                    leave.status === 'REJECTED' ? 'bg-red-50 text-red-600' :
+                                      'bg-amber-50 text-amber-600'
+                                  }`}>
+                                  <Calendar className="w-6 h-6" />
+                                </div>
+                                <div>
+                                  <p className="text-lg font-extrabold text-[#002d5a]">
+                                    {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
+                                  </p>
+                                  <p className="text-sm text-slate-500 font-medium">{leave.reason || 'No reason provided'}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-4">
+                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${leave.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                                    leave.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                                      'bg-amber-100 text-amber-700'
+                                  }`}>
+                                  {leave.status}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem]">
+                          <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                          <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No leave requests found</p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </>
-            )}
-          </motion.div>
-        ) : (
+                  </>
+                )}
+              </motion.div>
+            ) : (
               <motion.div
                 key="appointments"
                 initial={{ opacity: 0, y: 20 }}
@@ -885,46 +876,46 @@ const Profile = ({
                               <div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Visit Date</p>
                                 <div className="flex items-center gap-2.5 text-sm font-bold text-slate-700">
-                                   <Calendar className="w-4 h-4 text-slate-400" />
-                                   {new Date(app.appointmentDate).toLocaleDateString()}
+                                  <Calendar className="w-4 h-4 text-slate-400" />
+                                  {new Date(app.appointmentDate).toLocaleDateString()}
                                 </div>
                               </div>
                               <div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Arrival Time</p>
                                 <div className="flex items-center gap-2.5 text-sm font-bold text-slate-700">
-                                   <Clock className="w-4 h-4 text-slate-400" />
-                                   {new Date(app.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  <Clock className="w-4 h-4 text-slate-400" />
+                                  {new Date(app.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                               </div>
                             </div>
                           </div>
 
                           <div className="mt-10 pt-8 border-t border-slate-50 flex gap-4">
-                             {app.status === 'PENDING' && (
-                               <button 
-                                 onClick={() => handleAction(completeAppointment, app.id)}
-                                 className="flex-1 py-4 bg-[#00a69c] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#008d84] transition-all shadow-xl shadow-cyan-500/20 active:scale-95"
-                               >
-                                 Complete Visit
-                               </button>
-                             )}
-                             {['BOOKED', 'ACCEPTED', 'PENDING'].includes(app.status?.toUpperCase()) && (
-                               <button 
-                                 onClick={() => handleStartTelemedicine(app.id)}
-                                 className="flex-1 py-4 bg-[#002d5a] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#003d7a] transition-all shadow-xl shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2"
-                               >
-                                 <Video className="w-4 h-4 text-blue-300" />
-                                 Start Session
-                               </button>
-                             )}
-                             {['PENDING', 'SCHEDULED'].includes(app.status?.toUpperCase()) && (
-                               <button 
-                                 onClick={() => handleAction(cancelAppointment, app.id)}
-                                   className="flex-1 py-4 bg-red-50 text-red-600 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-red-100 transition-all active:scale-95"
-                               >
-                                 Deny Visit
-                               </button>
-                             )}
+                            {app.status === 'PENDING' && (
+                              <button
+                                onClick={() => handleAction(completeAppointment, app.id)}
+                                className="flex-1 py-4 bg-[#00a69c] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#008d84] transition-all shadow-xl shadow-cyan-500/20 active:scale-95"
+                              >
+                                Complete Visit
+                              </button>
+                            )}
+                            {['BOOKED', 'ACCEPTED', 'PENDING'].includes(app.status?.toUpperCase()) && (
+                              <button
+                                onClick={() => handleStartTelemedicine(app.id)}
+                                className="flex-1 py-4 bg-[#002d5a] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#003d7a] transition-all shadow-xl shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2"
+                              >
+                                <Video className="w-4 h-4 text-blue-300" />
+                                Start Session
+                              </button>
+                            )}
+                            {['PENDING', 'SCHEDULED'].includes(app.status?.toUpperCase()) && (
+                              <button
+                                onClick={() => handleAction(cancelAppointment, app.id)}
+                                className="flex-1 py-4 bg-red-50 text-red-600 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-red-100 transition-all active:scale-95"
+                              >
+                                Deny Visit
+                              </button>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -933,7 +924,7 @@ const Profile = ({
                 </div>
               </motion.div>
             )}
-        </AnimatePresence>
+          </AnimatePresence>
         </div>
       )}
       {/* Review Modal */}
@@ -946,16 +937,16 @@ const Profile = ({
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl relative"
             >
-              <button 
+              <button
                 onClick={() => setReviewModalOpen(false)}
                 className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
-              
+
               <h2 className="text-2xl font-black text-[#002d5a] mb-2">Rate Your Visit</h2>
               <p className="text-sm text-slate-500 font-medium mb-8">Share your experience to help others find the best care.</p>
-              
+
               <div className="flex items-center justify-center gap-2 mb-8">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -968,7 +959,7 @@ const Profile = ({
                   </button>
                 ))}
               </div>
-              
+
               <div className="space-y-4 mb-8">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Comments</label>
                 <textarea
@@ -979,7 +970,7 @@ const Profile = ({
                   className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-medium text-slate-600 resize-none"
                 />
               </div>
-              
+
               <button
                 onClick={handleSubmitReview}
                 disabled={isUpdating || !reviewData.comment.trim()}

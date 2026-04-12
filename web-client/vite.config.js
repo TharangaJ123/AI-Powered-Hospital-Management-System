@@ -10,6 +10,10 @@ export default defineConfig({
         target: 'http://localhost:8099',
         changeOrigin: true,
       },
+      '/api/payments': {
+        target: 'http://localhost:8084',
+        changeOrigin: true,
+      },
     },
   },
 })
