@@ -20,6 +20,7 @@ import com.sliit.hospitalManagementSystem.payment_service.dto.PaymentInitiationR
 import com.sliit.hospitalManagementSystem.payment_service.dto.PaymentStatusResponse;
 import com.sliit.hospitalManagementSystem.payment_service.model.PaymentRecord;
 import com.sliit.hospitalManagementSystem.payment_service.model.PaymentState;
+import com.sliit.hospitalManagementSystem.payment_service.service.NotificationServiceClient;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +29,8 @@ import lombok.RequiredArgsConstructor;
 public class PayHereService {
 
 	private final PayHereProperties payHereProperties;
+	private final NotificationServiceClient notificationServiceClient;
+	private final AppointmentServiceClient appointmentServiceClient;
 	private final Map<String, PaymentRecord> paymentStore = new ConcurrentHashMap<>();
 
 	public PaymentInitiationResponse initiatePayment(PaymentInitiationRequest request) {
@@ -41,6 +44,15 @@ public class PayHereService {
 				.currency(payHereProperties.getCurrency())
 				.state(PaymentState.PENDING)
 				.message("Payment initiated")
+				.customerEmail(request.getEmail())
+				.customerName(request.getFirstName() + " " + request.getLastName())
+				.customerPhone(request.getPhone())
+				.items(request.getItems())
+				.patientId(request.getPatientId())
+				.doctorId(request.getDoctorId())
+				.appointmentDate(request.getAppointmentDate())
+				.consultationType(request.getConsultationType())
+				.reason(request.getReason())
 				.updatedAt(Instant.now())
 				.build());
 
@@ -84,7 +96,7 @@ public class PayHereService {
 				? PaymentState.SUCCESS
 				: PaymentState.FAILED;
 
-		paymentStore.compute(notifyRequest.getOrderId(), (orderId, existing) -> {
+		PaymentRecord updatedRecord = paymentStore.compute(notifyRequest.getOrderId(), (orderId, existing) -> {
 			BigDecimal amount = existing != null ? existing.getAmount() : new BigDecimal(notifyRequest.getPayhereAmount());
 			String currency = existing != null ? existing.getCurrency() : notifyRequest.getPayhereCurrency();
 
@@ -95,9 +107,55 @@ public class PayHereService {
 					.currency(currency)
 					.state(state)
 					.message(notifyRequest.getStatusMessage())
+					.customerEmail(existing != null ? existing.getCustomerEmail() : null)
+					.customerName(existing != null ? existing.getCustomerName() : null)
+					.customerPhone(existing != null ? existing.getCustomerPhone() : null)
+					.items(existing != null ? existing.getItems() : null)
+					.patientId(existing != null ? existing.getPatientId() : null)
+					.doctorId(existing != null ? existing.getDoctorId() : null)
+					.appointmentDate(existing != null ? existing.getAppointmentDate() : null)
+					.consultationType(existing != null ? existing.getConsultationType() : null)
+					.reason(existing != null ? existing.getReason() : null)
 					.updatedAt(Instant.now())
 					.build();
 		});
+
+		// Send notifications and handle appointment booking based on payment status
+		if (updatedRecord.getCustomerEmail() != null) {
+			if (state == PaymentState.SUCCESS) {
+				// Send payment success email
+				notificationServiceClient.sendPaymentSuccessEmail(
+					updatedRecord.getCustomerEmail(),
+					updatedRecord.getCustomerName(),
+					updatedRecord.getOrderId(),
+					formatAmount(updatedRecord.getAmount()),
+					updatedRecord.getPaymentId(),
+					updatedRecord.getItems()
+				);
+
+				// Automatically create appointment after successful payment
+				if (updatedRecord.getPatientId() != null && updatedRecord.getDoctorId() != null) {
+					appointmentServiceClient.createAppointmentAfterPayment(
+						updatedRecord.getPatientId(),
+						updatedRecord.getDoctorId(),
+						updatedRecord.getAppointmentDate(),
+						updatedRecord.getCustomerName(),
+						updatedRecord.getCustomerEmail(),
+						updatedRecord.getCustomerPhone(),
+						updatedRecord.getReason(),
+						updatedRecord.getConsultationType()
+					);
+				}
+			} else if (state == PaymentState.FAILED) {
+				notificationServiceClient.sendPaymentFailureEmail(
+					updatedRecord.getCustomerEmail(),
+					updatedRecord.getCustomerName(),
+					updatedRecord.getOrderId(),
+					formatAmount(updatedRecord.getAmount()),
+					updatedRecord.getMessage()
+				);
+			}
+		}
 
 		return true;
 	}

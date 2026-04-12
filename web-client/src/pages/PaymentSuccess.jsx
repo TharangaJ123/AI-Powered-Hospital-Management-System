@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { CheckCircle, ArrowLeft } from 'lucide-react'
 import { createAppointment } from '../services/appointments'
@@ -9,19 +9,41 @@ const PaymentSuccess = ({ session }) => {
   const [isProcessing, setIsProcessing] = useState(true)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState(null)
+  const [appointmentCreated, setAppointmentCreated] = useState(false)
+  const isProcessingRef = useRef(false)
 
   const user = session?.user
   const token = session?.token
 
   useEffect(() => {
     const completePayment = async () => {
+      // Prevent multiple appointment creations (React StrictMode protection)
+      if (appointmentCreated || isProcessingRef.current) {
+        return
+      }
+      
+      // Set processing flag immediately
+      isProcessingRef.current = true
+      
+      // Get and immediately remove pending appointment to prevent refresh duplicates
+      const pendingAppointment = localStorage.getItem('pendingAppointment')
+      if (pendingAppointment) {
+        localStorage.removeItem('pendingAppointment')
+      }
+      if (!pendingAppointment) {
+        setError('No pending appointment found')
+        setIsProcessing(false)
+        isProcessingRef.current = false
+        return
+      }
+      
       try {
         // Get order ID from URL params or query string
         const urlParams = new URLSearchParams(location.search)
         const orderId = urlParams.get('order_id')
         
-        // Get appointment details from localStorage or session
-        const appointmentDetails = JSON.parse(localStorage.getItem('pendingAppointment') || '{}')
+        // Get appointment details from localStorage
+        const appointmentDetails = JSON.parse(pendingAppointment)
         
         if (!appointmentDetails.doctorName) {
           setError('No appointment details found')
@@ -29,8 +51,9 @@ const PaymentSuccess = ({ session }) => {
           return
         }
 
-        // Create appointment after successful payment
-        const appointmentDate = new Date(`${appointmentDetails.date}T${appointmentDetails.timeSlot}:00`).toISOString()
+        // ONLY PLACE where appointments are created - after successful payment
+        // Pass the exact date and time selected without UTC offset conversion
+        const appointmentDate = `${appointmentDetails.date}T${appointmentDetails.timeSlot}:00`
         
         const payload = {
           patientId: appointmentDetails.patientId,
@@ -40,13 +63,16 @@ const PaymentSuccess = ({ session }) => {
           email: appointmentDetails.email,
           phoneNumber: appointmentDetails.phoneNumber,
           reason: appointmentDetails.reason,
-          consultationType: appointmentDetails.consultationType
+          consultationType: appointmentDetails.consultationType,
+          doctorName:appointmentDetails.doctorName,
+          timeSlot:appointmentDetails.timeSlot,
+          specialty: appointmentDetails.specialty
         }
         
         await createAppointment(payload, token)
         
-        // Clear pending appointment
-        localStorage.removeItem('pendingAppointment')
+        // Set flag to prevent duplicate appointments
+        setAppointmentCreated(true)
         
         setIsSuccess(true)
         setIsProcessing(false)
@@ -64,11 +90,12 @@ const PaymentSuccess = ({ session }) => {
       } catch (err) {
         setError('Payment successful but appointment booking failed: ' + err.message)
         setIsProcessing(false)
+        isProcessingRef.current = false
       }
     }
 
     completePayment()
-  }, [location, navigate, token])
+  }, [navigate, token, appointmentCreated])
 
   if (isProcessing) {
     return (

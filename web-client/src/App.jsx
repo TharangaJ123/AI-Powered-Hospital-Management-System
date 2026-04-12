@@ -69,14 +69,18 @@ function App() {
         setProfileError('')
       } catch (error) {
         console.error('Patient profile error:', error)
+        
+        // Check if token is expired (401 Unauthorized)
+        if (error.message.includes('HTTP 401') || error.message.includes('401') || error.message.includes('Unauthorized')) {
+          console.log('Token expired, logging out...')
+          handleLogout()
+          return
+        }
+        
         // Don't block the app if patient profile fails - user can still book appointments
         setPatientProfile(null)
         setProfileError('') // Clear error so app continues
-        
-        // Only show error in development
-        if (import.meta.env.DEV) {
-          console.warn('Patient profile loading failed, but continuing without it. Error:', error.message)
-        }
+        console.log('Patient profile loading failed, but continuing without it. Error:', error.message)
       }
     }
 

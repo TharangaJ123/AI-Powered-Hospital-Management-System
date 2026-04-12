@@ -99,7 +99,7 @@ export const getPatientProfile = async ({ userId, token }) => {
 
   if (!response.ok) {
     const payload = await response.json().catch(() => null)
-    const message = payload?.message || 'Unable to load patient profile.'
+    const message = payload?.message || `HTTP ${response.status}: Unable to load patient profile.`
     throw new Error(message)
   }
 

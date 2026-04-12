@@ -120,8 +120,9 @@ export const getAppointmentsByDoctor = async (doctorId, token) => {
   return response.json()
 }
 
-export const checkDoctorAvailabilityByDate = async (doctorId, date) => {
-  const response = await fetch(`${API_BASE}/appointments/availability?doctorId=${doctorId}&date=${date}`, {
+export const checkDoctorAvailabilityByDate = async (doctorId, date, time = '') => {
+  const timeQuery = time ? `&time=${time}` : '';
+  const response = await fetch(`${API_BASE}/appointments/availability?doctorId=${doctorId}&date=${date}${timeQuery}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

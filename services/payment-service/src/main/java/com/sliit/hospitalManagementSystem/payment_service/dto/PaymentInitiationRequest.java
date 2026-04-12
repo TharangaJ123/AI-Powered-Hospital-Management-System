@@ -44,5 +44,12 @@ public class PaymentInitiationRequest {
 
 	@NotBlank
 	private String country;
+
+	// Appointment details for automatic booking after payment
+	private String patientId;
+	private String doctorId;
+	private String appointmentDate;
+	private String consultationType;
+	private String reason;
 }
 

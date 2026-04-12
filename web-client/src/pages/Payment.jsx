@@ -8,13 +8,10 @@ import {
   CheckCircle, 
   AlertCircle,
   Calendar,
-  User,
-  Stethoscope,
   Clock,
-  Upload,
-  FileText
+  User,
+  Stethoscope
 } from 'lucide-react'
-import { createAppointment } from '../services/appointments'
 
 const Payment = ({ session }) => {
   const navigate = useNavigate()
@@ -23,8 +20,6 @@ const Payment = ({ session }) => {
   const [isSuccess, setIsSuccess] = useState(false)
   const [errors, setErrors] = useState({})
   const [selectedMethod, setSelectedMethod] = useState('card')
-  const [receiptFile, setReceiptFile] = useState(null)
-  const [receiptPreview, setReceiptPreview] = useState(null)
   
   // Get user and token from session
   const user = session?.user
@@ -46,7 +41,7 @@ const Payment = ({ session }) => {
     ifscCode: ''
   })
 
-  const consultationFee = 500 // Fixed consultation fee
+  const consultationFee = 2500 // Fixed consultation fee
   const platformFee = 50
   const totalAmount = consultationFee + platformFee
 
@@ -118,10 +113,6 @@ const Payment = ({ session }) => {
       } else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifscCode.toUpperCase())) {
         newErrors.ifscCode = 'Invalid IFSC code'
       }
-    } else if (selectedMethod === 'receipt') {
-      if (!receiptFile) {
-        newErrors.receipt = 'Please upload a payment receipt'
-      }
     }
     
     setErrors(newErrors)
@@ -145,55 +136,23 @@ const Payment = ({ session }) => {
     setIsProcessing(true)
     
     try {
-      if (selectedMethod === 'receipt') {
-        // For receipt upload, simulate verification process
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        
-        // Show success message for receipt upload
-        setIsSuccess(true)
-        
-        // After success, redirect to appointments page after 3 seconds
-        setTimeout(() => {
-          navigate('/appointments', { 
-            state: { 
-              paymentSuccess: true,
-              appointmentDetails: appointmentDetails,
-              receiptUpload: true
-            } 
-          })
-        }, 3000)
-      } else {
-        // Simulate payment processing for other methods
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        
-        // Create appointment after successful payment
-        const appointmentDate = new Date(`${appointmentDetails.date}T${appointmentDetails.timeSlot}:00`).toISOString()
-        
-        const payload = {
-          patientId: appointmentDetails.patientId,
-          doctorId: appointmentDetails.doctorId,
-          appointmentDate: appointmentDate,
-          fullName: appointmentDetails.fullName,
-          email: appointmentDetails.email,
-          phoneNumber: appointmentDetails.phoneNumber,
-          reason: appointmentDetails.reason,
-          consultationType: appointmentDetails.consultationType
-        }
-        
-        await createAppointment(payload, token)
-        
-        setIsSuccess(true)
-        
-        // After success, redirect to appointments page after 3 seconds
-        setTimeout(() => {
-          navigate('/appointments', { 
-            state: { 
-              paymentSuccess: true,
-              appointmentDetails: appointmentDetails 
-            } 
-          })
-        }, 3000)
-      }
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // Store appointment details for PaymentSuccess page to create appointment
+      localStorage.setItem('pendingAppointment', JSON.stringify(appointmentDetails))
+      
+      setIsSuccess(true)
+      
+      // After success, redirect to PaymentSuccess page after 3 seconds
+      setTimeout(() => {
+        navigate('/payment-success', { 
+          state: { 
+            paymentSuccess: true,
+            appointmentDetails: appointmentDetails 
+          } 
+        })
+      }, 3000)
     } catch (error) {
       setIsProcessing(false)
       alert('Payment processing failed: ' + error.message)
@@ -220,41 +179,21 @@ const Payment = ({ session }) => {
     setFormData(prev => ({ ...prev, cardNumber: formatted }))
   }
 
-  const handleReceiptUpload = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      // Check file type
-      if (!file.type.match(/^(image\/(jpeg|jpg|png)|application\/pdf)$/)) {
-        alert('Please upload an image (JPG, PNG) or PDF file')
-        return
-      }
-      
-      // Check file size (5MB limit)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB')
-        return
-      }
-
-      setReceiptFile(file)
-      
-      // Create preview for images
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          setReceiptPreview(e.target.result)
-        }
-        reader.readAsDataURL(file)
-      } else {
-        setReceiptPreview(null)
-      }
-    }
-  }
 
   const initiatePayHerePayment = async () => {
     // Check if backend is ready
     if (!payhereReady) {
-      console.error('❌ Backend payment system not ready...')
+      console.error('PayHere backend payment system not ready...')
       alert('Payment system is initializing. Please wait a moment and try again.')
+      setIsProcessing(false)
+      return
+    }
+
+    // Check rate limiting - prevent too rapid requests
+    const lastPaymentAttempt = localStorage.getItem('lastPaymentAttempt')
+    const now = Date.now()
+    if (lastPaymentAttempt && (now - parseInt(lastPaymentAttempt)) < 5000) {
+      alert('Please wait a few seconds before trying again.')
       setIsProcessing(false)
       return
     }
@@ -264,24 +203,18 @@ const Payment = ({ session }) => {
     
     // Check if running in development
     if (window.location.hostname === 'localhost') {
-      console.log('🌐 PayHere backend API mode: sandbox')
-      console.log('🔗 Backend URL: http://localhost:8084')
-      console.log('🔄 Redirect URLs:', window.location.origin)
+      console.log('PayHere backend API mode: sandbox')
+      console.log('Backend URL: http://localhost:8084')
+      console.log('Redirect URLs:', window.location.origin)
     }
     
-    // Backend API integration - payment data sent to backend
-
     // Save appointment details for success page
     localStorage.setItem('pendingAppointment', JSON.stringify(appointmentDetails))
-
-    // Payment is configured with real merchant ID
-    // No validation needed as we're using actual credentials
-
-    // Debug: Backend will handle payment object
+    localStorage.setItem('lastPaymentAttempt', now.toString())
     
     // Start PayHere payment via backend API
     try {
-      console.log('🚀 Starting PayHere payment via backend API...')
+      console.log('Starting PayHere payment via backend API...')
       
       // Call backend to get PayHere checkout URL
       const response = await fetch('http://localhost:8084/api/payments/payhere/initiate', {
@@ -295,24 +228,33 @@ const Payment = ({ session }) => {
           items: `Appointment with ${appointmentDetails.doctorName}`,
           firstName: appointmentDetails.fullName.split(' ')[0] || 'Patient',
           lastName: appointmentDetails.fullName.split(' ').slice(1).join(' ') || 'Name',
-          email: appointmentDetails.email || 'patient@example.com',
+          email: appointmentDetails.email || '',
           phone: appointmentDetails.phoneNumber || '0000000000',
           address: "Colombo",
           city: "Colombo",
-          country: "Sri Lanka"
+          country: "Sri Lanka",
+          // Appointment details for automatic booking after payment
+          patientId: appointmentDetails.patientId,
+          doctorId: appointmentDetails.doctorId,
+          appointmentDate: new Date(`${appointmentDetails.date}T${appointmentDetails.timeSlot}:00`).toISOString(),
+          consultationType: appointmentDetails.consultationType,
+          reason: appointmentDetails.reason,
+          specialty: appointmentDetails.specialty
         })
       })
 
       if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error('PayHere rate limit exceeded. Please wait a few minutes before trying again.')
+        }
         throw new Error('Failed to initiate payment with backend')
       }
 
       const data = await response.json()
-      console.log('✅ Backend response:', data)
-      console.log('🔗 PayHere checkout URL:', data.checkoutUrl)
-      console.log('🎉 PayHere integration fixed! Using backend API instead of JavaScript SDK.')
+      console.log('Backend response:', data)
+      console.log('PayHere checkout URL:', data.checkoutUrl)
 
-      // Create form and submit to PayHere (like the test HTML)
+      // Create form and submit to PayHere
       const form = document.createElement('form')
       form.method = 'POST'
       form.action = data.checkoutUrl
@@ -331,45 +273,37 @@ const Payment = ({ session }) => {
       form.submit()
 
     } catch (error) {
-      console.error('❌ PayHere backend API error:', error)
-      alert('PayHere failed to start. Please try again or use receipt upload.')
+      console.error('PayHere backend API error:', error)
+      
+      if (error.message.includes('rate limit')) {
+        alert('PayHere is experiencing high traffic. Please wait 2-3 minutes before trying again.')
+      } else {
+        alert('Payment failed to start. Please try again.')
+      }
+      
       setIsProcessing(false)
+      // Clear rate limiting on error to allow immediate retry for non-rate-limit errors
+      if (!error.message.includes('rate limit')) {
+        localStorage.removeItem('lastPaymentAttempt')
+      }
     }
   }
 
   const handlePaymentCompletion = async () => {
-    try {
-      // Create appointment after successful payment
-      const appointmentDate = new Date(`${appointmentDetails.date}T${appointmentDetails.timeSlot}:00`).toISOString()
-      
-      const payload = {
-        patientId: appointmentDetails.patientId,
-        doctorId: appointmentDetails.doctorId,
-        appointmentDate: appointmentDate,
-        fullName: appointmentDetails.fullName,
-        email: appointmentDetails.email,
-        phoneNumber: appointmentDetails.phoneNumber,
-        reason: appointmentDetails.reason,
-        consultationType: appointmentDetails.consultationType
-      }
-      
-      await createAppointment(payload, token)
-      
-      setIsSuccess(true)
-      
-      // After success, redirect to appointments page after 3 seconds
-      setTimeout(() => {
-        navigate('/appointments', { 
-          state: { 
-            paymentSuccess: true,
-            appointmentDetails: appointmentDetails 
-          } 
-        })
-      }, 3000)
-    } catch (error) {
-      setIsProcessing(false)
-      alert('Payment successful but appointment booking failed: ' + error.message)
-    }
+    // Appointment is now automatically created by the payment service
+    // No manual booking needed here
+    setIsSuccess(true)
+    
+    // After success, redirect to appointments page after 3 seconds
+    setTimeout(() => {
+      navigate('/appointments', { 
+        state: { 
+          paymentSuccess: true,
+          appointmentDetails: appointmentDetails,
+          autoBooked: true // Flag to indicate automatic booking
+        } 
+      })
+    }, 3000)
   }
 
   if (isSuccess) {
@@ -380,13 +314,10 @@ const Payment = ({ session }) => {
             <CheckCircle className="w-12 h-12" />
           </div>
           <h2 className="text-3xl font-bold text-slate-800 mb-4">
-            {location.state?.receiptUpload ? 'Receipt Uploaded Successfully!' : 'Payment Successful!'}
+            Payment Successful!
           </h2>
           <p className="text-slate-600 mb-8">
-            {location.state?.receiptUpload 
-              ? `Your payment receipt has been uploaded. We will verify it within 24 hours and confirm your appointment.`
-              : `Your payment of Rs. ${totalAmount.toFixed(2)} has been processed successfully. Appointment booking confirmed!`
-            }
+            Your payment of Rs. {totalAmount.toFixed(2)} has been processed successfully. Appointment booking confirmed!
           </p>
           <div className="text-sm text-slate-500 mb-6">
             Redirecting to your appointments...
@@ -401,86 +332,79 @@ const Payment = ({ session }) => {
       <div className="absolute -top-32 -left-20 w-72 h-72 bg-cyan-200/30 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-52 -right-20 w-72 h-72 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div className="max-w-6xl mx-auto relative z-10">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <button
             onClick={() => navigate('/appointments')}
-            className="group inline-flex items-center gap-2 text-[#0066cc] hover:text-[#0052a3] font-semibold mb-5 transition-colors"
+            className="group inline-flex items-center gap-2 text-[#0066cc] hover:text-[#0052a3] font-semibold mb-4 sm:mb-5 transition-colors text-sm sm:text-base"
           >
-            <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:-translate-x-1" />
             Back to Booking
           </button>
-          <div className="rounded-3xl border border-white/70 bg-white/70 backdrop-blur-md shadow-xl p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white">
-                <Shield className="w-6 h-6" />
+          <div className="rounded-3xl border border-white/70 bg-white/70 backdrop-blur-md shadow-xl p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white flex-shrink-0">
+                <Shield className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <div>
-                <h1 className="text-3xl font-black text-slate-800">Secure Payment</h1>
-                <p className="text-slate-600">Complete your appointment booking with confidence</p>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-black text-slate-800">Secure Payment</h1>
+                <p className="text-sm sm:text-base text-slate-600">Complete your appointment booking with confidence</p>
               </div>
             </div>
             
             {/* Security Badge */}
-            <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 px-4 py-2 rounded-xl inline-flex">
-              <Lock className="w-4 h-4" />
-              256-bit SSL Encrypted Payment
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-green-600 bg-green-50 px-3 sm:px-4 py-2 rounded-xl inline-flex">
+              <Lock className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">256-bit SSL Encrypted Payment</span>
+              <span className="sm:hidden">SSL Encrypted</span>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Payment Form */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-3xl shadow-2xl border border-white p-8">
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-3xl shadow-2xl border border-white p-4 sm:p-6 lg:p-8 h-full">
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Payment Method Selection */}
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800 mb-4">Select Payment Method</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-lg">
+                      <CreditCard className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-bold text-slate-800">Select Payment Method</h3>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 sm:gap-2">
                     <button
                       type="button"
                       onClick={() => setSelectedMethod('card')}
-                      className={`p-4 rounded-xl border-2 transition-all ${
+                      className={`p-4 sm:p-5 rounded-xl border-2 transition-all hover:scale-105 hover:shadow-lg ${
                         selectedMethod === 'card'
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-slate-200 hover:border-slate-300'
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
                       }`}
                     >
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <CreditCard className="w-6 h-6" />
-                        <span className="text-xs font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white px-2 py-1 rounded">PayHere</span>
+                      <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 flex-wrap">
+                        <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <span className="text-xs sm:text-sm font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white px-2 sm:px-3 py-1 rounded-full">PayHere</span>
                       </div>
-                      <span className="text-sm font-medium">Card with PayHere</span>
-                      <p className="text-xs text-slate-500 mt-1">Secure payment via PayHere</p>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMethod('receipt')}
-                      className={`p-4 rounded-xl border-2 transition-all ${
-                        selectedMethod === 'receipt'
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-slate-200 hover:border-slate-300'
-                      }`}
-                    >
-                      <Upload className="w-6 h-6 mx-auto mb-2" />
-                      <span className="text-sm font-medium">Upload Receipt</span>
-                      <p className="text-xs text-slate-500 mt-1">Upload payment receipt</p>
+                      <span className="text-sm sm:text-base font-medium">Card with PayHere</span>
+                      <p className="text-xs sm:text-sm text-slate-500 mt-1">Secure payment via PayHere</p>
                     </button>
                   </div>
                 </div>
 
                 {/* Card Payment Form */}
                 {selectedMethod === 'card' && (
-                  <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center text-white">
-                        <CreditCard className="w-6 h-6" />
+                  <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 mb-4">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-12 lg:h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center text-white flex-shrink-0 shadow-lg">
+                        <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" />
                       </div>
-                      <div>
-                        <h4 className="font-bold text-slate-800">PayHere Payment</h4>
-                        <p className="text-sm text-slate-600">Secure payment via PayHere gateway</p>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-slate-800 text-base sm:text-lg">PayHere Payment</h4>
+                        <p className="text-sm sm:text-base text-slate-600">Secure payment via PayHere gateway</p>
                         {!payhereReady && (
                           <p className="text-xs text-amber-600 mt-1">
                             ⏳ Backend payment system initializing...
@@ -503,213 +427,115 @@ const Payment = ({ session }) => {
                       </div>
                     </div>
                     
-                    <div className="space-y-3 text-sm">
-                      <div className="flex items-center gap-2 text-green-600">
-                        <CheckCircle className="w-4 h-4" />
-                        <span>256-bit SSL encryption</span>
+                    <div className="space-y-1 sm:space-y-2 text-sm sm:text-base">
+                      <div className="flex items-center gap-1 text-green-600 flex-wrap p-2 sm:p-3 bg-green-50 rounded-lg">
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                        <span className="font-medium">256-bit SSL encryption</span>
                       </div>
-                      <div className="flex items-center gap-2 text-green-600">
-                        <CheckCircle className="w-4 h-4" />
-                        <span>Supports Visa, Mastercard, AMEX</span>
+                      <div className="flex items-center gap-1 text-green-600 flex-wrap p-2 sm:p-3 bg-green-50 rounded-lg">
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                        <span className="font-medium">Supports Visa, Mastercard, AMEX</span>
                       </div>
-                      <div className="flex items-center gap-2 text-green-600">
-                        <CheckCircle className="w-4 h-4" />
-                        <span>Instant payment confirmation</span>
+                      <div className="flex items-center gap-1 text-green-600 flex-wrap p-2 sm:p-3 bg-green-50 rounded-lg">
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                        <span className="font-medium">Instant payment confirmation</span>
                       </div>
                     </div>
 
-                    <div className="mt-4 p-3 bg-white/70 rounded-lg">
-                      <p className="text-xs text-slate-600">
+                    <div className="mt-2 p-2 sm:p-3 bg-white/70 rounded-lg">
+                      <p className="text-xs text-slate-600 leading-relaxed">
                         <strong>Note:</strong> You will be redirected to PayHere's secure payment page to complete the transaction.
                       </p>
-                      <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <p className="text-xs font-medium text-amber-800">
-                          <strong>Alternative:</strong> If PayHere redirect fails, use "Upload Receipt" option below.
-                        </p>
-                        <p className="text-xs text-amber-600">
-                          Receipt upload works immediately and creates your appointment.
-                        </p>
-                      </div>
                     </div>
                   </div>
                 )}
 
-                {/* Receipt Upload Section */}
-                {selectedMethod === 'receipt' && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Upload Payment Receipt
-                      </label>
-                      <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors">
-                        <input
-                          type="file"
-                          id="receipt-upload"
-                          accept="image/jpeg,image/jpg,image/png,application/pdf"
-                          onChange={handleReceiptUpload}
-                          className="hidden"
-                        />
-                        <label
-                          htmlFor="receipt-upload"
-                          className="cursor-pointer flex flex-col items-center gap-3"
-                        >
-                          <Upload className="w-8 h-8 text-slate-400" />
-                          <div>
-                            <p className="text-sm font-medium text-slate-700">
-                              Click to upload receipt
-                            </p>
-                            <p className="text-xs text-slate-500 mt-1">
-                              JPG, PNG or PDF (max 5MB)
-                            </p>
-                          </div>
-                        </label>
-                      </div>
-                      
-                      {receiptFile && (
-                        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                          <div className="flex items-start gap-3">
-                            <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-blue-800">
-                                {receiptFile.name}
-                              </p>
-                              <p className="text-xs text-blue-600">
-                                {(receiptFile.size / 1024 / 1024).toFixed(2)} MB
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setReceiptFile(null)
-                                setReceiptPreview(null)
-                                document.getElementById('receipt-upload').value = ''
-                              }}
-                              className="text-red-500 hover:text-red-700 text-sm"
-                            >
-                              Remove
-                            </button>
-                          </div>
-                          
-                          {receiptPreview && (
-                            <div className="mt-3">
-                              <img
-                                src={receiptPreview}
-                                alt="Receipt preview"
-                                className="max-h-32 rounded-lg border border-slate-200"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-                        <div>
-                          <h5 className="font-medium text-amber-800 text-sm mb-1">Important:</h5>
-                          <ul className="text-xs text-amber-700 space-y-1">
-                            <li>Ensure receipt shows the correct payment amount: Rs. {totalAmount.toFixed(2)}</li>
-                            <li>Receipt must be clearly visible and readable</li>
-                            <li>Payment will be verified before appointment confirmation</li>
-                            <li>You will receive confirmation within 24 hours</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isProcessing || (selectedMethod === 'receipt' && !receiptFile)}
-                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 font-bold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-blue-300/50"
+                  disabled={isProcessing}
+                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 sm:py-4 font-bold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-blue-300/50 text-sm sm:text-base"
                 >
                   {isProcessing ? (
                     <span className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       {selectedMethod === 'card' ? 'Redirecting to PayHere...' : 'Processing...'}
                     </span>
-                  ) : selectedMethod === 'card' ? (
-                    `Pay Rs. ${totalAmount.toFixed(2)} with PayHere`
-                  ) : selectedMethod === 'receipt' ? (
-                    receiptFile ? `Submit Receipt - Rs. ${totalAmount.toFixed(2)}` : 'Please upload receipt first'
                   ) : (
-                    `Pay Rs. ${totalAmount.toFixed(2)}`
+                    `Pay Rs. ${totalAmount.toFixed(2)} `
                   )}
                 </button>
 
-                {errors.receipt && (
-                  <p className="text-red-500 text-sm text-center mt-2">{errors.receipt}</p>
-                )}
               </form>
             </div>
           </div>
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-3xl shadow-2xl border border-white p-6 sticky top-32">
-              <h3 className="text-lg font-bold text-slate-800 mb-4">Order Summary</h3>
+            <div className="bg-white rounded-3xl shadow-2xl border border-white p-4 sm:p-5 lg:p-6 sticky top-4 sm:top-6 lg:top-32 h-full">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-lg">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-800">Order Summary</h3>
+              </div>
               
               {/* Appointment Details */}
-              <div className="space-y-3 mb-6 pb-6 border-b border-slate-200">
-                <div className="flex items-center gap-3">
-                  <User className="w-4 h-4 text-slate-400" />
-                  <div>
-                    <p className="text-sm text-slate-600">Patient</p>
-                    <p className="font-medium text-slate-800">{appointmentDetails.fullName || user?.name || 'Guest User'}</p>
+              <div className="bg-slate-50 rounded-xl p-3 sm:p-4 mb-4">
+                <h4 className="text-base font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Appointment Details
+                </h4>
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex items-start gap-48">
+                    <span className="text-sm text-slate-600 w-16 flex-shrink-0">Patient</span>
+                    <span className="text-sm font-medium text-slate-800 flex-1">{appointmentDetails.fullName || user?.name || 'Guest User'}</span>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <Stethoscope className="w-4 h-4 text-slate-400" />
-                  <div>
-                    <p className="text-sm text-slate-600">Doctor</p>
-                    <p className="font-medium text-slate-800">{appointmentDetails.doctorName || 'Selected Doctor'}</p>
+                  <div className="flex items-start gap-48">
+                    <span className="text-sm text-slate-600 w-16 flex-shrink-0">Doctor</span>
+                    <span className="text-sm font-medium text-slate-800 flex-1">{appointmentDetails.doctorName || 'Selected Doctor'}</span>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <Calendar className="w-4 h-4 text-slate-400" />
-                  <div>
-                    <p className="text-sm text-slate-600">Date</p>
-                    <p className="font-medium text-slate-800">{appointmentDetails.date || 'Selected Date'}</p>
+                  <div className="flex items-start gap-48">
+                    <span className="text-sm text-slate-600 w-16 flex-shrink-0">Date</span>
+                    <span className="text-sm font-medium text-slate-800 flex-1">{appointmentDetails.date || 'Selected Date'}</span>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <Clock className="w-4 h-4 text-slate-400" />
-                  <div>
-                    <p className="text-sm text-slate-600">Time</p>
-                    <p className="font-medium text-slate-800">{appointmentDetails.timeSlot || 'Selected Time'}</p>
+                  <div className="flex items-start gap-48">
+                    <span className="text-sm text-slate-600 w-16 flex-shrink-0">Time</span>
+                    <span className="text-sm font-medium text-slate-800 flex-1">{appointmentDetails.timeSlot || 'Selected Time'}</span>
                   </div>
                 </div>
               </div>
 
               {/* Cost Breakdown */}
-              <div className="space-y-2 mb-6">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Consultation Fee</span>
-                  <span className="font-medium">Rs. {consultationFee.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Platform Fee</span>
-                  <span className="font-medium">Rs. {platformFee.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-lg font-bold text-slate-800 pt-2 border-t border-slate-200">
-                  <span>Total Amount</span>
-                  <span>Rs. {totalAmount.toFixed(2)}</span>
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-3 sm:p-4 mb-4">
+                <h4 className="text-base font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  Cost Breakdown
+                </h4>
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex justify-between items-center py-3 border-b border-blue-100">
+                    <span className="text-sm text-slate-600">Consultation Fee</span>
+                    <span className="text-sm font-medium text-slate-800">Rs. {consultationFee.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-blue-100">
+                    <span className="text-sm text-slate-600">Platform Fee</span>
+                    <span className="text-sm font-medium text-slate-800">Rs. {platformFee.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg px-4">
+                    <span className="text-base sm:text-lg font-bold">Total Amount</span>
+                    <span className="text-base sm:text-lg font-bold">Rs. {totalAmount.toFixed(2)}</span>
+                  </div>
                 </div>
               </div>
 
               {/* Security Info */}
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                <div className="flex items-start gap-3">
-                  <Shield className="w-5 h-5 text-green-600 mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-green-800 text-sm mb-1">Secure Payment</h4>
-                    <p className="text-xs text-green-700">
+              <div className="bg-green-50 border border-green-200 rounded-xl p-3 sm:p-4">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-green-800 text-sm sm:text-base mb-1">Secure Payment</h4>
+                    <p className="text-xs sm:text-sm text-green-700 leading-relaxed">
                       Your payment information is encrypted and secure. We never store your card details.
                     </p>
                   </div>
