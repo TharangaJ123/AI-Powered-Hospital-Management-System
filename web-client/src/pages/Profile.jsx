@@ -8,7 +8,8 @@ import { getAllDoctors, requestDoctorLeave, getDoctorLeaves } from '../services/
 import { getAppointmentsByPatient, getAppointmentsByDoctor, updateAppointment, cancelAppointment, completeAppointment } from '../services/appointments'
 import { createTelemedicineSession, getTelemedicineSession } from '../services/telemedicine'
 import { getContactFormsByUser } from '../services/contact'
-import { createReview } from '../services/reviews'
+import { createReview, getPatientReviews, getDoctorReviews } from '../services/reviews'
+
 import { Star, X } from 'lucide-react'
 
 const Profile = ({
@@ -42,6 +43,9 @@ const Profile = ({
   })
   const [reviewModalOpen, setReviewModalOpen] = useState(false)
   const [reviewData, setReviewData] = useState({ appointmentId: null, doctorId: null, rating: 5, comment: '' })
+  const [userReviews, setUserReviews] = useState([])
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false)
+
 
   const handleSubmitReview = async () => {
     if (!reviewData.appointmentId || !reviewData.doctorId || !patientProfile?.id) return
@@ -118,29 +122,37 @@ const Profile = ({
     if (user.role === 'DOCTOR' && !doctorProfile?.id) return
 
     setIsLoadingAppointments(true)
+    setIsLoadingReviews(true)
     try {
       if (user.role === 'PATIENT' && patientProfile?.id) {
-        const [appsData, docsData, contactsData] = await Promise.all([
+        const [appsData, docsData, contactsData, reviewsData] = await Promise.all([
           getAppointmentsByPatient(patientProfile.id, token),
           getAllDoctors(),
-          getContactFormsByUser(patientProfile.id, token)
+          getContactFormsByUser(patientProfile.id, token),
+          getPatientReviews(patientProfile.id, token)
         ])
         setAppointments(appsData)
         setDoctors(docsData)
         setContactForms(contactsData)
+        setUserReviews(reviewsData)
       } else if (user.role === 'DOCTOR' && doctorProfile?.id) {
-        const [appsData, leavesData] = await Promise.all([
+        const [appsData, leavesData, reviewsData] = await Promise.all([
           getAppointmentsByDoctor(doctorProfile.id, token),
-          getDoctorLeaves(doctorProfile.id, token)
+          getDoctorLeaves(doctorProfile.id, token),
+          getDoctorReviews(doctorProfile.id)
         ])
         setAppointments(appsData)
         setLeaves(leavesData)
+        setUserReviews(reviewsData)
       }
+
     } catch (err) {
       setAppointmentError(err.message || 'Failed to load dashboard data')
     } finally {
       setIsLoadingAppointments(false)
+      setIsLoadingReviews(false)
     }
+
   }
   const handleAction = async (actionFn, appointmentId) => {
     setIsUpdating(true)
@@ -327,6 +339,14 @@ const Profile = ({
               >
                 Support Inquiries
               </button>
+              <button
+                onClick={() => setActiveTab('reviews')}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'reviews' ? 'bg-white text-[#0066cc] shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                  }`}
+              >
+                My Reviews
+              </button>
+
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 overflow-hidden">
@@ -526,7 +546,56 @@ const Profile = ({
                   )}
                 </div>
               )}
+
+              {activeTab === 'reviews' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 space-y-8">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                        <Star className="w-6 h-6 text-amber-500" />
+                        Feedback History
+                      </h2>
+                      <p className="text-sm text-slate-500 mt-1">Review the ratings and comments you've shared with our medical staff.</p>
+                    </div>
+                  </div>
+
+                  {isLoadingReviews ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                      <Loader2 className="w-10 h-10 animate-spin mb-4 text-amber-500" />
+                      <p className="text-sm">Loading your feedback...</p>
+                    </div>
+                  ) : userReviews.length === 0 ? (
+                    <div className="text-center py-20 border-2 border-dashed border-slate-100 rounded-3xl">
+                      <Star className="w-12 h-12 text-slate-100 mx-auto mb-4" />
+                      <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No reviews submitted yet</p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-6">
+                      {userReviews.map(review => (
+                        <div key={review.id} className="p-6 rounded-2xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:shadow-lg transition-all">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Reviewed</p>
+                               <h4 className="font-bold text-slate-900 text-lg">Dr. {getDoctorName(review.doctorId)}</h4>
+                            </div>
+                            <div className="flex gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-slate-600 font-medium italic">"{review.comment}"</p>
+                          <p className="text-[10px] font-bold text-slate-400 mt-4 uppercase tracking-widest">
+                            {review.status} • {new Date(review.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
+
 
             {/* Premium Calendar View */}
             <div className="mt-8 grid lg:grid-cols-3 gap-8">
@@ -646,7 +715,6 @@ const Profile = ({
       )}
       {user?.role === 'DOCTOR' && (
         <div className="max-w-7xl mx-auto px-4 mt-8">
-          {/* Dashboard Tabs */}
           <div className="flex items-center bg-slate-100 p-2 rounded-[2rem] w-fit mb-12 border border-slate-200 shadow-inner">
             <button
               onClick={() => setActiveTab('profile')}
@@ -678,10 +746,20 @@ const Profile = ({
               <Calendar className={`w-4 h-4 ${activeTab === 'leaves' ? 'text-blue-300' : 'text-slate-400'}`} />
               <span>Manage Leaves</span>
             </button>
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`flex items-center space-x-3 px-10 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'reviews'
+                  ? 'bg-[#002d5a] text-white shadow-xl scale-105'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+                }`}
+            >
+              <Star className={`w-4 h-4 ${activeTab === 'reviews' ? 'text-amber-400' : 'text-slate-400'}`} />
+              <span>Patient Feedback</span>
+            </button>
           </div>
 
           <AnimatePresence mode="wait">
-            {activeTab === 'profile' ? (
+            {activeTab === 'profile' && (
               <motion.div
                 key="profile"
                 initial={{ opacity: 0, y: 20 }}
@@ -696,7 +774,9 @@ const Profile = ({
                   error={profileError}
                 />
               </motion.div>
-            ) : activeTab === 'leaves' ? (
+            )}
+
+            {activeTab === 'leaves' && (
               <motion.div
                 key="leaves"
                 initial={{ opacity: 0, y: 20 }}
@@ -723,7 +803,6 @@ const Profile = ({
                   </div>
                 ) : (
                   <>
-                    {/* Leave Request Form */}
                     <div className="bg-white rounded-[3rem] p-10 md:p-16 border border-slate-100 shadow-xl space-y-10">
                       <div className="space-y-2">
                         <h2 className="text-3xl font-black text-[#002d5a]">Request Time-Off</h2>
@@ -773,7 +852,6 @@ const Profile = ({
                       </form>
                     </div>
 
-                    {/* Leaves History */}
                     <div className="space-y-6">
                       <h3 className="text-xl font-black text-[#002d5a] px-2">Leave History & Status</h3>
                       {leaves.length > 0 ? (
@@ -815,7 +893,9 @@ const Profile = ({
                   </>
                 )}
               </motion.div>
-            ) : (
+            )}
+
+            {activeTab === 'appointments' && (
               <motion.div
                 key="appointments"
                 initial={{ opacity: 0, y: 20 }}
@@ -917,6 +997,68 @@ const Profile = ({
                               </button>
                             )}
                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'reviews' && (
+              <motion.div
+                key="reviews"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+                className="pb-20"
+              >
+                <div className="rounded-[2.5rem] border border-slate-200 bg-white shadow-sm p-8 md:p-12">
+                  <div className="flex items-center justify-between mb-12">
+                    <div>
+                      <h2 className="text-3xl font-black text-[#002d5a] flex items-center gap-4">
+                        <Star className="w-10 h-10 text-amber-500" />
+                        Patient Sentiments
+                      </h2>
+                      <p className="text-slate-500 mt-2 font-medium text-lg">Detailed feedback and ratings from your clinical sessions.</p>
+                    </div>
+                  </div>
+
+                  {isLoadingReviews ? (
+                    <div className="flex flex-col items-center justify-center py-32 text-slate-400">
+                      <Loader2 className="w-16 h-16 animate-spin mb-6 text-amber-500" />
+                      <p className="text-sm font-black uppercase tracking-widest">Aggregating Feedback...</p>
+                    </div>
+                  ) : userReviews.length === 0 ? (
+                    <div className="text-center py-32 rounded-[3.5rem] border-2 border-dashed border-slate-100 bg-slate-50/50">
+                      <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm text-slate-200">
+                        <Star className="w-10 h-10" />
+                      </div>
+                      <h3 className="text-slate-900 text-2xl font-black italic">No Sentiments Recorded</h3>
+                      <p className="text-slate-500 mt-3 max-w-sm mx-auto font-medium text-lg">As patients complete their consultations, their feedback will appear here.</p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-8">
+                      {userReviews.map((review, idx) => (
+                        <div key={review.id} className="p-8 rounded-[2rem] border border-slate-50 bg-slate-50/50 hover:bg-white hover:shadow-xl transition-all duration-500">
+                          <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-2xl bg-[#002d5a] text-white flex items-center justify-center font-black text-xl">
+                                ?
+                              </div>
+                              <div>
+                                <p className="text-sm font-black text-[#002d5a]">Verified Patient Feedback</p>
+                                <p className="text-xs text-slate-400 font-medium">{new Date(review.createdAt).toLocaleDateString()}</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} className={`w-5 h-5 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-100'}`} />
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-lg text-slate-600 font-medium italic leading-relaxed">"{review.comment}"</p>
                         </div>
                       ))}
                     </div>
