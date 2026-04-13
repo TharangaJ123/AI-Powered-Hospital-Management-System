@@ -20,6 +20,7 @@ import {
   ExternalLink,
   ShieldAlert,
   MessageSquare,
+  Star,
   Send as SendIcon
 } from 'lucide-react'
 import { useState, useEffect, Fragment } from 'react'
@@ -39,6 +40,8 @@ import {
   getPlatformOperations 
 } from '../services/auth'
 import { getAllContactForms, replyToContactForm } from '../services/contact'
+import { getAllReviews } from '../services/reviews'
+
 
 const AdminDashboard = ({ token }) => {
   const [activeView, setActiveView] = useState('OVERVIEW') // OVERVIEW, APPOINTMENTS, DOCTORS, PATIENTS, LOGS
@@ -53,6 +56,7 @@ const AdminDashboard = ({ token }) => {
     pendingDoctors: [],
     allLeaves: [],
     contactForms: [],
+    allReviews: [],
     operations: null
   })
   const [rescheduleData, setRescheduleData] = useState({ id: null, date: '' })
@@ -91,13 +95,14 @@ const AdminDashboard = ({ token }) => {
     setLoading(true)
     setError(null)
     try {
-      const [allApps, allDocs, allUsers, allLeaves, ops, allContacts] = await Promise.all([
+      const [allApps, allDocs, allUsers, allLeaves, ops, allContacts, allReviews] = await Promise.all([
         getAllAppointments(token).catch(() => []),
         getAllDoctors().catch(() => []),
         getAllUsers(token).catch(() => []),
         getAllDoctorLeaves(token).catch(() => []),
         getPlatformOperations(token).catch(() => null),
-        getAllContactForms(token).catch(() => [])
+        getAllContactForms(token).catch(() => []),
+        getAllReviews(token).catch(() => [])
       ])
 
       const patientUsers = (allUsers || []).filter(u => u.role === 'PATIENT')
@@ -111,6 +116,7 @@ const AdminDashboard = ({ token }) => {
         pendingDoctors: pendingDocs,
         allLeaves: allLeaves,
         contactForms: allContacts,
+        allReviews: allReviews,
         operations: ops
       })
     } catch (err) {
@@ -176,6 +182,7 @@ const AdminDashboard = ({ token }) => {
     { id: 'PATIENTS', title: "Patient Records", icon: Users, desc: "Access and manage central patient databases.", color: "bg-purple-500" },
     { id: 'LEAVES', title: "Leave Requests", icon: ShieldAlert, desc: "Approve or reject doctor time-off requests.", color: "bg-orange-500" },
     { id: 'CONTACTS', title: "Support Management", icon: MessageSquare, desc: "Reply to patient inquiries and feedback.", color: "bg-teal-500" },
+    { id: 'REVIEWS', title: "Patient Reviews", icon: Star, desc: "Monitor and moderate patient feedback for doctors.", color: "bg-amber-500" },
     { id: 'LOGS', title: "System Logs", icon: FileText, desc: "Monitor system health and security events.", color: "bg-slate-700" }
   ]
 
@@ -193,6 +200,12 @@ const AdminDashboard = ({ token }) => {
     p.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const filteredReviews = (dashboardStats.allReviews || []).filter(r => 
+    r.comment?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    String(r.doctorId).includes(searchQuery) ||
+    String(r.patientId).includes(searchQuery)
   )
 
   const renderOverview = () => (
@@ -1060,7 +1073,60 @@ const AdminDashboard = ({ token }) => {
     )
   }
 
+  const renderReviews = () => (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <button 
+          onClick={() => setActiveView('OVERVIEW')}
+          className="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-[#0066cc] transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Overview
+        </button>
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+          <input 
+            type="text" 
+            placeholder="Search reviews by comment or ID..."
+            className="pl-11 pr-6 py-2.5 rounded-full border border-slate-100 bg-white text-sm font-medium focus:ring-2 focus:ring-[#0066cc]/20 outline-none w-full md:w-80"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden text-sm">
+        <div className="grid grid-cols-5 bg-slate-50/50 border-b border-slate-100 px-8 py-4 text-[10px] uppercase font-black tracking-widest text-slate-400">
+           <div>Doctor</div>
+           <div>Patient ID</div>
+           <div>Rating</div>
+           <div className="col-span-2">Comment</div>
+        </div>
+        {filteredReviews.length === 0 ? (
+          <div className="p-20 text-center text-slate-400 italic">No reviews found matching your search.</div>
+        ) : (
+          filteredReviews.map((review) => {
+            const doctor = dashboardStats.doctors.find(d => d.id === review.doctorId)
+            return (
+              <div key={review.id} className="grid grid-cols-5 border-b border-slate-50 last:border-0 hover:bg-slate-50/30 transition-colors px-8 py-6 items-center">
+                <div className="font-bold text-slate-900">Dr. {doctor?.fullName || review.doctorId}</div>
+                <div className="text-slate-500">#{review.patientId}</div>
+                <div className="flex items-center gap-1">
+                   {[...Array(5)].map((_, i) => (
+                     <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
+                   ))}
+                </div>
+                <div className="col-span-2 text-slate-600 font-medium italic">"{review.comment}"</div>
+              </div>
+            )
+          })
+        )}
+      </div>
+    </div>
+  )
+
   return (
+
     <div className="pt-32 pb-20 px-4 max-w-7xl mx-auto space-y-10">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl flex items-center gap-3">
@@ -1074,9 +1140,10 @@ const AdminDashboard = ({ token }) => {
       {activeView === 'APPOINTMENTS' && renderAppointments()}
       {activeView === 'DOCTORS' && renderDoctors()}
       {activeView === 'PATIENTS' && renderPatients()}
-      { activeView === 'LEAVES' && renderLeaves() }
-      { activeView === 'CONTACTS' && renderContacts() }
-      { activeView === 'LOGS' && renderLogs() }
+      {activeView === 'LEAVES' && renderLeaves()}
+      {activeView === 'CONTACTS' && renderContacts()}
+      {activeView === 'REVIEWS' && renderReviews()}
+      {activeView === 'LOGS' && renderLogs()}
 
       {/* Loading Overlay */}
       {loading && (

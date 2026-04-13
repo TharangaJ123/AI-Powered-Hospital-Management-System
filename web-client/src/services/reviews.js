@@ -34,3 +34,14 @@ export const getPatientReviews = async (patientId, token) => {
     if (!res.ok) return [];
     return res.json();
 };
+
+export const getAllReviews = async (token) => {
+    const res = await fetch(`${API_GW_URL}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    if (!res.ok) return [];
+    return res.json();
+};
+

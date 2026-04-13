@@ -38,8 +38,14 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getReviewsByPatient(patientId));
     }
 
+    @GetMapping
+    public ResponseEntity<List<Review>> getAllReviews() {
+        return ResponseEntity.ok(reviewService.getAllReviews());
+    }
+
     @PutMapping("/{id}/status")
     public ResponseEntity<Review> updateReviewStatus(@PathVariable Long id, @RequestParam ReviewStatus status) {
         return ResponseEntity.ok(reviewService.updateReviewStatus(id, status));
     }
 }
+

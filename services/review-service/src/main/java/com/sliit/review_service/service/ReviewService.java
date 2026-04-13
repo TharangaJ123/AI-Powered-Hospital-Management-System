@@ -48,4 +48,9 @@ public class ReviewService {
         review.setStatus(status);
         return reviewRepository.save(review);
     }
+
+    public List<Review> getAllReviews() {
+        return reviewRepository.findAll();
+    }
 }
+
