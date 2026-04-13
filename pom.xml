@@ -29,6 +29,9 @@
         <module>services/doctor-management</module>
         <module>services/ai-symptom-service</module>
         <module>services/contact-service</module>
+        <module>services/notification-service</module>
+        <module>services/payment-service</module>
+        <module>services/review-service</module>
     </modules>
 
     <dependencyManagement>

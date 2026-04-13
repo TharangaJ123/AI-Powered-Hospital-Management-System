@@ -1,0 +1,12 @@
+.git
+node_modules
+target
+*.log
+.mvn
+.env
+.DS_Store
+dist
+out
+build
+docker-compose.yml
+Dockerfile

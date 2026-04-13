@@ -1,0 +1,16 @@
+# Stage 1: Build
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN --mount=type=cache,target=/root/.m2 mvn install -N -B
+COPY services/doctor-management/pom.xml ./services/doctor-management/
+WORKDIR /app/services/doctor-management
+COPY services/doctor-management/src ./src
+RUN --mount=type=cache,target=/root/.m2 mvn clean package -DskipTests
+
+# Stage 2: Runtime
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=build /app/services/doctor-management/target/*.jar app.jar
+EXPOSE 8082
+ENTRYPOINT ["java", "-jar", "app.jar"]
