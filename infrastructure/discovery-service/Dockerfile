@@ -17,8 +17,10 @@ COPY infrastructure/discovery-service/src ./src
 RUN --mount=type=cache,target=/root/.m2 mvn clean package -DskipTests
 
 # Stage 2: Runtime
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/infrastructure/discovery-service/target/*.jar app.jar
 EXPOSE 8761
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
+RUN apt-get update && apt-get install -y curl

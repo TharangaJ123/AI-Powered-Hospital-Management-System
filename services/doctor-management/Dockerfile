@@ -9,7 +9,7 @@ COPY services/doctor-management/src ./src
 RUN --mount=type=cache,target=/root/.m2 mvn clean package -DskipTests
 
 # Stage 2: Runtime
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/services/doctor-management/target/*.jar app.jar
 EXPOSE 8082
