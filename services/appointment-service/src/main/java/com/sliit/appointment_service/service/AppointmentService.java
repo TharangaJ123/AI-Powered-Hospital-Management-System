@@ -34,6 +34,9 @@ public class AppointmentService {
     @Value("${notification.service.url:http://localhost:8085}")
     private String notificationServiceUrl;
 
+    @Value("${doctor.management.url:http://localhost:8082}")
+    private String doctorManagementUrl;
+
     /** Create and save a new appointment with BOOKED status */
     @Transactional
     public AppointmentResponseDto bookAppointment(AppointmentRequestDto request) {
@@ -205,7 +208,7 @@ public class AppointmentService {
     }
 
     private boolean isDoctorOnLeave(Long doctorId, LocalDate selectedDate) {
-        WebClient webClient = webClientBuilder.baseUrl("http://localhost:8082").build();
+        WebClient webClient = webClientBuilder.baseUrl(doctorManagementUrl).build();
 
         try {
             List<DoctorLeaveView> leaves = webClient.get()
@@ -263,7 +266,7 @@ public class AppointmentService {
 
     private String getDoctorName(Long doctorId) {
         try {
-            WebClient webClient = webClientBuilder.baseUrl("http://localhost:8082").build();
+            WebClient webClient = webClientBuilder.baseUrl(doctorManagementUrl).build();
             
             return webClient.get()
                     .uri("/api/doctors/{doctorId}/name", doctorId)

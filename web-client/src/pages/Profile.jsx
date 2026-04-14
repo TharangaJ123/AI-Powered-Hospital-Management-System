@@ -238,6 +238,14 @@ const Profile = ({
     }
   }
 
+  const isSessionActive = (appointmentDate) => {
+    if (!appointmentDate) return false
+    const appTime = new Date(appointmentDate).getTime()
+    const now = new Date().getTime()
+    const activationTime = 15 * 60 * 1000 // 15 minutes
+    return now >= appTime - activationTime
+  }
+
   // Calendar Helpers
   const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate()
   const firstDayOfMonth = (year, month) => new Date(year, month, 1).getDay()
@@ -464,10 +472,16 @@ const Profile = ({
                                 {['BOOKED', 'SCHEDULED', 'ACCEPTED'].includes(app?.status?.toUpperCase()) && (
                                   <button
                                     onClick={() => handleJoinTelemedicine(app.id)}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-xs font-bold hover:bg-green-600 hover:text-white transition-all shadow-sm shadow-green-200/50"
+                                    disabled={!isSessionActive(app.appointmentDate)}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm ${
+                                      isSessionActive(app.appointmentDate) 
+                                        ? 'bg-green-100 text-green-700 hover:bg-green-600 hover:text-white shadow-green-200/50' 
+                                        : 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-60'
+                                    }`}
+                                    title={!isSessionActive(app.appointmentDate) ? "Activated 15 mins before session" : ""}
                                   >
                                     <Video className="w-3.5 h-3.5" />
-                                    Join Video
+                                    {isSessionActive(app.appointmentDate) ? 'Join Video' : 'Join at T-15m'}
                                   </button>
                                 )}
                                 {['COMPLETED'].includes(app?.status?.toUpperCase()) && (
@@ -982,10 +996,16 @@ const Profile = ({
                             {['BOOKED', 'ACCEPTED', 'PENDING'].includes(app.status?.toUpperCase()) && (
                               <button
                                 onClick={() => handleStartTelemedicine(app.id)}
-                                className="flex-1 py-4 bg-[#002d5a] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#003d7a] transition-all shadow-xl shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2"
+                                disabled={!isSessionActive(app.appointmentDate)}
+                                className={`flex-1 py-4 text-[11px] font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2 ${
+                                  isSessionActive(app.appointmentDate)
+                                    ? 'bg-[#002d5a] text-white hover:bg-[#003d7a] shadow-blue-500/20'
+                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                }`}
+                                title={!isSessionActive(app.appointmentDate) ? "Available 15 mins before session" : ""}
                               >
-                                <Video className="w-4 h-4 text-blue-300" />
-                                Start Session
+                                <Video className={`w-4 h-4 ${isSessionActive(app.appointmentDate) ? 'text-blue-300' : 'text-slate-300'}`} />
+                                {isSessionActive(app.appointmentDate) ? 'Start Session' : 'Ready at T-15m'}
                               </button>
                             )}
                             {['PENDING', 'SCHEDULED'].includes(app.status?.toUpperCase()) && (

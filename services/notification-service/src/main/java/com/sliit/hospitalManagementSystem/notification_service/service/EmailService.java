@@ -237,7 +237,7 @@ public class EmailService {
                     </div>
 
                     <div class="highlight">
-                      <strong>Reminder:</strong> Please arrive 15 minutes early. For online consultations, your meeting link will activate 5 minutes before the scheduled time.
+                      <strong>Reminder:</strong> Please arrive 15 minutes early. For online consultations, your meeting link will activate 15 minutes before the scheduled time.
                     </div>
 
                   </div>

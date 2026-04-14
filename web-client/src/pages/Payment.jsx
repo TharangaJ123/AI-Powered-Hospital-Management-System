@@ -204,7 +204,6 @@ const Payment = ({ session }) => {
     // Check if running in development
     if (window.location.hostname === 'localhost') {
       console.log('PayHere backend API mode: sandbox')
-      console.log('Backend URL: http://localhost:8084')
       console.log('Redirect URLs:', window.location.origin)
     }
     
@@ -217,7 +216,8 @@ const Payment = ({ session }) => {
       console.log('Starting PayHere payment via backend API...')
       
       // Call backend to get PayHere checkout URL
-      const response = await fetch('http://localhost:8084/api/payments/payhere/initiate', {
+      // Use proxy instead of hardcoded URL to fix CSP issues
+      const response = await fetch('/api/payments/payhere/initiate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

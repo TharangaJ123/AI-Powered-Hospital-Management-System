@@ -19,4 +19,5 @@ public class UserResponseDto {
     private String lastName;
     private String doctorRegistrationNumber;
     private String specialization;
+    private String phoneNumber;
 }

@@ -114,6 +114,9 @@ public class RegistrationService {
             com.sliit.user_management.model.Doctor doctor = (com.sliit.user_management.model.Doctor) user;
             builder.doctorRegistrationNumber(doctor.getDoctorRegistrationNumber());
             builder.specialization(doctor.getSpecialization());
+        } else if (user instanceof com.sliit.user_management.model.Patient) {
+            com.sliit.user_management.model.Patient patient = (com.sliit.user_management.model.Patient) user;
+            builder.phoneNumber(patient.getPhoneNumber());
         }
 
         return builder.build();

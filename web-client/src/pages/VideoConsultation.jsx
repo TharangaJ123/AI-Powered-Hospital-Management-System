@@ -136,23 +136,47 @@ const VideoConsultation = ({ user, token }) => {
 
   if (error) {
     return (
-      <div className="flex-grow flex flex-col items-center justify-center bg-slate-50 p-6">
+      <div className="flex-grow flex flex-col items-center justify-center bg-[#000b1a] p-6 relative overflow-hidden">
+        {/* Animated Background Orbs */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-red-600/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-white rounded-[3rem] p-12 shadow-2xl shadow-blue-900/10 border border-slate-100 text-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md w-full bg-white/[0.03] backdrop-blur-3xl rounded-[3.5rem] p-12 lg:p-16 border border-white/10 text-center relative z-10 shadow-2xl"
         >
-          <div className="w-24 h-24 bg-red-50 rounded-3xl flex items-center justify-center mx-auto mb-8 text-red-500 rotate-3">
+          <div className="w-24 h-24 bg-gradient-to-br from-red-500/20 to-red-600/5 rounded-[2rem] flex items-center justify-center mx-auto mb-10 text-red-400 border border-red-500/20 shadow-lg shadow-red-500/10">
             <XCircle className="w-12 h-12" />
           </div>
-          <h2 className="text-3xl font-black text-[#002d5a] mb-4">Connection Failed</h2>
-          <p className="text-slate-500 font-medium mb-10 leading-relaxed">{error}</p>
-          <button 
-            onClick={() => navigate('/profile')}
-            className="w-full py-5 bg-[#002d5a] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#003d7a] transition-all shadow-xl shadow-blue-900/20"
-          >
-            Return to Dashboard
-          </button>
+          
+          <h2 className="text-3xl lg:text-4xl font-black text-white mb-6 tracking-tight">Access Restricted</h2>
+          
+          <div className="bg-white/5 rounded-2xl p-6 mb-10 border border-white/5">
+            <p className="text-blue-100/60 font-medium leading-relaxed italic text-sm">
+              "{error}"
+            </p>
+          </div>
+
+          <div className="space-y-4">
+             <button 
+              onClick={() => window.location.reload()}
+              className="w-full py-5 bg-white text-[#000b1a] rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-50 transition-all shadow-xl active:scale-95"
+            >
+              Retry Connection
+            </button>
+            <button 
+              onClick={() => navigate('/profile')}
+              className="w-full py-5 bg-white/5 text-white/60 hover:text-white rounded-2xl font-black text-xs uppercase tracking-widest border border-white/10 hover:bg-white/10 transition-all active:scale-95"
+            >
+              Return to Dashboard
+            </button>
+          </div>
+
+          <div className="mt-12 flex items-center justify-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-blue-500/40" />
+            <span className="text-[10px] font-black text-blue-500/40 uppercase tracking-[0.2em]">Secure Gateway Protocol</span>
+          </div>
         </motion.div>
       </div>
     );

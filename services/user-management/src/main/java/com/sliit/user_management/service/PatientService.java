@@ -65,6 +65,7 @@ public class PatientService {
                 .active(patient.isActive())
                 .firstName(patient.getFirstName())
                 .lastName(patient.getLastName())
+                .phoneNumber(patient.getPhoneNumber())
                 .build();
     }
 
