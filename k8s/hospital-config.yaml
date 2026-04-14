@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hospital-config
+data:
+  MYSQL_HOST: mysql-service
+  MYSQL_DATABASE: hospital_db
+  EUREKA_SERVER: http://discovery-service:8761/eureka/
+  NOTIFICATION_SERVICE_URL: http://notification-service:8085
+  VITE_API_BASE_URL: http://api-gateway:8099
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hospital-secrets
+type: Opaque
+data:
+  MYSQL_ROOT_PASSWORD: cm9vdA== # base64 for 'root'
+  GEMINI_API_KEY: "" # user should provide or I can put a placeholder
+  MAIL_USER: b21uaWhlYWx0aDYyOEBnbWFpbC5jb20= # base64 for 'omnihealth628@gmail.com'
+  MAIL_PASS: ""

@@ -1,0 +1,136 @@
+# AI Symptom Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-symptom-service
+spec:
+  selector:
+    matchLabels:
+      app: ai-symptom-service
+  template:
+    metadata:
+      labels:
+        app: ai-symptom-service
+    spec:
+      containers:
+      - name: ai-symptom-service
+        image: ai-symptom-service:latest
+        ports:
+        - containerPort: 8089
+        env:
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hospital-secrets
+              key: GEMINI_API_KEY
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-symptom-service
+spec:
+  selector:
+    app: ai-symptom-service
+  ports:
+    - port: 8089
+      targetPort: 8089
+
+---
+# Notification Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+spec:
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+      - name: notification-service
+        image: notification-service:latest
+        ports:
+        - containerPort: 8085
+        env:
+        - name: MAIL_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: hospital-secrets
+              key: MAIL_USER
+        - name: MAIL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hospital-secrets
+              key: MAIL_PASS
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+spec:
+  selector:
+    app: notification-service
+  ports:
+    - port: 8085
+      targetPort: 8085
+
+---
+# Contact Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contact-service
+spec:
+  selector:
+    matchLabels:
+      app: contact-service
+  template:
+    metadata:
+      labels:
+        app: contact-service
+    spec:
+      containers:
+      - name: contact-service
+        image: contact-service:latest
+        ports:
+        - containerPort: 8087
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:mysql://mysql-service:3306/hospital_db
+        - name: SPRING_DATASOURCE_USERNAME
+          value: root
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hospital-secrets
+              key: MYSQL_ROOT_PASSWORD
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: contact-service
+spec:
+  selector:
+    app: contact-service
+  ports:
+    - port: 8087
+      targetPort: 8087
