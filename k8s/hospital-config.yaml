@@ -7,7 +7,13 @@ data:
   MYSQL_DATABASE: hospital_db
   EUREKA_SERVER: http://discovery-service:8761/eureka/
   NOTIFICATION_SERVICE_URL: http://notification-service:8085
+  DOCTOR_MANAGEMENT_URL: http://doctor-management:8082
+  APPOINTMENT_SERVICE_URL: http://appointment-service:8083
   VITE_API_BASE_URL: http://api-gateway:8099
+  EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+  PAYHERE_RETURN_URL: http://localhost:30173/payment/success
+  PAYHERE_CANCEL_URL: http://localhost:30173/payment/cancel
+  ALLOWED_ORIGINS: http://localhost:30173
 ---
 apiVersion: v1
 kind: Secret

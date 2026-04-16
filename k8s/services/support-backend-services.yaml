@@ -28,6 +28,11 @@ spec:
             configMapKeyRef:
               name: hospital-config
               key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
 ---
 apiVersion: v1
 kind: Service
@@ -76,6 +81,11 @@ spec:
             configMapKeyRef:
               name: hospital-config
               key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
 ---
 apiVersion: v1
 kind: Service
@@ -123,6 +133,11 @@ spec:
             configMapKeyRef:
               name: hospital-config
               key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
 ---
 apiVersion: v1
 kind: Service

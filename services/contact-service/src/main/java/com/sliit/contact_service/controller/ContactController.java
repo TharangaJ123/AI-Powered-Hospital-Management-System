@@ -13,15 +13,23 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/contact")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
+@lombok.extern.slf4j.Slf4j
 public class ContactController {
 
     private final ContactService contactService;
 
     @PostMapping("/submit")
     public ResponseEntity<ContactMessage> submitMessage(@RequestBody ContactRequest request) {
-        ContactMessage savedMessage = contactService.saveMessage(request);
-        return new ResponseEntity<>(savedMessage, HttpStatus.CREATED);
+        log.info("Received contact form submission from: {}", request.getEmail());
+        try {
+            ContactMessage savedMessage = contactService.saveMessage(request);
+            log.info("Successfully saved contact message with ID: {}", savedMessage.getId());
+            return new ResponseEntity<>(savedMessage, HttpStatus.CREATED);
+        } catch (Exception e) {
+            log.error("Error saving contact message: {}", e.getMessage());
+            throw e;
+        }
     }
 
     @GetMapping("/all")

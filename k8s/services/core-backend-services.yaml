@@ -55,6 +55,18 @@ spec:
             configMapKeyRef:
               name: hospital-config
               key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: api-gateway-config
 ---
 apiVersion: v1
 kind: Service
@@ -104,6 +116,11 @@ spec:
             configMapKeyRef:
               name: hospital-config
               key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
 ---
 apiVersion: v1
 kind: Service
@@ -156,6 +173,16 @@ spec:
             configMapKeyRef:
               name: hospital-config
               key: NOTIFICATION_SERVICE_URL
+        - name: DOCTOR_MANAGEMENT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: DOCTOR_MANAGEMENT_URL
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
 ---
 apiVersion: v1
 kind: Service

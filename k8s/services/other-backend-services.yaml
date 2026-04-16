@@ -32,6 +32,11 @@ spec:
             configMapKeyRef:
               name: hospital-config
               key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
 ---
 apiVersion: v1
 kind: Service
@@ -79,6 +84,11 @@ spec:
             configMapKeyRef:
               name: hospital-config
               key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
 ---
 apiVersion: v1
 kind: Service
@@ -126,6 +136,11 @@ spec:
             configMapKeyRef:
               name: hospital-config
               key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
 ---
 apiVersion: v1
 kind: Service
@@ -173,6 +188,21 @@ spec:
             configMapKeyRef:
               name: hospital-config
               key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+        - name: PAYHERE_RETURN_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: PAYHERE_RETURN_URL
+        - name: PAYHERE_CANCEL_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: PAYHERE_CANCEL_URL
 ---
 apiVersion: v1
 kind: Service
