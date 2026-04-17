@@ -1,0 +1,50 @@
+# Maven build files
+**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# Compiled class files
+**/*.class
+
+# Logs
+*.log
+stdout.txt
+stderr.txt
+stdout_auth.txt
+stderr_auth.txt
+mvn_log.txt
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE specific files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.settings/
+.project/
+.classpath/
+.factorypath
+
+# Frontend / Web Client
+web-client/node_modules/
+web-client/dist/
+web-client/.env.local
+
+# Temporary files
+eureka_apps.json
+
+# Sensitive files
+.env
+.env.*
+application-secrets.properties
+**/resources/application-secrets.properties

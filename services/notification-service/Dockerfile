@@ -1,0 +1,16 @@
+# Stage 1: Build
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN --mount=type=cache,target=/root/.m2 mvn install -N -B
+COPY services/notification-service/pom.xml ./services/notification-service/
+WORKDIR /app/services/notification-service
+COPY services/notification-service/src ./src
+RUN --mount=type=cache,target=/root/.m2 mvn clean package -DskipTests
+
+# Stage 2: Runtime
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY --from=build /app/services/notification-service/target/*.jar app.jar
+EXPOSE 8085
+ENTRYPOINT ["java", "-jar", "app.jar"]

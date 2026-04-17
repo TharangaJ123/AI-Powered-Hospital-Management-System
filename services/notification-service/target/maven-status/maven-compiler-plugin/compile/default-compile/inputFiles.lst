@@ -1,0 +1,10 @@
+C:\Users\Govindi Tharshika\Desktop\ddd\AI-Powered-Hospital-Management-System\services\notification-service\src\main\java\com\sliit\hospitalManagementSystem\notification_service\config\SecurityConfig.java
+C:\Users\Govindi Tharshika\Desktop\ddd\AI-Powered-Hospital-Management-System\services\notification-service\src\main\java\com\sliit\hospitalManagementSystem\notification_service\controller\NotificationController.java
+C:\Users\Govindi Tharshika\Desktop\ddd\AI-Powered-Hospital-Management-System\services\notification-service\src\main\java\com\sliit\hospitalManagementSystem\notification_service\dto\EmailRequest.java
+C:\Users\Govindi Tharshika\Desktop\ddd\AI-Powered-Hospital-Management-System\services\notification-service\src\main\java\com\sliit\hospitalManagementSystem\notification_service\dto\NotificationRequest.java
+C:\Users\Govindi Tharshika\Desktop\ddd\AI-Powered-Hospital-Management-System\services\notification-service\src\main\java\com\sliit\hospitalManagementSystem\notification_service\dto\NotificationResponse.java
+C:\Users\Govindi Tharshika\Desktop\ddd\AI-Powered-Hospital-Management-System\services\notification-service\src\main\java\com\sliit\hospitalManagementSystem\notification_service\NotificationServiceApplication.java
+C:\Users\Govindi Tharshika\Desktop\ddd\AI-Powered-Hospital-Management-System\services\notification-service\src\main\java\com\sliit\hospitalManagementSystem\notification_service\service\AppointmentNotificationService.java
+C:\Users\Govindi Tharshika\Desktop\ddd\AI-Powered-Hospital-Management-System\services\notification-service\src\main\java\com\sliit\hospitalManagementSystem\notification_service\service\EmailService.java
+C:\Users\Govindi Tharshika\Desktop\ddd\AI-Powered-Hospital-Management-System\services\notification-service\src\main\java\com\sliit\hospitalManagementSystem\notification_service\service\NotificationService.java
+C:\Users\Govindi Tharshika\Desktop\ddd\AI-Powered-Hospital-Management-System\services\notification-service\src\main\java\com\sliit\hospitalManagementSystem\notification_service\service\SmsService.java
