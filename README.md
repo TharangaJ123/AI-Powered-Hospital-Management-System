@@ -144,6 +144,18 @@ If you prefer to deploy manually via CLI, run these commands in order:
     kubectl get svc
     ```
 
+---
+
+## 🌐 Accessing the Application
+
+Once port forwarding is active, you can access the system at the following URLs:
+
+- **Frontend (Web Client)**: [http://localhost:30173](http://localhost:30173)
+- **API Gateway**: [http://localhost:30099](http://localhost:30099)
+- **Eureka Service Registry**: [http://localhost:8761](http://localhost:8761)
+
+---
+
 #### Individual Service Deployment & Access
 If you prefer to manage services separately, use the following commands:
 
