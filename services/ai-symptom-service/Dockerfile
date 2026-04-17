@@ -12,5 +12,5 @@ RUN --mount=type=cache,target=/root/.m2 mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/services/ai-symptom-service/target/*.jar app.jar
-EXPOSE 8087
+EXPOSE 8089
 ENTRYPOINT ["java", "-jar", "app.jar"]

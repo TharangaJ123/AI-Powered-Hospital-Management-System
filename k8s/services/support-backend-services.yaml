@@ -23,6 +23,8 @@ spec:
             secretKeyRef:
               name: hospital-secrets
               key: GEMINI_API_KEY
+        - name: SPRING_APPLICATION_JSON
+          value: '{"gemini.api.key":"$(GEMINI_API_KEY)", "gemini.api.url":"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"}'
         - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
           valueFrom:
             configMapKeyRef:

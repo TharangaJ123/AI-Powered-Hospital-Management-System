@@ -98,8 +98,8 @@ spec:
   selector:
     app: telemedicine-service
   ports:
-    - port: 8084
-      targetPort: 8084
+      - port: 8088
+        targetPort: 8088
 
 ---
 # Review Service
@@ -120,7 +120,7 @@ spec:
       - name: review-service
         image: review-service:latest
         ports:
-        - containerPort: 8088
+        - containerPort: 8086
         env:
         - name: SPRING_DATASOURCE_URL
           value: jdbc:mysql://mysql-service:3306/hospital_db?useSSL=false
@@ -150,8 +150,8 @@ spec:
   selector:
     app: review-service
   ports:
-    - port: 8088
-      targetPort: 8088
+    - port: 8086
+      targetPort: 8086
 
 ---
 # Payment Service
@@ -172,7 +172,7 @@ spec:
       - name: payment-service
         image: payment-service:latest
         ports:
-        - containerPort: 8086
+        - containerPort: 8084
         env:
         - name: SPRING_DATASOURCE_URL
           value: jdbc:mysql://mysql-service:3306/hospital_db?useSSL=false
@@ -212,5 +212,5 @@ spec:
   selector:
     app: payment-service
   ports:
-    - port: 8086
-      targetPort: 8086
+    - port: 8084
+      targetPort: 8084

@@ -22,6 +22,6 @@ metadata:
 type: Opaque
 data:
   MYSQL_ROOT_PASSWORD: cm9vdA== # base64 for 'root'
-  GEMINI_API_KEY: "" # user should provide or I can put a placeholder
+  GEMINI_API_KEY: "QUl6YVN5Q3YwQnMycWdwVXZYYk9TM3dxcWQxUktpYVZkS1NWUm5n" # Gemini API key base64 encoded (no change, matches application.properties)
   MAIL_USER: b21uaWhlYWx0aDYyOEBnbWFpbC5jb20= # base64 for 'omnihealth628@gmail.com'
   MAIL_PASS: ""

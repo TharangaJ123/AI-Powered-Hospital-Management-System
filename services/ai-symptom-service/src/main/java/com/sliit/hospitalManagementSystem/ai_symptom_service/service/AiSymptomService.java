@@ -27,6 +27,8 @@ public class AiSymptomService {
     private final ObjectMapper objectMapper;
 
     public SymptomCheckResponse checkSymptoms(SymptomCheckRequest request) {
+        System.out.println("[DEBUG] Gemini API Key (masked): " + (apiKey != null && apiKey.length() > 8 ? apiKey.substring(0, 4) + "..." + apiKey.substring(apiKey.length() - 4) : apiKey));
+        System.out.println("[DEBUG] Gemini API Endpoint: " + apiUrl);
         if ("YOUR_GEMINI_API_KEY".equals(apiKey) || apiKey == null || apiKey.isEmpty()) {
             return SymptomCheckResponse.builder()
                     .diagnosis("Health analysis system is currently offline.")
@@ -61,6 +63,7 @@ public class AiSymptomService {
             return parseGeminiResponse(responseBody);
         } catch (Exception e) {
             System.err.println("AI Service Error: " + e.getMessage());
+            e.printStackTrace(); // Added to see the full stack trace
             return SymptomCheckResponse.builder()
                     .diagnosis("AI analysis service is temporarily unavailable.")
                     .clinicalCondition("API Connection Failure")
