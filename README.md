@@ -122,6 +122,28 @@ Manifests are available in the `k8s/` directory for orchestration.
     ./k8s/port-forward-all.ps1
     ```
 
+#### Manual Cluster Setup (Alternative)
+If you prefer to deploy manually via CLI, run these commands in order:
+
+1.  **Deploy Database & Infrastructure**:
+    ```bash
+    kubectl apply -f k8s/database.yaml
+    kubectl apply -f k8s/hospital-config.yaml
+    kubectl apply -f k8s/api-gateway-config.yaml
+    ```
+2.  **Deploy Microservices**:
+    ```bash
+    kubectl apply -f k8s/web-client.yaml
+    kubectl apply -f k8s/services/core-backend-services.yaml
+    kubectl apply -f k8s/services/other-backend-services.yaml
+    kubectl apply -f k8s/services/support-backend-services.yaml
+    ```
+3.  **Verify Deployment**:
+    ```bash
+    kubectl get pods
+    kubectl get svc
+    ```
+
 #### Individual Service Deployment & Access
 If you prefer to manage services separately, use the following commands:
 
