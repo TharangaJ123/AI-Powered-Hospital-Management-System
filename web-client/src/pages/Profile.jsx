@@ -576,7 +576,7 @@ const Profile = ({
                           <div className="flex justify-between items-start mb-4">
                             <div>
                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Reviewed</p>
-                               <h4 className="font-bold text-slate-900 text-lg">Dr. {getDoctorName(review.doctorId)}</h4>
+                               <h4 className="font-bold text-slate-900 text-lg">{getDoctorName(review.doctorId)}</h4>
                             </div>
                             <div className="flex gap-1">
                               {[...Array(5)].map((_, i) => (
