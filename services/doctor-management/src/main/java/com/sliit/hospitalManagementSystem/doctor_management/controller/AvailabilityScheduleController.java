@@ -17,12 +17,15 @@ import java.util.List;
 @SuppressWarnings("null")
 public class AvailabilityScheduleController {
 
+    // Service for managing the weekly recurring availability schedules of doctors
     private final AvailabilityScheduleService availabilityScheduleService;
 
+    // Constructor based dependency injection
     public AvailabilityScheduleController(AvailabilityScheduleService availabilityScheduleService) {
         this.availabilityScheduleService = availabilityScheduleService;
     }
 
+    // Creates a new recurring availability slot for a doctor (e.g., Mondays 9am-12pm)
     @PostMapping
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<AvailabilityScheduleDTO> createSchedule(@Valid @RequestBody AvailabilityScheduleDTO dto) {
@@ -30,12 +33,14 @@ public class AvailabilityScheduleController {
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
+    // Fetches all availability schedules defined for a specific doctor
     @GetMapping("/doctor/{doctorId}")
     public ResponseEntity<List<AvailabilityScheduleDTO>> getSchedulesByDoctorId(@PathVariable Long doctorId) {
         List<AvailabilityScheduleDTO> schedules = availabilityScheduleService.getSchedulesByDoctorId(doctorId);
         return ResponseEntity.ok(schedules);
     }
 
+    // Fetches availability schedules for a specific doctor filtered by the day of the week
     @GetMapping("/doctor/{doctorId}/day/{dayOfWeek}")
     public ResponseEntity<List<AvailabilityScheduleDTO>> getSchedulesByDoctorIdAndDay(
             @PathVariable Long doctorId, @PathVariable DayOfWeek dayOfWeek) {
@@ -43,12 +48,14 @@ public class AvailabilityScheduleController {
         return ResponseEntity.ok(schedules);
     }
 
+    // Retrieves only the currently active and available time slots for a doctor
     @GetMapping("/doctor/{doctorId}/available")
     public ResponseEntity<List<AvailabilityScheduleDTO>> getAvailableSchedules(@PathVariable Long doctorId) {
         List<AvailabilityScheduleDTO> schedules = availabilityScheduleService.getAvailableSchedules(doctorId);
         return ResponseEntity.ok(schedules);
     }
 
+    // Updates an existing availability schedule slot by its ID
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<AvailabilityScheduleDTO> updateSchedule(
@@ -57,6 +64,7 @@ public class AvailabilityScheduleController {
         return ResponseEntity.ok(updated);
     }
 
+    // Permanently removes a specific availability schedule slot
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<Void> deleteSchedule(@PathVariable Long id) {
@@ -64,6 +72,7 @@ public class AvailabilityScheduleController {
         return ResponseEntity.noContent().build();
     }
 
+    // Removes all availability schedules for a specific doctor
     @DeleteMapping("/doctor/{doctorId}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<Void> deleteAllSchedulesByDoctorId(@PathVariable Long doctorId) {

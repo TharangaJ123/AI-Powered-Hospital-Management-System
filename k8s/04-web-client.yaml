@@ -1,0 +1,36 @@
+# ============================================================
+# Web Client (React/Vite Frontend) - Deployment and NodePort Service
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-client # Resource name for the frontend application
+spec:
+  replicas: 1 # Number of frontend pod instances
+  selector:
+    matchLabels:
+      app: web-client # Label for targeting frontend pods
+  template:
+    metadata:
+      labels:
+        app: web-client # Label applied to the frontend pods
+    spec:
+      containers:
+      - name: web-client
+        image: ai-powered-hospital-management-system-web-client:latest # Docker image containing the built React app and Nginx
+        imagePullPolicy: IfNotPresent # Uses local image if available
+        ports:
+        - containerPort: 80 # Default Nginx port for serving static content
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-client # Load balancer for the frontend application
+spec:
+  type: NodePort # Exposes the frontend to external browser traffic
+  selector:
+    app: web-client # Directs traffic to frontend pods
+  ports:
+  - port: 80 # Internal service port
+    targetPort: 80 # Target port on the container
+    nodePort: 30173 # Fixed external port (access via http://localhost:30173)

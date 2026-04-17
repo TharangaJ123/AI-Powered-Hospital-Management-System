@@ -18,25 +18,32 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// Filter that intercepts each request to validate JWT and populate the security context
 @Component
 public class AuthTokenFilter extends OncePerRequestFilter {
 
+    // Utility for JWT parsing and validation
     @Autowired
     private JwtUtils jwtUtils;
 
+    // Orchestrates the filtering process for each incoming HTTP request
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
+            // Extract and validate the JWT token from the Authorization header
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+                // Extract user identity and roles from the token claims
                 String email = jwtUtils.getUserNameFromJwtToken(jwt);
                 List<String> roles = jwtUtils.getRolesFromJwtToken(jwt);
 
+                // Convert role strings into Spring Security GrantedAuthority objects
                 List<SimpleGrantedAuthority> authorities = roles == null ? List.of() : roles.stream()
                         .map(role -> new SimpleGrantedAuthority(role.startsWith("ROLE_") ? role : "ROLE_" + role))
                         .collect(Collectors.toList());
 
+                // Create a UserDetails object and set the authentication in the security context
                 UserDetails userDetails = new UserDetailsImpl(email, authorities);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
@@ -48,9 +55,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             logger.error("Cannot set user authentication: {}", e);
         }
 
+        // Continue with the remaining filters in the chain
         filterChain.doFilter(request, response);
     }
 
+    // Extracts the token from the Bearer Authorization header
     private String parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");
 

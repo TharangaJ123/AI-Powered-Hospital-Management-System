@@ -28,15 +28,17 @@ public class SmsService {
     private final RestTemplate restTemplate = new RestTemplate();
     private static final String NOTIFY_API_URL = "https://app.notify.lk/api/v1/send";
 
+    // Post-construction hook to verify that the SMS service configurations are loaded
     @PostConstruct
     public void init() {
         log.info("Notify.lk SMS service initialized. SenderId: {}", senderId);
     }
 
+    // Formats the phone number and dispatches an SMS message via the Notify.lk provider
     public void sendSms(String to, String body) {
         log.info("Sending SMS to {} via Notify.lk...", to);
         try {
-            // Notify.lk expects 947XXXXXXXX format (11 digits)
+            // Normalizes the phone number to the required 947XXXXXXXX format (11 digits)
             String formattedPhone = to.replaceAll("\\D", "");
             if (formattedPhone.startsWith("0")) {
                 formattedPhone = "94" + formattedPhone.substring(1);
@@ -44,10 +46,11 @@ public class SmsService {
                 formattedPhone = "94" + formattedPhone;
             }
 
-            // Build form data as POST body (application/x-www-form-urlencoded)
+            // Sets up the form-encoded headers for the external API request
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
+            // Populates the required authentication and payload parameters for Notify.lk
             MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
             formData.add("user_id", userId);
             formData.add("api_key", apiKey);
@@ -57,6 +60,7 @@ public class SmsService {
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
 
+            // Executes the POST request to the external SMS gateway
             ResponseEntity<String> response = restTemplate.postForEntity(NOTIFY_API_URL, request, String.class);
             log.info("Notify.lk API Response [{}]: {}", response.getStatusCode(), response.getBody());
         } catch (Exception e) {
@@ -67,25 +71,30 @@ public class SmsService {
 
     // --- Template Builders ---
 
+    // Generates a welcome text message for new users
     public String buildUserRegisteredSms(String userName) {
         return String.format("Hi %s! Welcome to OminiHealth. Your registration was successful. Log in anytime for premium healthcare services.", userName);
     }
 
+    // Generates a confirmation text for a newly booked appointment
     public String buildAppointmentBookedSms(String patientName, String doctorName, String date, String time, String appointmentId) {
         return String.format("Hi %s, your appointment with Dr. %s is confirmed on %s at %s. ID: %s. - OmniHealth",
                 patientName, doctorName, date, time, appointmentId);
     }
 
+    // Generates a cancellation alert text for an appointment
     public String buildAppointmentCancelledSms(String patientName, String doctorName, String date, String time) {
         return String.format("Hi %s, your appointment with Dr. %s on %s at %s has been cancelled. Contact us for details. - OmniHealth",
                 patientName, doctorName, date, time);
     }
 
+    // Generates a text message indicating that appointment details have been updated
     public String buildAppointmentModifiedSms(String patientName, String doctorName, String date, String time) {
         return String.format("Hi %s, your appointment with Dr. %s has been updated. New time: %s at %s. - OmniHealth",
                 patientName, doctorName, date, time);
     }
 
+    // Generates a concluding text message after a medical consultation
     public String buildConsultationCompletedSms(String patientName, String doctorName) {
         return String.format("Hi %s, your consultation with Dr. %s is complete. Wishing you good health! - OmniHealth",
                 patientName, doctorName);

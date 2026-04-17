@@ -4,15 +4,25 @@ import java.time.LocalDateTime;
 
 public class PatientReportDTO {
 
+    // Unique ID for the medical report record
     private Long id;
+    // ID of the doctor who uploaded or authorized the report
     private Long doctorId;
+    // ID of the patient whom the report belongs to
     private Long patientId;
+    // Descriptive title of the report (e.g., "Blood Test Results")
     private String reportTitle;
+    // Category of the report (e.g., Lab Result, X-Ray, Prescription)
     private String reportType;
+    // URL for downloading or viewing the actual report file
     private String fileUrl;
+    // Original name of the uploaded file
     private String fileName;
+    // Detailed description or summary of the report content
     private String description;
+    // Professional observations and notes added by the doctor
     private String doctorRemarks;
+    // Timestamp when the report was added to the system
     private LocalDateTime uploadedAt;
 
     public PatientReportDTO() {}

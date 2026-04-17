@@ -5,14 +5,23 @@ import java.time.LocalTime;
 
 public class AvailabilityScheduleDTO {
 
+    // Unique identifier for the availability schedule record
     private Long id;
+    // ID of the doctor associated with this schedule
     private Long doctorId;
+    // The specific day of the week for this recurring schedule (e.g., MONDAY)
     private DayOfWeek dayOfWeek;
+    // The starting time of the doctor's shift
     private LocalTime startTime;
+    // The ending time of the doctor's shift
     private LocalTime endTime;
+    // The estimated length of a single consultation slot in minutes
     private Integer slotDurationMinutes;
+    // The maximum number of patients allowed in a single time window
     private Integer maxPatientsPerSlot;
+    // Flag indicating if this schedule slot is currently active
     private Boolean isAvailable;
+    // The consultation mode (e.g., Online, Physical, or Both)
     private String consultationType;
 
     public AvailabilityScheduleDTO() {}

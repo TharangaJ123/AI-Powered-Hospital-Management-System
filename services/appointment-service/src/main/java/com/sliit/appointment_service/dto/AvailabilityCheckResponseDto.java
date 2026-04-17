@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class AvailabilityCheckResponseDto {
+    // Boolean flag indicating if the doctor is free for the requested slot
     private boolean available;
+    // Human-readable message explaining the availability status
     private String message;
 }

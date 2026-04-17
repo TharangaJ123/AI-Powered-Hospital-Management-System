@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 public class AiSymptomController {
 
+    // Injecting AiSymptomService to handle the logic for symptom analysis
     private final AiSymptomService aiSymptomService;
 
+    // Endpoint to receive symptoms and patient data, returning an AI-generated diagnosis
     @PostMapping("/check-symptoms")
     public ResponseEntity<SymptomCheckResponse> checkSymptoms(@RequestBody SymptomCheckRequest request) {
         return ResponseEntity.ok(aiSymptomService.checkSymptoms(request));

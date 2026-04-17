@@ -19,64 +19,47 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
+    // Injecting AdminService to handle administrative business logic
     private final AdminService adminService;
 
-    /**
-     * Retrieves a list of all users registered in the system.
-     * 
-     * @return a ResponseEntity containing a list of UserResponseDto objects representing all users.
-     */
+    // Endpoint to retrieve a list of all registered users
     @GetMapping("/users")
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         return ResponseEntity.ok(adminService.getAllUsers());
     }
 
-    /**
-     * Toggles the active status of a user.
-     * 
-     * @param userId the ID of the user to update
-     * @param active the new active status
-     * @return a ResponseEntity containing the updated UserResponseDto
-     */
+    // Endpoint to enable or disable a specific user account
     @PutMapping("/users/{userId}/toggle")
     public ResponseEntity<UserResponseDto> toggleUserStatus(@PathVariable Long userId, @RequestParam boolean active) {
         return ResponseEntity.ok(adminService.toggleUserStatus(userId, active));
     }
 
-    /**
-     * Verifies a doctor's registration.
-     * 
-     * @param userId the ID of the doctor user to verify
-     * @return a ResponseEntity containing the updated UserResponseDto
-     */
+    // Endpoint to verify a doctor's credentials and registration
     @PutMapping("/doctors/{userId}/verify")
     public ResponseEntity<UserResponseDto> verifyDoctor(@PathVariable Long userId) {
         return ResponseEntity.ok(adminService.verifyDoctor(userId));
     }
 
-
-
-    /**
-     * Retrieves aggregated platform operations and statistics.
-     * 
-     * @return a ResponseEntity containing platform operations data in JSON string format
-     */
+    // Endpoint to fetch general platform statistics and operational data
     @GetMapping("/operations")
     public ResponseEntity<Object> getPlatformOperations() {
         return ResponseEntity.ok(adminService.getPlatformOperations());
     }
 
+    // Endpoint to permanently delete a user from the system
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
         adminService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }
 
+    // Endpoint to retrieve all financial transactions recorded in the platform
     @GetMapping("/transactions")
     public ResponseEntity<List<com.sliit.user_management.model.FinancialTransaction>> getAllTransactions() {
         return ResponseEntity.ok(adminService.getAllTransactions());
     }
 
+    // Endpoint to delete a specific review submitted by a patient
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
         adminService.deleteReview(reviewId);

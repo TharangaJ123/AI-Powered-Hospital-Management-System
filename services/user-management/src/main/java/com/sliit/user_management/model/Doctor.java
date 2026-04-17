@@ -20,8 +20,10 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class Doctor extends User {
 
+    // Unique registration or license number issued by a medical board
     @Column(unique = true)
     private String doctorRegistrationNumber;
 
+    // The doctor's medical area of expertise (e.g., Cardiology, Pediatrics)
     private String specialization;
 }

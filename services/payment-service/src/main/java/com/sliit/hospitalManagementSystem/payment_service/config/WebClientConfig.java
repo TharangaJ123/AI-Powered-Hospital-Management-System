@@ -7,6 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfig {
 
+    // Configures and provides a WebClient bean with a customized memory limit for codecs
     @Bean
     public WebClient webClient() {
         return WebClient.builder()

@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EmailService {
 
+    // The Spring Boot mail sender component for dispatching emails
     private final JavaMailSender mailSender;
 
+    // Core method to send a Mime email with optional HTML support
     public void sendEmail(String to, String subject, String body, boolean isHtml) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -32,10 +34,12 @@ public class EmailService {
 
     // ── HTML Template Builders ────────────────────────────────────────────────
 
+    // Validation helper to identify missing or corrupted data strings
     private boolean isInvalid(String val) {
         return val == null || val.trim().isEmpty() || val.equalsIgnoreCase("null") || val.equalsIgnoreCase("undefined");
     }
 
+    // Generates a stylized HTML email body for newly booked appointments
     public String buildAppointmentBookedBody(String recipientName, String doctorName,
                                              String patientName, String date, String time,
                                              String appointmentId, String specialty,
@@ -264,6 +268,7 @@ public class EmailService {
                 );
     }
 
+    // Generates a red-themed HTML email alert for cancelled medical appointments
     public String buildAppointmentCancelledBody(String recipientName, String doctorName,
                                                 String date, String time, String appointmentId) {
         return """
@@ -289,6 +294,7 @@ public class EmailService {
                 """.formatted(recipientName, appointmentId, doctorName, date, time);
     }
 
+    // Generates a green-themed HTML email summarizing a completed consultation
     public String buildConsultationCompletedBody(String recipientName, String doctorName,
                                                  String date, String appointmentId) {
         return """
@@ -314,6 +320,7 @@ public class EmailService {
                 </div></body></html>
                 """.formatted(recipientName, appointmentId, doctorName, date);
     }
+    // Generates a welcome email for newly registered users on the platform
     public String buildUserRegisteredBody(String recipientName, String email) {
         return """
                 <!DOCTYPE html>
@@ -450,6 +457,7 @@ public class EmailService {
                 """.formatted(recipientName, recipientName, email);
     }
 
+    // Generates a detailed transaction receipt for successful payments
     public String buildPaymentSuccessBody(String recipientName, String orderId, String amount, 
                                          String paymentId, String items, String date) {
         return """
@@ -502,6 +510,7 @@ public class EmailService {
                 """.formatted(recipientName, orderId, paymentId, amount, date, items);
     }
 
+    // Generates an urgent notification email when a payment transaction fails
     public String buildPaymentFailureBody(String recipientName, String orderId, String amount, 
                                          String errorMessage, String date) {
         return """

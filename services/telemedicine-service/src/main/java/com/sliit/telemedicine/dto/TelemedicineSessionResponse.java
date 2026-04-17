@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class TelemedicineSessionResponse {
+    // Unique name of the virtual meeting room
     private String roomName;
+    // Direct link to the Jitsi meeting for the session
     private String jitsiUrl;
 }

@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfig {
 
+    // Provides a WebClient.Builder bean for creating reactive HTTP clients
     @Bean
     public WebClient.Builder webClientBuilder() {
         return WebClient.builder();

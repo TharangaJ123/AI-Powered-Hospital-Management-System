@@ -1,0 +1,251 @@
+# ============================================================
+# Notification Service (port 8085)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service # Supporting service for Email and SMS dispatch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+      - name: notification-service
+        image: ai-powered-hospital-management-system-notification-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8085
+        env:
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+        - name: SPRING_MAIL_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: hospital-secrets
+              key: MAIL_USER
+        - name: SPRING_MAIL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hospital-secrets
+              key: MAIL_PASS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+spec:
+  selector:
+    app: notification-service
+  ports:
+  - port: 8085
+    targetPort: 8085
+
+---
+# ============================================================
+# Review Service (port 8086)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: review-service # Supporting service for patient feedback and ratings
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: review-service
+  template:
+    metadata:
+      labels:
+        app: review-service
+    spec:
+      containers:
+      - name: review-service
+        image: ai-powered-hospital-management-system-review-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8086
+        env:
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: review-service
+spec:
+  selector:
+    app: review-service
+  ports:
+  - port: 8086
+    targetPort: 8086
+
+---
+# ============================================================
+# Contact Service (port 8087)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contact-service # Supporting service for user inquiries and support
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: contact-service
+  template:
+    metadata:
+      labels:
+        app: contact-service
+    spec:
+      containers:
+      - name: contact-service
+        image: ai-powered-hospital-management-system-contact-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8087
+        env:
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: contact-service
+spec:
+  selector:
+    app: contact-service
+  ports:
+  - port: 8087
+    targetPort: 8087
+
+---
+# ============================================================
+# Telemedicine Service (port 8088)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemedicine-service # Supporting service for virtual consultation rooms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: telemedicine-service
+  template:
+    metadata:
+      labels:
+        app: telemedicine-service
+    spec:
+      containers:
+      - name: telemedicine-service
+        image: ai-powered-hospital-management-system-telemedicine-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8088
+        env:
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: telemedicine-service
+spec:
+  selector:
+    app: telemedicine-service
+  ports:
+  - port: 8088
+    targetPort: 8088
+
+---
+# ============================================================
+# AI Symptom Service (port 8089) - with Gemini API key
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-symptom-service # Supporting service for AI-driven diagnostic analysis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-symptom-service
+  template:
+    metadata:
+      labels:
+        app: ai-symptom-service
+    spec:
+      containers:
+      - name: ai-symptom-service
+        image: ai-powered-hospital-management-system-ai-symptom-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8089
+        env:
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hospital-secrets
+              key: GEMINI_API_KEY
+        # This service maps the AI API key from the encrypted hospital-secrets Secret
+        - name: GEMINI_API_URL
+          value: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-symptom-service
+spec:
+  selector:
+    app: ai-symptom-service
+  ports:
+  - port: 8089
+    targetPort: 8089

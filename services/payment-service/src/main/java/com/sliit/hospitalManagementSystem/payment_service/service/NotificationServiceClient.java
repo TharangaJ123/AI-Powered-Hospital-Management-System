@@ -13,18 +13,23 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class NotificationServiceClient {
 
+    // WebClient for dispatching asynchronous requests to the Notification service
     private final WebClient webClient;
 
+    // Base URL for the Notification microservice, configured via properties
     @Value("${notification.service.url:http://localhost:8085}")
     private String notificationServiceUrl;
 
+    // Sends an email notification to the customer upon successful payment
     public void sendPaymentSuccessEmail(String toEmail, String customerName, String orderId, 
                                        String amount, String paymentId, String items) {
         try {
+            // Build the payload for the successful payment email
             PaymentEmailRequest request = new PaymentEmailRequest(
                 toEmail, customerName, orderId, amount, paymentId, items
             );
 
+            // Execute the POST request to the notification service's success endpoint
             webClient.post()
                 .uri(notificationServiceUrl + "/api/notifications/email/payment-success")
                 .bodyValue(request)
@@ -40,13 +45,16 @@ public class NotificationServiceClient {
         }
     }
 
+    // Sends an email notification to the customer when a payment attempt fails
     public void sendPaymentFailureEmail(String toEmail, String customerName, String orderId, 
                                        String amount, String errorMessage) {
         try {
+            // Build the payload for the failed payment email
             PaymentFailureEmailRequest request = new PaymentFailureEmailRequest(
                 toEmail, customerName, orderId, amount, errorMessage
             );
 
+            // Execute the POST request to the notification service's failure endpoint
             webClient.post()
                 .uri(notificationServiceUrl + "/api/notifications/email/payment-failure")
                 .bodyValue(request)
@@ -62,6 +70,7 @@ public class NotificationServiceClient {
         }
     }
 
+    // Data structure for the successful payment email request
     public record PaymentEmailRequest(
         String toEmail,
         String customerName,
@@ -71,6 +80,7 @@ public class NotificationServiceClient {
         String items
     ) {}
 
+    // Data structure for the failed payment email request
     public record PaymentFailureEmailRequest(
         String toEmail,
         String customerName,

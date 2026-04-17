@@ -1,0 +1,226 @@
+# ============================================================
+# User Management Service (port 8081)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-management # Backend service for user accounts and profiles
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-management
+  template:
+    metadata:
+      labels:
+        app: user-management
+    spec:
+      containers:
+      - name: user-management
+        image: ai-powered-hospital-management-system-user-management:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081 # Exposed port for authentication and profile management
+        env:
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+        - name: DOCTOR_MANAGEMENT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: DOCTOR_MANAGEMENT_URL
+        - name: NOTIFICATION_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: NOTIFICATION_SERVICE_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-management
+spec:
+  selector:
+    app: user-management
+  ports:
+  - port: 8081
+    targetPort: 8081
+
+---
+# ============================================================
+# Doctor Management Service (port 8082)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: doctor-management # Backend service for doctor clinical profiles and schedules
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: doctor-management
+  template:
+    metadata:
+      labels:
+        app: doctor-management
+    spec:
+      containers:
+      - name: doctor-management
+        image: ai-powered-hospital-management-system-doctor-management:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8082
+        env:
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: doctor-management
+spec:
+  selector:
+    app: doctor-management
+  ports:
+  - port: 8082
+    targetPort: 8082
+
+---
+# ============================================================
+# Appointment Service (port 8083)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: appointment-service # Backend service for booking and managing medical visits
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: appointment-service
+  template:
+    metadata:
+      labels:
+        app: appointment-service
+    spec:
+      containers:
+      - name: appointment-service
+        image: ai-powered-hospital-management-system-appointment-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8083
+        env:
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+        - name: NOTIFICATION_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: NOTIFICATION_SERVICE_URL
+        - name: DOCTOR_MANAGEMENT_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: DOCTOR_MANAGEMENT_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: appointment-service
+spec:
+  selector:
+    app: appointment-service
+  ports:
+  - port: 8083
+    targetPort: 8083
+
+---
+# ============================================================
+# Payment Service (port 8084)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service # Backend service for billing and financial transactions
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+      - name: payment-service
+        image: ai-powered-hospital-management-system-payment-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8084
+        env:
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+        - name: APPOINTMENT_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: APPOINTMENT_SERVICE_URL
+        - name: NOTIFICATION_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: NOTIFICATION_SERVICE_URL
+        - name: PAYHERE_RETURN_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: PAYHERE_RETURN_URL
+        - name: PAYHERE_CANCEL_URL
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: PAYHERE_CANCEL_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+spec:
+  selector:
+    app: payment-service
+  ports:
+  - port: 8084
+    targetPort: 8084

@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
 
 /**
  * Service class responsible for handling administrative operations.
- * This includes user management, doctor verification, and retrieving platform metrics.
+ * This includes user management, doctor verification, and retrieving platform
+ * metrics.
  */
 @Service
 @RequiredArgsConstructor
@@ -62,7 +63,7 @@ public class AdminService {
     /**
      * Toggles the active status of a specified user.
      * 
-     * @param userId the ID of the user to modify
+     * @param userId   the ID of the user to modify
      * @param isActive the new active status
      * @return the updated UserResponseDto
      * @throws RuntimeException if the user is not found
@@ -73,7 +74,7 @@ public class AdminService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setActive(isActive);
         user = userRepository.save(user);
-        
+
         return mapToResponseDto(user);
     }
 
@@ -87,11 +88,11 @@ public class AdminService {
     public UserResponseDto verifyDoctor(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         if (user.getRole() != com.sliit.user_management.model.Role.DOCTOR) {
             throw new RuntimeException("User is not a doctor");
         }
-        
+
         user.setVerified(true);
         user.setActive(true);
         user = userRepository.save(user);
@@ -102,32 +103,33 @@ public class AdminService {
         } catch (Exception e) {
             System.err.println("Failed to sync doctor profile: " + e.getMessage());
         }
-        
+
         return mapToResponseDto(user);
     }
 
     private void syncDoctorProfile(User user, String status) {
         WebClient webClient = webClientBuilder.baseUrl("http://localhost:8085").build();
-        
+
         Map<String, Object> profileData = new java.util.HashMap<>();
         profileData.put("userId", user.getId());
         profileData.put("firstName", user.getFirstName());
         profileData.put("lastName", user.getLastName());
         profileData.put("email", user.getEmail());
-        
+
         if (user instanceof com.sliit.user_management.model.Doctor) {
             com.sliit.user_management.model.Doctor doctor = (com.sliit.user_management.model.Doctor) user;
             profileData.put("specialization", doctor.getSpecialization());
             profileData.put("licenseNumber", doctor.getDoctorRegistrationNumber());
         }
-        
+
         profileData.put("status", status);
 
         try {
             Map<String, Object> existingProfile = webClient.get()
                     .uri("/api/doctors/profiles/user/{userId}", user.getId())
                     .retrieve()
-                    .bodyToMono(new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {})
+                    .bodyToMono(new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {
+                    })
                     .block();
 
             if (existingProfile != null && existingProfile.get("id") != null) {
@@ -152,8 +154,6 @@ public class AdminService {
                 .block();
     }
 
-
-
     /**
      * Retrieves overall platform statistics and operations data.
      * 
@@ -162,15 +162,15 @@ public class AdminService {
     public Object getPlatformOperations() {
         long totalUsers = userRepository.count();
         Double totalRevenue = financialTransactionRepository.getTotalRevenue();
-        if (totalRevenue == null) totalRevenue = 0.0;
-        
+        if (totalRevenue == null)
+            totalRevenue = 0.0;
+
         long successfulTransactions = financialTransactionRepository.countByStatus("SUCCESS");
-        
+
         return java.util.Map.of(
-            "totalUsers", totalUsers,
-            "totalRevenue", totalRevenue,
-            "successfulTransactions", successfulTransactions
-        );
+                "totalUsers", totalUsers,
+                "totalRevenue", totalRevenue,
+                "successfulTransactions", successfulTransactions);
     }
 
     /**
@@ -182,7 +182,7 @@ public class AdminService {
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         // Profiles are linked via userId (physically or logically)
         // If they use @OneToOne with CascadeType.ALL, deleting user is enough.
         // Let's check User entity to be sure.

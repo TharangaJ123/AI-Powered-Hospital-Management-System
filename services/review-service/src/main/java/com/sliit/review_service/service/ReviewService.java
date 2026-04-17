@@ -14,8 +14,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReviewService {
 
+    // Injecting ReviewRepository to interact with the database
     private final ReviewRepository reviewRepository;
 
+    // Logic to create and save a new review based on the provided DTO
     public Review createReview(ReviewDto dto) {
         Review review = Review.builder()
                 .doctorId(dto.getDoctorId())
@@ -28,20 +30,24 @@ public class ReviewService {
         return reviewRepository.save(review);
     }
 
+    // Fetches all approved reviews for a specific doctor
     public List<Review> getReviewsForDoctor(Long doctorId) {
         return reviewRepository.findByDoctorIdAndStatus(doctorId, ReviewStatus.APPROVED);
     }
 
+    // Fetches all reviews submitted by a specific patient
     public List<Review> getReviewsByPatient(Long patientId) {
         return reviewRepository.findByPatientId(patientId);
     }
 
+    // Calculates and returns statistical data for a doctor (avg rating and review count)
     public DoctorStatsDto getDoctorStats(Long doctorId) {
         Double avg = reviewRepository.getAverageRatingForDoctor(doctorId);
         Long count = reviewRepository.countApprovedReviewsForDoctor(doctorId);
         return new DoctorStatsDto(doctorId, avg != null ? avg : 0.0, count != null ? count : 0L);
     }
 
+    // Updates the status of an existing review after verifying its existence
     public Review updateReviewStatus(Long reviewId, ReviewStatus status) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Review not found"));
@@ -49,6 +55,7 @@ public class ReviewService {
         return reviewRepository.save(review);
     }
 
+    // Retrieves every review currently stored in the database
     public List<Review> getAllReviews() {
         return reviewRepository.findAll();
     }

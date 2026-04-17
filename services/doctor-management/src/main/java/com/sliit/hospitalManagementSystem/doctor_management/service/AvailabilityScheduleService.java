@@ -21,30 +21,35 @@ public class AvailabilityScheduleService {
         this.availabilityScheduleRepository = availabilityScheduleRepository;
     }
 
+    // Creates a new recurring availability slot for a doctor
     @SuppressWarnings("null")
     public AvailabilityScheduleDTO createSchedule(AvailabilityScheduleDTO dto) {
         AvailabilitySchedule schedule = mapToEntity(dto);
         return mapToDTO(availabilityScheduleRepository.save(schedule));
     }
 
+    // Retrieves all configured availability slots for a specific doctor
     public List<AvailabilityScheduleDTO> getSchedulesByDoctorId(Long doctorId) {
         return availabilityScheduleRepository.findByDoctorId(doctorId).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+    // Fetches a doctor's availability for a specific day of the week
     public List<AvailabilityScheduleDTO> getSchedulesByDoctorIdAndDay(Long doctorId, DayOfWeek dayOfWeek) {
         return availabilityScheduleRepository.findByDoctorIdAndDayOfWeek(doctorId, dayOfWeek).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+    // Retrieves only the slots that are currently marked as active/available for booking
     public List<AvailabilityScheduleDTO> getAvailableSchedules(Long doctorId) {
         return availabilityScheduleRepository.findByDoctorIdAndIsAvailable(doctorId, true).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+    // Updates an existing availability slot's details such as time or slot duration
     public AvailabilityScheduleDTO updateSchedule(@NonNull Long id, AvailabilityScheduleDTO dto) {
         return availabilityScheduleRepository.findById(id)
                 .map(existing -> {
@@ -64,6 +69,7 @@ public class AvailabilityScheduleService {
                 .orElseThrow(() -> new RuntimeException("Availability schedule not found with id: " + id));
     }
 
+    // Removes a specific availability slot by ID
     public void deleteSchedule(@NonNull Long id) {
         if (!availabilityScheduleRepository.existsById(id)) {
             throw new RuntimeException("Availability schedule not found with id: " + id);
@@ -71,13 +77,13 @@ public class AvailabilityScheduleService {
         availabilityScheduleRepository.deleteById(id);
     }
 
+    // Transactional method to wipe all availability configurations for a doctor
     @Transactional
     public void deleteAllSchedulesByDoctorId(Long doctorId) {
         availabilityScheduleRepository.deleteByDoctorId(doctorId);
     }
 
-    // --- Mapping helpers ---
-
+    // Converts an AvailabilitySchedule JPA entity into a DTO for API responses
     private AvailabilityScheduleDTO mapToDTO(AvailabilitySchedule schedule) {
         return AvailabilityScheduleDTO.builder()
                 .id(schedule.getId())
@@ -92,6 +98,7 @@ public class AvailabilityScheduleService {
                 .build();
     }
 
+    // Converts an AvailabilityScheduleDTO into a JPA entity, applying default values where necessary
     private AvailabilitySchedule mapToEntity(AvailabilityScheduleDTO dto) {
         return AvailabilitySchedule.builder()
                 .doctorId(dto.getDoctorId())

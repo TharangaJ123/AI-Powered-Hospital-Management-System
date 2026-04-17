@@ -22,6 +22,7 @@ public class TelemedicineSessionService {
         this.telemedicineSessionRepository = telemedicineSessionRepository;
     }
 
+    // Initializes a new virtual consultation session and generates a unique meeting URL if not provided
     public TelemedicineSessionDTO createSession(TelemedicineSessionDTO dto) {
         TelemedicineSession session = mapToEntity(dto);
 
@@ -32,24 +33,28 @@ public class TelemedicineSessionService {
         return mapToDTO(Objects.requireNonNull(telemedicineSessionRepository.save(session)));
     }
 
+    // Retrieves session details by its record ID
     public TelemedicineSessionDTO getSessionById(@NonNull Long id) {
         return telemedicineSessionRepository.findById(id)
                 .map(this::mapToDTO)
                 .orElseThrow(() -> new RuntimeException("Telemedicine session not found with id: " + id));
     }
 
+    // Fetches all sessions for a specific doctor, starting from the most recent
     public List<TelemedicineSessionDTO> getSessionsByDoctorId(Long doctorId) {
         return telemedicineSessionRepository.findByDoctorIdOrderByScheduledStartTimeDesc(doctorId).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+    // Retrieves sessions that are currently in 'SCHEDULED' state for a doctor
     public List<TelemedicineSessionDTO> getUpcomingSessionsByDoctorId(Long doctorId) {
         return telemedicineSessionRepository.findByDoctorIdAndStatus(doctorId, SessionStatus.SCHEDULED).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+    // Transitions a session to 'IN_PROGRESS' and records the actual start timestamp
     public TelemedicineSessionDTO startSession(@NonNull Long id) {
         return telemedicineSessionRepository.findById(id)
                 .map(session -> {
@@ -60,6 +65,7 @@ public class TelemedicineSessionService {
                 .orElseThrow(() -> new RuntimeException("Telemedicine session not found with id: " + id));
     }
 
+    // Concludes a session, records the end time, and saves the doctor's consultation notes
     public TelemedicineSessionDTO endSession(@NonNull Long id, String notes) {
         return telemedicineSessionRepository.findById(id)
                 .map(session -> {
@@ -71,6 +77,7 @@ public class TelemedicineSessionService {
                 .orElseThrow(() -> new RuntimeException("Telemedicine session not found with id: " + id));
     }
 
+    // Marks a scheduled session as 'CANCELLED'
     public TelemedicineSessionDTO cancelSession(@NonNull Long id) {
         return telemedicineSessionRepository.findById(id)
                 .map(session -> {
@@ -80,6 +87,7 @@ public class TelemedicineSessionService {
                 .orElseThrow(() -> new RuntimeException("Telemedicine session not found with id: " + id));
     }
 
+    // Utility to transform a session entity to a data transfer object
     private TelemedicineSessionDTO mapToDTO(@NonNull TelemedicineSession session) {
         return TelemedicineSessionDTO.builder()
                 .id(session.getId())
@@ -96,6 +104,7 @@ public class TelemedicineSessionService {
                 .build();
     }
 
+    // Maps a session DTO into a JPA entity for database persistence
     private TelemedicineSession mapToEntity(TelemedicineSessionDTO dto) {
         return TelemedicineSession.builder()
                 .doctorId(dto.getDoctorId())

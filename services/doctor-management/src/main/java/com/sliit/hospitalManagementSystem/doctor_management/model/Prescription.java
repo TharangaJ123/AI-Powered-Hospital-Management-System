@@ -8,48 +8,62 @@ import java.time.LocalDateTime;
 @Table(name = "prescriptions")
 public class Prescription {
 
+    // Primary key for the digital prescription
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Foreign key reference to the issuing doctor
     @Column(name = "doctor_id", nullable = false)
     private Long doctorId;
 
+    // Foreign key reference to the recipient patient
     @Column(name = "patient_id", nullable = false)
     private Long patientId;
 
+    // Optional reference to the appointment that triggered this prescription
     @Column(name = "appointment_request_id")
     private Long appointmentRequestId;
 
+    // Doctor's clinical diagnosis for the patient
     @Column(name = "diagnosis", columnDefinition = "TEXT")
     private String diagnosis;
 
+    // List of drugs and medical items prescribed
     @Column(name = "medications", columnDefinition = "TEXT")
     private String medications;
 
+    // Specific intake directions (e.g., "twice a day after meals")
     @Column(name = "dosage_instructions", columnDefinition = "TEXT")
     private String dosageInstructions;
 
+    // Supplementary advice or health warnings
     @Column(name = "additional_notes", columnDefinition = "TEXT")
     private String additionalNotes;
 
+    // The date the prescription was officially issued
     @Column(name = "prescription_date", nullable = false)
     private LocalDate prescriptionDate;
 
+    // The validity period or expiry date of the prescription
     @Column(name = "valid_until")
     private LocalDate validUntil;
 
+    // Flag for electronic signature/digital verification status
     @Column(name = "is_digital")
     private Boolean isDigital;
 
+    // Internal timestamp for record creation
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    // Internal timestamp for record updates
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public Prescription() {}
 
+    // JPA hook to initialize timestamps and defaults before persistence
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -62,6 +76,7 @@ public class Prescription {
         }
     }
 
+    // JPA hook to update the modification timestamp before every save
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();

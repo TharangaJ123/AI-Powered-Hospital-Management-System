@@ -7,39 +7,50 @@ import java.time.LocalDateTime;
 @Table(name = "patient_reports")
 public class PatientReport {
 
+    // Primary key for the patient medical report record
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Foreign key reference to the doctor associated with the report
     @Column(name = "doctor_id", nullable = false)
     private Long doctorId;
 
+    // Foreign key reference to the patient whom the report belongs to
     @Column(name = "patient_id", nullable = false)
     private Long patientId;
 
+    // Display title for the medical report
     @Column(name = "report_title", nullable = false)
     private String reportTitle;
 
+    // Categorization of the report (e.g., Diagnostic, Follow-up)
     @Column(name = "report_type")
     private String reportType;
 
+    // External URL or cloud storage path for the digital file
     @Column(name = "file_url")
     private String fileUrl;
 
+    // Original filename of the uploaded medical document
     @Column(name = "file_name")
     private String fileName;
 
+    // Summary of the report findings or patient history
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    // Professional clinical observations recorded by the doctor
     @Column(name = "doctor_remarks", columnDefinition = "TEXT")
     private String doctorRemarks;
 
+    // Automatically generated timestamp of the upload event
     @Column(name = "uploaded_at", updatable = false)
     private LocalDateTime uploadedAt;
 
     public PatientReport() {}
 
+    // JPA hook to record the exact moment of file persistence
     @PrePersist
     protected void onCreate() {
         uploadedAt = LocalDateTime.now();

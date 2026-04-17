@@ -4,14 +4,23 @@ import java.time.LocalDateTime;
 
 public class AppointmentRequestDTO {
 
+    // Unique ID for the appointment request record
     private Long id;
+    // ID of the doctor receiving the request
     private Long doctorId;
+    // ID of the patient making the request
     private Long patientId;
+    // Name of the patient recorded at the time of request
     private String patientName;
+    // Requested date and time for the medical consultation
     private LocalDateTime requestedDateTime;
+    // Mode of consultation (e.g., ONLINE, PHYSICAL)
     private String consultationType;
+    // Patient's reason for the visit or symptoms
     private String reason;
+    // Current processing status (PENDING, ACCEPTED, REJECTED, COMPLETED)
     private String status;
+    // Feedback or instructions provided by the doctor
     private String doctorNotes;
 
     public AppointmentRequestDTO() {}

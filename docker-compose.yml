@@ -1,22 +1,7 @@
 version: "3.9"
 
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: hospital-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: hospital_db
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - hospital-network
-
+  # Centralized registry for all microservices in the hospital network
   discovery-service:
     build:
       context: .
@@ -27,12 +12,13 @@ services:
     networks:
       - hospital-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8761" ]
       interval: 20s
       timeout: 10s
       retries: 5
       start_period: 30s
 
+  # Central entry point that routes external traffic to specific services
   api-gateway:
     build:
       context: .
@@ -48,80 +34,67 @@ services:
     networks:
       - hospital-network
 
+  # Manages patient and staff authentication and profile data
   user-management:
     build:
       context: .
       dockerfile: services/user-management/Dockerfile
     container_name: user-management
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/hospital_db
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - DOCTOR_MANAGEMENT_URL=http://doctor-management:8082
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8085
     depends_on:
-      mysql:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
     networks:
       - hospital-network
 
+  # Handles the scheduling and status tracking of medical appointments
   appointment-service:
     build:
       context: .
       dockerfile: services/appointment-service/Dockerfile
     container_name: appointment-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/hospital_db
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
       - NOTIFICATION_SERVICE_URL=http://notification-service:8085
       - DOCTOR_MANAGEMENT_URL=http://doctor-management:8082
     depends_on:
-      mysql:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
     networks:
       - hospital-network
 
+  # Stores and manages detailed clinical profiles for doctors
   doctor-management:
     build:
       context: .
       dockerfile: services/doctor-management/Dockerfile
     container_name: doctor-management
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/hospital_db
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
     depends_on:
-      mysql:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
     networks:
       - hospital-network
 
+  # Orchestrates virtual consultation sessions via WebRTC or external links
   telemedicine-service:
     build:
       context: .
       dockerfile: services/telemedicine-service/Dockerfile
     container_name: telemedicine-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/hospital_db
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
     depends_on:
-      mysql:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
     networks:
       - hospital-network
 
+  # Uses AI models to analyze symptoms and provide medical suggestions
   ai-symptom-service:
     build:
       context: .
@@ -135,6 +108,7 @@ services:
     networks:
       - hospital-network
 
+  # Hub for dispatching transactional Email and SMS alerts
   notification-service:
     build:
       context: .
@@ -150,60 +124,51 @@ services:
     networks:
       - hospital-network
 
+  # Manages general support inquiries and contact form submissions
   contact-service:
     build:
       context: .
       dockerfile: services/contact-service/Dockerfile
     container_name: contact-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/hospital_db
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
     depends_on:
-      mysql:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
     networks:
       - hospital-network
 
+  # Collects and displays patient feedback and provider ratings
   review-service:
     build:
       context: .
       dockerfile: services/review-service/Dockerfile
     container_name: review-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/hospital_db
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
     depends_on:
-      mysql:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
     networks:
       - hospital-network
 
+  # Processes financial transactions and payment gateway integrations
   payment-service:
     build:
       context: .
       dockerfile: services/payment-service/Dockerfile
     container_name: payment-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/hospital_db
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - APPOINTMENT_SERVICE_URL=http://appointment-service:8083
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8085
     depends_on:
-      mysql:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
     networks:
       - hospital-network
 
+  # The React-based user interface served via Nginx
   web-client:
     build:
       context: ./web-client

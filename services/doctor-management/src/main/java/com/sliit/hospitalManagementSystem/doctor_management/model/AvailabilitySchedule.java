@@ -8,32 +8,41 @@ import java.time.LocalTime;
 @Table(name = "availability_schedules")
 public class AvailabilitySchedule {
 
+    // Primary key for the recurring availability schedule
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Foreign key reference to the doctor
     @Column(name = "doctor_id", nullable = false)
     private Long doctorId;
 
+    // The recurring day of the week (e.g., MONDAY, TUESDAY)
     @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week", nullable = false)
     private DayOfWeek dayOfWeek;
 
+    // The daily start time for the doctor's shift
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
+    // The daily end time for the doctor's shift
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
+    // Granularity of a single consultation slot in minutes
     @Column(name = "slot_duration_minutes")
     private Integer slotDurationMinutes;
 
+    // Maximum number of patients allowed during one slot
     @Column(name = "max_patients_per_slot")
     private Integer maxPatientsPerSlot;
 
+    // Availability toggle for this specific schedule record
     @Column(name = "is_available")
     private Boolean isAvailable;
 
+    // The mode of the meeting supported during this time (Online, Physical, Both)
     @Enumerated(EnumType.STRING)
     @Column(name = "consultation_type")
     private ConsultationType consultationType;

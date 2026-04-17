@@ -8,6 +8,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 public class AiSymptomServiceApplication {
 
+	// Main entry point for the Spring Boot AI Symptom Checker Microservice
 	public static void main(String[] args) {
 		SpringApplication.run(AiSymptomServiceApplication.class, args);
 	}

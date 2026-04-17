@@ -33,30 +33,35 @@ public class AppointmentRequestService {
         this.webClientBuilder = webClientBuilder;
     }
 
+    // Handles the creation of a new appointment request from a DTO
     @SuppressWarnings("null")
     public AppointmentRequestDTO createRequest(AppointmentRequestDTO dto) {
         AppointmentRequest request = mapToEntity(dto);
         return mapToDTO(appointmentRequestRepository.save(request));
     }
 
+    // Retrieves a specific appointment request by its unique identifier
     public AppointmentRequestDTO getRequestById(@NonNull Long id) {
         return appointmentRequestRepository.findById(id)
                 .map(this::mapToDTO)
                 .orElseThrow(() -> new RuntimeException("Appointment request not found with id: " + id));
     }
 
+    // Fetches all requests for a doctor, ordered by the requested date and time
     public List<AppointmentRequestDTO> getRequestsByDoctorId(Long doctorId) {
         return appointmentRequestRepository.findByDoctorIdOrderByRequestedDateTimeDesc(doctorId).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+    // Retrieves only the requests that are currently in 'PENDING' status for a doctor
     public List<AppointmentRequestDTO> getPendingRequestsByDoctorId(Long doctorId) {
         return appointmentRequestRepository.findByDoctorIdAndStatus(doctorId, AppointmentRequestStatus.PENDING).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+    // Marks an appointment as 'ACCEPTED' and triggers a summary notification to the patient
     public AppointmentRequestDTO acceptRequest(@NonNull Long id, String doctorNotes) {
         return appointmentRequestRepository.findById(id)
                 .map(request -> {
@@ -64,7 +69,7 @@ public class AppointmentRequestService {
                     request.setDoctorNotes(doctorNotes);
                     AppointmentRequest saved = appointmentRequestRepository.save(request);
                     
-                    // Trigger Notification
+                    // Trigger asynchronous notification to notify the patient about the acceptance
                     try {
                         sendAppointmentSummaryNotification(saved);
                     } catch (Exception e) {
@@ -76,21 +81,10 @@ public class AppointmentRequestService {
                 .orElseThrow(() -> new RuntimeException("Appointment request not found with id: " + id));
     }
 
+    // Internal method to orchestrate cross-service calls to fetch patient data and send notifications
     private void sendAppointmentSummaryNotification(AppointmentRequest request) {
-        // 1. Fetch Patient Email and Phone from user-management
-        // We use .block() here for simplicity as the return type of acceptRequest is not reactive
-        // In a real production app, consider using non-blocking calls or async execution
         try {
-            // Get User Response (for email)
-            Mono<Object> userMono = webClientBuilder.build()
-                .get()
-                .uri("http://user-management/api/patients/" + request.getPatientId() + "/profile")
-                .retrieve()
-                .bodyToMono(Object.class);
-            
-            // For now, we'll try to get the profile and any relevant info.
-            // Since UserResponseDto and PatientProfileDto are in another service, 
-            // we'll use a Map to read the response dynamically to avoid DTO duplication issues.
+            // Fetch patient profile details from user-management microservice using WebClient
             java.util.Map profile = webClientBuilder.build()
                 .get()
                 .uri("http://user-management/api/patients/" + request.getPatientId() + "/profile")
@@ -98,14 +92,15 @@ public class AppointmentRequestService {
                 .bodyToMono(java.util.Map.class)
                 .block();
 
-            // Also check doctor details
+            // Fetch current doctor profile to include name and specialization in the notification
             DoctorProfile doctor = doctorProfileRepository.findById(request.getDoctorId()).orElse(null);
             
             if (profile != null) {
+                // Construct a detailed notification request object
                 NotificationRequest notification = NotificationRequest.builder()
                     .type(NotificationRequest.NotificationType.APPOINTMENT_BOOKED)
                     .recipientName(request.getPatientName())
-                    .recipientEmail((String) profile.get("email")) // This might need a separate call to get User email
+                    .recipientEmail((String) profile.get("email")) 
                     .recipientPhone((String) profile.get("phoneNumber"))
                     .appointmentId("APT-" + request.getId())
                     .patientName(request.getPatientName())
@@ -118,11 +113,11 @@ public class AppointmentRequestService {
                     .doctorNotes(request.getDoctorNotes())
                     .build();
 
-                // If email is missing from profile, try fetching from user endpoint
+                // Fallback mechanism to fetch email from auth endpoint if not found in profile
                 if (notification.getRecipientEmail() == null) {
                     java.util.Map userEntry = webClientBuilder.build()
                         .get()
-                        .uri("http://user-management/api/auth/user/" + request.getPatientId()) // Assuming this exists or similar
+                        .uri("http://user-management/api/auth/user/" + request.getPatientId()) 
                         .retrieve()
                         .bodyToMono(java.util.Map.class)
                         .onErrorReturn(java.util.Collections.emptyMap())
@@ -132,26 +127,28 @@ public class AppointmentRequestService {
                     }
                 }
 
-                // Fallback email if still null for testing
+                // Default fallback for testing environments
                 if (notification.getRecipientEmail() == null) {
                     notification.setRecipientEmail("patient@example.com");
                 }
 
                 log.info("Sending full summary email to {}", notification.getRecipientEmail());
 
+                // Post the notification request to the notification-service
                 webClientBuilder.build()
                     .post()
                     .uri("http://notification-service/api/notifications/send")
                     .bodyValue(notification)
                     .retrieve()
                     .bodyToMono(Void.class)
-                    .subscribe(); // Async call to notification service
+                    .subscribe(); 
             }
         } catch (Exception e) {
             log.error("Error building or sending notification: {}", e.getMessage());
         }
     }
 
+    // Marks an appointment request as 'REJECTED'
     public AppointmentRequestDTO rejectRequest(@NonNull Long id, String doctorNotes) {
         return appointmentRequestRepository.findById(id)
                 .map(request -> {
@@ -162,6 +159,7 @@ public class AppointmentRequestService {
                 .orElseThrow(() -> new RuntimeException("Appointment request not found with id: " + id));
     }
 
+    // Updates the status to 'COMPLETED' after a successful medical consultation
     public AppointmentRequestDTO completeRequest(@NonNull Long id) {
         return appointmentRequestRepository.findById(id)
                 .map(request -> {
@@ -171,8 +169,7 @@ public class AppointmentRequestService {
                 .orElseThrow(() -> new RuntimeException("Appointment request not found with id: " + id));
     }
 
-    // --- Mapping helpers ---
-
+    // Utility to convert an AppointmentRequest JPA entity to a data transfer object
     private AppointmentRequestDTO mapToDTO(@NonNull AppointmentRequest request) {
         return AppointmentRequestDTO.builder()
                 .id(request.getId())
@@ -187,6 +184,7 @@ public class AppointmentRequestService {
                 .build();
     }
 
+    // Utility to convert a DTO into an AppointmentRequest entity for database persistence
     private AppointmentRequest mapToEntity(AppointmentRequestDTO dto) {
         return AppointmentRequest.builder()
                 .doctorId(dto.getDoctorId())

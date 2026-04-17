@@ -28,27 +28,28 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AppointmentService {
 
+    // Repository for persistence operations on appointments
     private final AppointmentRepository appointmentRepository;
+    // WebClient builder for making requests to other microservices
     private final WebClient.Builder webClientBuilder;
 
+    // URL for the Notification service, injected from properties
     @Value("${notification.service.url:http://localhost:8085}")
     private String notificationServiceUrl;
 
+    // URL for the Doctor Management service, injected from properties
     @Value("${doctor.management.url:http://localhost:8082}")
     private String doctorManagementUrl;
 
-    /** Create and save a new appointment with BOOKED status */
+    // Orchestrates the booking of a new appointment and persists it to the database
     @Transactional
     public AppointmentResponseDto bookAppointment(AppointmentRequestDto request) {
         Long resolvedDoctorId = resolveDoctorId(request.getDoctorId());
 
-        // Skip all availability and duplicate checks for payment-based appointments
-        // User has already paid, so we should allow the appointment creation
-        // The availability was validated during the initial selection phase
-
+        // Construct the appointment entity from the request data
         Appointment appointment = Appointment.builder()
                 .patientId(request.getPatientId())
-            .doctorId(resolvedDoctorId)
+                .doctorId(resolvedDoctorId)
                 .fullName(request.getFullName())
                 .phoneNumber(request.getPhoneNumber())
                 .email(request.getEmail())
@@ -60,17 +61,19 @@ public class AppointmentService {
                 .status(AppointmentStatus.BOOKED)
                 .build();
 
+        // Save to database and trigger a confirmation notification
         appointment = appointmentRepository.save(appointment);
         sendAppointmentNotification(appointment);
         return mapToResponseDto(appointment);
     }
 
-    /** Update an existing appointment's details */
+    // Updates an existing appointment's details based on the provided request
     @Transactional
     public AppointmentResponseDto updateAppointment(Long id, AppointmentRequestDto request) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + id));
 
+        // Update fields with new values from the request
         appointment.setAppointmentDate(request.getAppointmentDate());
         appointment.setPatientId(request.getPatientId());
         appointment.setDoctorId(resolveDoctorId(request.getDoctorId()));
@@ -81,7 +84,7 @@ public class AppointmentService {
         return mapToResponseDto(appointment);
     }
 
-    /** Soft delete an appointment by setting its status to CANCELLED */
+    // Soft-deletes an appointment by transitioning its status to CANCELLED
     @Transactional
     public AppointmentResponseDto cancelAppointment(Long id) {
         Appointment appointment = appointmentRepository.findById(id)
@@ -92,14 +95,14 @@ public class AppointmentService {
         return mapToResponseDto(appointment);
     }
 
-    /** Fetch the status and details of a single appointment */
+    // Retrieves current details for a specific appointment ID
     public AppointmentResponseDto getAppointmentStatus(Long id) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + id));
         return mapToResponseDto(appointment);
     }
 
-    /** Update the status of an appointment to COMPLETED */
+    // Finalizes an appointment by marking it as COMPLETED
     @Transactional
     public AppointmentResponseDto completeAppointment(Long id) {
         Appointment appointment = appointmentRepository.findById(id)
@@ -110,14 +113,14 @@ public class AppointmentService {
         return mapToResponseDto(appointment);
     }
 
-    /** Fetch all appointments in the system */
+    // Retrieves a list of all appointment records across the system
     public List<AppointmentResponseDto> getAllAppointments() {
         return appointmentRepository.findAll().stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
 
-    /** Hard delete an appointment from the database */
+    // Permanently removes an appointment record from the persistent store
     @Transactional
     public void deleteAppointment(Long id) {
         if (!appointmentRepository.existsById(id)) {
@@ -126,29 +129,32 @@ public class AppointmentService {
         appointmentRepository.deleteById(id);
     }
 
-    /** Fetch all appointments belonging to a specific patient */
+    // Returns a list of appointments associated with a specific patient
     public List<AppointmentResponseDto> getAppointmentsByPatient(Long patientId) {
         return appointmentRepository.findByPatientId(patientId).stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
 
-    /** Fetch all appointments scheduled for a specific doctor */
+    // Returns a list of appointments assigned to a specific doctor
     public List<AppointmentResponseDto> getAppointmentsByDoctor(Long doctorId) {
         return appointmentRepository.findByDoctorId(doctorId).stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
 
+    // Verifies if a doctor is available on a specific date and optional time slot
     public AvailabilityCheckResponseDto checkDoctorAvailability(Long doctorId, LocalDate date, String timeStr) {
         Long resolvedDoctorId = resolveDoctorId(doctorId);
 
         try {
             if (timeStr != null && !timeStr.isEmpty()) {
+                // Perform granular time-slot validation
                 java.time.LocalTime time = java.time.LocalTime.parse(timeStr);
                 LocalDateTime selectedDateTime = date.atTime(time);
                 validateDoctorAvailabilityForDate(resolvedDoctorId, selectedDateTime);
             } else {
+                // Perform high-level day-off validation
                 if (isDoctorOnLeave(resolvedDoctorId, date)) {
                     throw new ResponseStatusException(CONFLICT, "Doctor is on leave on the selected day.");
                 }
@@ -165,15 +171,14 @@ public class AppointmentService {
         }
     }
 
-
-
+    // Maps the internal Appointment entity to a public Response DTO
     private AppointmentResponseDto mapToResponseDto(Appointment appointment) {
         return AppointmentResponseDto.builder()
                 .id(appointment.getId())
                 .patientId(appointment.getPatientId())
                 .doctorId(appointment.getDoctorId())
-            .fullName(appointment.getFullName())
-            .phoneNumber(appointment.getPhoneNumber())
+                .fullName(appointment.getFullName())
+                .phoneNumber(appointment.getPhoneNumber())
                 .email(appointment.getEmail())
                 .appointmentDate(appointment.getAppointmentDate())
                 .status(appointment.getStatus())
@@ -182,15 +187,17 @@ public class AppointmentService {
                 .build();
     }
 
+    // Ensures a valid doctor ID is used, defaulting to 1L if null
     private Long resolveDoctorId(Long doctorId) {
         return doctorId != null ? doctorId : 1L;
     }
 
+    // Checks for overlapping appointments and leave schedules for a specific time slot
     private void validateDoctorAvailabilityForDate(Long doctorId, LocalDateTime appointmentDate) {
-        // Check for conflicts within 1 hour window (30 minutes before and after)
         LocalDateTime timeWindowStart = appointmentDate.minusMinutes(30);
         LocalDateTime timeWindowEnd = appointmentDate.plusMinutes(30);
 
+        // Verify if any other scheduled or accepted appointments conflict with this window
         boolean doctorHasAppointment = appointmentRepository.existsByDoctorIdAndAppointmentDateBetweenAndStatusIn(
                 doctorId,
                 timeWindowStart,
@@ -202,15 +209,18 @@ public class AppointmentService {
             throw new ResponseStatusException(CONFLICT, "Doctor already has an appointment within 30 minutes of the selected time.");
         }
 
+        // Cross-reference with the doctor's approved leave dates
         if (isDoctorOnLeave(doctorId, appointmentDate.toLocalDate())) {
             throw new ResponseStatusException(CONFLICT, "Doctor is on leave on the selected day.");
         }
     }
 
+    // Queries the Doctor Management service to check if the doctor is on leave
     private boolean isDoctorOnLeave(Long doctorId, LocalDate selectedDate) {
         WebClient webClient = webClientBuilder.baseUrl(doctorManagementUrl).build();
 
         try {
+            // Fetch leave records from the external doctor management microservice
             List<DoctorLeaveView> leaves = webClient.get()
                     .uri("/api/doctors/leaves/doctor/{doctorId}", doctorId)
                     .retrieve()
@@ -222,6 +232,7 @@ public class AppointmentService {
                 return false;
             }
 
+            // Check if the selected date falls within any non-rejected leave period
             return leaves.stream()
                     .filter(Objects::nonNull)
                     .filter(leave -> !"REJECTED".equalsIgnoreCase(leave.getStatus()))
@@ -231,62 +242,26 @@ public class AppointmentService {
         }
     }
 
+    // Internal view class for parsing doctor leave data from JSON
     private static class DoctorLeaveView {
         private LocalDate startDate;
         private LocalDate endDate;
         private String status;
 
-        public LocalDate getStartDate() {
-            return startDate;
-        }
-
-        @SuppressWarnings("unused")
-        public void setStartDate(LocalDate startDate) {
-            this.startDate = startDate;
-        }
-
-        public LocalDate getEndDate() {
-            return endDate;
-        }
-
-        @SuppressWarnings("unused")
-        public void setEndDate(LocalDate endDate) {
-            this.endDate = endDate;
-        }
-
-        public String getStatus() {
-            return status;
-        }
-
-        @SuppressWarnings("unused")
-        public void setStatus(String status) {
-            this.status = status;
-        }
+        public LocalDate getStartDate() { return startDate; }
+        public LocalDate getEndDate() { return endDate; }
+        public String getStatus() { return status; }
     }
 
-    private String getDoctorName(Long doctorId) {
-        try {
-            WebClient webClient = webClientBuilder.baseUrl(doctorManagementUrl).build();
-            
-            return webClient.get()
-                    .uri("/api/doctors/{doctorId}/name", doctorId)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-        } catch (WebClientResponseException ex) {
-            return null;
-        }
-    }
+    // Triggers a confirmation email/SMS via the Notification microservice
     private void sendAppointmentNotification(Appointment appointment) {
         try {
             log.info("Starting appointment notification process for appointment ID: {}", appointment.getId());
             
-            // Use doctorName from appointment (no need to fetch since endpoint doesn't exist)
             String doctorName = appointment.getDoctorName() != null ? appointment.getDoctorName() : "Doctor";
-            
             String notificationUrl = notificationServiceUrl + "/api/notifications/appointment/confirm";
-            log.info("Calling notification service at: {}", notificationUrl);
             
+            // Build the multi-channel notification payload
             java.util.Map<String, Object> payload = java.util.Map.of(
                 "appointmentId", appointment.getId().toString(),
                 "email", appointment.getEmail(),
@@ -299,8 +274,7 @@ public class AppointmentService {
                 "reason", appointment.getReason() != null && !appointment.getReason().isEmpty() ? appointment.getReason() : "Regular checkup"
             );
             
-            log.info("Notification payload: {}", payload);
-            
+            // Post notification data to the notification service
             String response = webClientBuilder.build()
                 .post()
                 .uri(notificationUrl)

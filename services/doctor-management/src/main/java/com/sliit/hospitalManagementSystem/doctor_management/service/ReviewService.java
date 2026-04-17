@@ -21,9 +21,10 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final WebClient.Builder webClientBuilder;
 
+    // Processes a patient's review submission after validating their eligibility
     @SuppressWarnings("null")
     public ReviewDTO submitReview(ReviewDTO reviewDto) {
-        // 1. Verify that the patient has a completed appointment with this doctor
+        // 1. Verify that the patient has a completed appointment with this doctor to prevent fake reviews
         boolean hasCompletedAppointment = verifyCompletedAppointment(reviewDto.getPatientId(), reviewDto.getDoctorId());
         
         if (!hasCompletedAppointment) {
@@ -42,12 +43,10 @@ public class ReviewService {
         return mapToDTO(saved);
     }
 
+    // Communicates with appointment-service to confirm if a session was successfully conducted
     private boolean verifyCompletedAppointment(Long patientId, Long doctorId) {
         try {
-            // Call appointment-service to check status
-            // Note: In local dev with Eureka, this would use http://appointment-service
-            // If discovery is not used, we'd use localhost:8081 (default port for appointment service)
-            // Using service name for now as per other service calls in codebase
+            // Call external appointment-service via WebClient to retrieve patient's meeting history
             List<Map<String, Object>> appointments = webClientBuilder.build()
                 .get()
                 .uri("http://appointment-service/api/appointments/patient/" + patientId)
@@ -57,6 +56,7 @@ public class ReviewService {
 
             if (appointments == null) return false;
 
+            // Business logic: Review is only allowed if at least one appointment with this doctor is marked 'COMPLETED'
             return appointments.stream()
                 .anyMatch(app -> 
                     doctorId.equals(Long.valueOf(app.get("doctorId").toString())) && 
@@ -64,27 +64,29 @@ public class ReviewService {
                 );
         } catch (Exception e) {
             log.error("Error verifying appointment with appointment-service: {}", e.getMessage());
-            // In a real world app, we might fail open or closed based on design. 
-            // Here, we'll be strict for security.
             return false;
         }
     }
 
+    // Retrieves all reviews for a specific doctor, ordered by the latest feedback first
     public List<ReviewDTO> getReviewsByDoctor(Long doctorId) {
         return reviewRepository.findByDoctorIdOrderByCreatedAtDesc(doctorId).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+    // Calculates the overall star rating for a doctor based on patient feedback
     public Double getAverageRating(Long doctorId) {
         Double avg = reviewRepository.findAverageRatingByDoctorId(doctorId);
         return avg != null ? avg : 0.0;
     }
 
+    // Permanently removes a review record by its ID
     public void deleteReview(Long reviewId) {
         reviewRepository.deleteById(Objects.requireNonNull(reviewId, "reviewId must not be null"));
     }
 
+    // Helper method to convert a Review JPA entity to a data transfer object
     private ReviewDTO mapToDTO(Review review) {
         return ReviewDTO.builder()
                 .id(review.getId())

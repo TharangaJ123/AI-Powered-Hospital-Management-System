@@ -2,22 +2,39 @@ package com.sliit.hospitalManagementSystem.doctor_management.dto;
 
 public class DoctorProfileDTO {
 
+    // Unique identifier for the doctor profile record
     private Long id;
+    // Reference ID to the associated system user account
     private Long userId;
+    // Doctor's first name
     private String firstName;
+    // Doctor's last name
     private String lastName;
+    // Professional email address
     private String email;
+    // Professional contact phone number
     private String phone;
+    // Medical specialization (e.g., Cardiology, Pediatrics)
     private String specialization;
+    // Academic and professional qualifications (e.g., MBBS, MD)
     private String qualification;
+    // Total years of medical practice experience
     private Integer experienceYears;
+    // Medical board registration or license number
     private String licenseNumber;
+    // Short professional biography or description
     private String bio;
+    // URL or path to the doctor's profile photograph
     private String profilePhotoUrl;
+    // Standard fee charged for a consultation session
     private Double consultationFee;
+    // Flag indicating if the doctor accepts virtual consultations
     private Boolean isAvailableForTelemedicine;
+    // Current registration status (e.g., PENDING, APPROVED)
     private String status;
+    // Calculated average rating from patient reviews
     private Double averageRating;
+    // Total number of reviews received from patients
     private Integer reviewCount;
 
     public DoctorProfileDTO() {}

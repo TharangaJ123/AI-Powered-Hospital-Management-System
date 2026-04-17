@@ -1,0 +1,102 @@
+# ============================================================
+# ConfigMap: Centralized environment variables for microservices
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hospital-config # Identifier for this configuration collection
+data:
+  EUREKA_SERVER: http://discovery-service:8761/eureka/ # Connection URL for the service discovery node
+  EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true" # Forces Eureka to use pod IP instead of hostname
+  NOTIFICATION_SERVICE_URL: http://notification-service:8085 # Internal cluster address for notification-service
+  DOCTOR_MANAGEMENT_URL: http://doctor-management:8082 # Internal cluster address for doctor-management
+  APPOINTMENT_SERVICE_URL: http://appointment-service:8083 # Internal cluster address for appointment-service
+  PAYHERE_RETURN_URL: http://localhost:30173/payment/success # Redirection URL after successful payment
+  PAYHERE_CANCEL_URL: http://localhost:30173/payment/cancel # Redirection URL after cancelled payment
+  ALLOWED_ORIGINS: http://localhost:30173,http://localhost:5173 # Permitted CORS origins for API security
+
+---
+# ============================================================
+# Secret: Secure storage for private keys and credentials
+# ============================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hospital-secrets # Identifier for the encrypted secret collection
+type: Opaque
+stringData:
+  # Using stringData for automatic base64 encoding by Kubernetes
+  GEMINI_API_KEY: "AIzaSyDnO8IXS6FDwozEZO2N6RZCKwWCG0VrmT8" # API key for the AI symptom analysis engine
+  MAIL_USER: "omnihealth628@gmail.com" # SMTP username for automated email dispatch
+  MAIL_PASS: "lyvhhjsswgeseazc" # App password for the email provider
+
+---
+# ============================================================
+# ConfigMap: Runtime routing definitions for the API Gateway
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-config # Configuration for the Spring Cloud Gateway
+data:
+  application.properties: |
+    spring.application.name=api-gateway # Internal service identification name
+    server.port=8099 # Listening port for incoming HTTP traffic
+    eureka.client.service-url.defaultZone=http://discovery-service:8761/eureka/ # Discovery server link
+    eureka.instance.prefer-ip-address=true # Use network IP for routing discovery
+
+    # Route 0: Redirects authentication requests to user-management
+    spring.cloud.gateway.mvc.routes[0].id=user-management-auth
+    spring.cloud.gateway.mvc.routes[0].uri=lb://user-management
+    spring.cloud.gateway.mvc.routes[0].predicates[0]=Path=/api/auth/**
+
+    # Route 1: Redirects patient-specific operations to user-management
+    spring.cloud.gateway.mvc.routes[1].id=user-management-patients
+    spring.cloud.gateway.mvc.routes[1].uri=lb://user-management
+    spring.cloud.gateway.mvc.routes[1].predicates[0]=Path=/api/patients/**
+
+    # Route 2: Redirects admin operations to user-management
+    spring.cloud.gateway.mvc.routes[2].id=user-management-admin
+    spring.cloud.gateway.mvc.routes[2].uri=lb://user-management
+    spring.cloud.gateway.mvc.routes[2].predicates[0]=Path=/api/admin/**
+
+    # Route 3: Redirects scheduling operations to appointment-service
+    spring.cloud.gateway.mvc.routes[3].id=appointment-service
+    spring.cloud.gateway.mvc.routes[3].uri=lb://appointment-service
+    spring.cloud.gateway.mvc.routes[3].predicates[0]=Path=/api/appointments/**
+
+    # Route 4: Redirects virtual session operations to telemedicine-service
+    spring.cloud.gateway.mvc.routes[4].id=telemedicine-service
+    spring.cloud.gateway.mvc.routes[4].uri=lb://telemedicine-service
+    spring.cloud.gateway.mvc.routes[4].predicates[0]=Path=/api/telemedicine/**
+
+    # Route 5: Redirects clinical profile management to doctor-management
+    spring.cloud.gateway.mvc.routes[5].id=doctor-management
+    spring.cloud.gateway.mvc.routes[5].uri=lb://doctor-management
+    spring.cloud.gateway.mvc.routes[5].predicates[0]=Path=/api/doctors/**
+
+    # Route 6: Redirects AI diagnostic calls to ai-symptom-service
+    spring.cloud.gateway.mvc.routes[6].id=ai-symptom-service
+    spring.cloud.gateway.mvc.routes[6].uri=lb://ai-symptom-service
+    spring.cloud.gateway.mvc.routes[6].predicates[0]=Path=/api/ai/**
+
+    # Route 7: Redirects support inquiries to contact-service
+    spring.cloud.gateway.mvc.routes[7].id=contact-service
+    spring.cloud.gateway.mvc.routes[7].uri=lb://contact-service
+    spring.cloud.gateway.mvc.routes[7].predicates[0]=Path=/api/contact/**
+
+    # Route 8: Redirects feedback operations to review-service
+    spring.cloud.gateway.mvc.routes[8].id=review-service
+    spring.cloud.gateway.mvc.routes[8].uri=lb://review-service
+    spring.cloud.gateway.mvc.routes[8].predicates[0]=Path=/api/reviews/**
+
+    # Route 9: Redirects billing operations to payment-service
+    spring.cloud.gateway.mvc.routes[9].id=payment-service
+    spring.cloud.gateway.mvc.routes[9].uri=lb://payment-service
+    spring.cloud.gateway.mvc.routes[9].predicates[0]=Path=/api/payments/**
+
+    # CORS configuration to manage cross-origin access security
+    spring.cloud.gateway.mvc.cors.configurations.[/**].allowed-origins=http://localhost:30173,http://localhost:5173,http://localhost:80
+    spring.cloud.gateway.mvc.cors.configurations.[/**].allowed-methods=*
+    spring.cloud.gateway.mvc.cors.configurations.[/**].allowed-headers=*
+    spring.cloud.gateway.mvc.cors.configurations.[/**].allow-credentials=true

@@ -1,0 +1,104 @@
+# ============================================================
+# Discovery Service (Eureka Server) - Deployment and Cluster Networking
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discovery-service # Resource name for the discovery cluster
+spec:
+  replicas: 1 # Number of discovery server instances to run
+  selector:
+    matchLabels:
+      app: discovery-service # Label used to identify related pods
+  template:
+    metadata:
+      labels:
+        app: discovery-service # Label applied to the pods
+    spec:
+      containers:
+      - name: discovery-service
+        image: ai-powered-hospital-management-system-discovery-service:latest # Docker image for the discovery server
+        imagePullPolicy: IfNotPresent # Only pull image if not already available locally
+        ports:
+        - containerPort: 8761 # Default port for Eureka Server
+        readinessProbe: # Checks if the container is ready to accept traffic
+          httpGet:
+            path: /
+            port: 8761
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe: # Checks if the container is still alive and healthy
+          httpGet:
+            path: /
+            port: 8761
+          initialDelaySeconds: 60
+          periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discovery-service # Static endpoint for discovery requests
+spec:
+  selector:
+    app: discovery-service # Routes traffic to pods with this label
+  ports:
+  - port: 8761 # Port exposed by the service
+    targetPort: 8761 # Port on the target container
+
+---
+# ============================================================
+# API Gateway - Routing and Cross-Origin Traffic Management
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway # Resource name for the central gateway
+spec:
+  replicas: 1 # Number of gateway instances to run
+  selector:
+    matchLabels:
+      app: api-gateway # Label selector for pod targeting
+  template:
+    metadata:
+      labels:
+        app: api-gateway # Label applied to gateway pods
+    spec:
+      containers:
+      - name: api-gateway
+        image: ai-powered-hospital-management-system-api-gateway:latest # Docker image for the gateway service
+        imagePullPolicy: IfNotPresent # Prefers local image if available
+        ports:
+        - containerPort: 8099 # Listening port for external requests
+        env:
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE # Environment variable for Eureka registration
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_SERVER
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS # Instructs gateway to use IP for pod identification
+          valueFrom:
+            configMapKeyRef:
+              name: hospital-config
+              key: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+        - name: SPRING_CONFIG_IMPORT # Directs Spring to load custom properties from the volume
+          value: "optional:file:/config/application.properties"
+        volumeMounts:
+        - name: config-volume # Mounts the ConfigMap data as a local file
+          mountPath: /config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: api-gateway-config # Source ConfigMap for route definitions
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway # Load balancer for the gateway service
+spec:
+  type: NodePort # Exposes the service on a static port on each node's IP
+  selector:
+    app: api-gateway # Directs traffic to gateway pods
+  ports:
+  - port: 8099 # Internal cluster port
+    targetPort: 8099 # Pod destination port
+    nodePort: 30099 # Fixed port for external access (localhost:30099)

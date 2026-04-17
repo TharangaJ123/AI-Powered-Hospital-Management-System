@@ -7,61 +7,79 @@ import java.time.LocalDateTime;
 @Table(name = "doctor_profiles")
 public class DoctorProfile {
 
+    // Primary key for the doctor profile
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Unique user ID linking to the main authentication system
     @Column(name = "user_id", nullable = false, unique = true)
     private Long userId;
 
+    // Doctor's legal first name
     @Column(name = "first_name", nullable = false)
     private String firstName;
 
+    // Doctor's legal last name
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
+    // Official professional email address
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    // Direct contact phone number
     @Column(name = "phone")
     private String phone;
 
+    // Medical area of expertise (e.g., ENT, Orthopedics)
     @Column(name = "specialization", nullable = false)
     private String specialization;
 
+    // Professional degrees and certifications
     @Column(name = "qualification", columnDefinition = "TEXT")
     private String qualification;
 
+    // Total years spent in the medical field
     @Column(name = "experience_years")
     private Integer experienceYears;
 
+    // Official medical license registration number
     @Column(name = "license_number", unique = true)
     private String licenseNumber;
 
+    // Detailed professional summary or bio
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
+    // Path or URL to the doctor's profile picture
     @Column(name = "profile_photo_url", columnDefinition = "TEXT")
     private String profilePhotoUrl;
 
+    // Cost per consultation session
     @Column(name = "consultation_fee")
     private Double consultationFee;
 
+    // Availability flag for remote video consultations
     @Column(name = "is_available_for_telemedicine")
     private Boolean isAvailableForTelemedicine;
 
+    // Registration and approval state (e.g., PENDING, APPROVED, SUSPENDED)
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private DoctorStatus status;
 
+    // Timestamp when the profile was first created
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    // Timestamp of the most recent profile update
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public DoctorProfile() {}
 
+    // JPA hook to initialize metadata before the first database save
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -74,6 +92,7 @@ public class DoctorProfile {
         }
     }
 
+    // JPA hook to refresh the update timestamp before any field modification
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();

@@ -18,7 +18,10 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 public class Patient extends User {
+    // Patient's contact phone number
     private String phoneNumber;
+    // Patient's residential or mailing address
     private String address;
+    // Patient's date of birth in string format (e.g., YYYY-MM-DD)
     private String dateOfBirth;
 }

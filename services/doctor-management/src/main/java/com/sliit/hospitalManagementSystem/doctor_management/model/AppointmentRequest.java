@@ -7,45 +7,57 @@ import java.time.LocalDateTime;
 @Table(name = "appointment_requests")
 public class AppointmentRequest {
 
+    // Primary key for the appointment request record
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Foreign key reference to the doctor
     @Column(name = "doctor_id", nullable = false)
     private Long doctorId;
 
+    // Foreign key reference to the patient
     @Column(name = "patient_id", nullable = false)
     private Long patientId;
 
+    // Name of the patient cached for quick display in the doctor's dashboard
     @Column(name = "patient_name")
     private String patientName;
 
+    // The date and time requested by the patient for the meeting
     @Column(name = "requested_date_time", nullable = false)
     private LocalDateTime requestedDateTime;
 
+    // The mode of the session (e.g., Online or Physical)
     @Enumerated(EnumType.STRING)
     @Column(name = "consultation_type")
     private ConsultationType consultationType;
 
+    // Patient's description of symptoms or reason for booking
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
 
+    // Current state of the request (PENDING, ACCEPTED, etc.)
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private AppointmentRequestStatus status;
 
+    // Clinical or administrative notes added by the doctor
     @Column(name = "doctor_notes", columnDefinition = "TEXT")
     private String doctorNotes;
 
+    // Timestamp when the record was first created
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    // Timestamp of the most recent update to the record
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public AppointmentRequest() {
     }
 
+    // Comprehensive constructor for manual initialization
     public AppointmentRequest(Long id, Long doctorId, Long patientId, String patientName, LocalDateTime requestedDateTime, ConsultationType consultationType, String reason, AppointmentRequestStatus status, String doctorNotes, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.doctorId = doctorId;
@@ -60,10 +72,12 @@ public class AppointmentRequest {
         this.updatedAt = updatedAt;
     }
 
+    // Static entry point for the builder pattern
     public static AppointmentRequestBuilder builder() {
         return new AppointmentRequestBuilder();
     }
 
+    // JPA hook to initialize timestamps and default status before first save
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -73,6 +87,7 @@ public class AppointmentRequest {
         }
     }
 
+    // JPA hook to refresh the update timestamp before every record modification
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();

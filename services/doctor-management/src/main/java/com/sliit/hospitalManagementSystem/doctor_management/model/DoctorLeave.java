@@ -8,34 +8,43 @@ import java.time.LocalDateTime;
 @Table(name = "doctor_leaves")
 public class DoctorLeave {
 
+    // Primary key for the doctor leave record
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Foreign key reference to the doctor requesting leave
     @Column(name = "doctor_id", nullable = false)
     private Long doctorId;
 
+    // The first day of the intended leave period
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
+    // The final day of the intended leave period
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
+    // Explanation or justification for the leave request
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
 
+    // Current approval status (PENDING, APPROVED, REJECTED)
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private LeaveStatus status;
 
+    // Timestamp when the leave request was submitted
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    // Timestamp of the most recent modification to the request status or details
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public DoctorLeave() {}
 
+    // JPA lifecycle hook to set initial timestamps and default status before persistence
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -45,6 +54,7 @@ public class DoctorLeave {
         }
     }
 
+    // JPA lifecycle hook to refresh the update timestamp before every database update
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();

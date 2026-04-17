@@ -8,5 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface TelemedicineSessionRepository extends JpaRepository<TelemedicineSession, Long> {
+    // Custom query to find a telemedicine session by its linked appointment ID
     Optional<TelemedicineSession> findByAppointmentId(Long appointmentId);
 }

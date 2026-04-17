@@ -13,21 +13,26 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class AppointmentServiceClient {
 
+    // WebClient for making asynchronous HTTP requests to other microservices
     private final WebClient webClient;
 
+    // Base URL for the Appointment microservice, defaults to localhost:8082
     @Value("${appointment.service.url:http://localhost:8082}")
     private String appointmentServiceUrl;
 
+    // Triggers the creation of an appointment once a payment is successfully verified
     public void createAppointmentAfterPayment(String patientId, String doctorId, 
                                             String appointmentDate, String fullName, 
                                             String email, String phoneNumber, 
                                             String reason, String consultationType) {
         try {
+            // Construct the appointment request body
             AppointmentRequest request = new AppointmentRequest(
                 patientId, doctorId, appointmentDate, fullName, 
                 email, phoneNumber, reason, consultationType
             );
 
+            // Make an asynchronous POST request to the appointment service
             webClient.post()
                 .uri(appointmentServiceUrl + "/api/appointments")
                 .bodyValue(request)
@@ -35,7 +40,6 @@ public class AppointmentServiceClient {
                 .bodyToMono(String.class)
                 .doOnSuccess(response -> {
                     log.info("Appointment automatically created after payment: {}", response);
-                    // Do not send email here, appointment-service already handles it!
                 })
                 .doOnError(error -> log.error("Failed to create appointment after payment: {}", error.getMessage()))
                 .onErrorResume(error -> Mono.empty())
@@ -46,9 +50,10 @@ public class AppointmentServiceClient {
         }
     }
 
+    // Sends confirmation notifications (email/SMS) after an appointment is booked
     private void sendAppointmentConfirmationNotification(String fullName, String email, String phone, String appointmentResponse) {
         try {
-            // Send email notification
+            // Dispatch email notification via the Notification service
             webClient.post()
                 .uri("http://localhost:8085/api/notifications/email/appointment-confirmed")
                 .bodyValue(java.util.Map.of(
@@ -63,7 +68,7 @@ public class AppointmentServiceClient {
                 .onErrorResume(error -> Mono.empty())
                 .subscribe();
 
-            // Send SMS notification
+            // Dispatch SMS notification via the Notification service
             webClient.post()
                 .uri("http://localhost:8085/api/notifications/sms/appointment-confirmed")
                 .bodyValue(java.util.Map.of(
@@ -83,6 +88,7 @@ public class AppointmentServiceClient {
         }
     }
 
+    // Record representing the data structure for appointment creation requests
     public record AppointmentRequest(
         String patientId,
         String doctorId,

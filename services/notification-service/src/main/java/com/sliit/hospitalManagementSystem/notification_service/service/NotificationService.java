@@ -14,12 +14,11 @@ public class NotificationService {
     private final EmailService emailService;
     private final SmsService smsService;
 
-    /**
-     * Dispatch an HTML template email and SMS (if phone provided) based on the NotificationType.
-     */
+    // Dispatch an HTML template email and SMS (if phone provided) based on the NotificationType.
     public NotificationResponse sendNotification(NotificationRequest req) {
         log.info("Processing {} notification for {}({})", req.getType(), req.getRecipientEmail(), req.getRecipientPhone());
 
+        // Tracking variables for delivery status and error capture
         boolean emailSent = false;
         String emailErr = null;
         boolean smsSent = false;
@@ -29,6 +28,7 @@ public class NotificationService {
         String emailBody;
         String smsBody = null;
 
+        // Selection logic to determine the appropriate HTML and text templates based on business event
         switch (req.getType()) {
 
             case APPOINTMENT_BOOKED -> {
@@ -83,7 +83,7 @@ public class NotificationService {
             default -> throw new IllegalArgumentException("Unknown type: " + req.getType());
         }
 
-        // Send template email
+        // Attempt to deliver the generated HTML email
         try {
             emailService.sendEmail(req.getRecipientEmail(), emailSubject, emailBody, true);
             emailSent = true;
@@ -92,9 +92,7 @@ public class NotificationService {
             log.error("Email delivery failed: {}", e.getMessage());
         }
 
-        // Send SMS if phone number is provided
-        // Send SMS disabled as per user request (limited credits)
-        
+        // Attempt to deliver the SMS if a phone number was provided in the request
         if (req.getRecipientPhone() != null && !req.getRecipientPhone().isEmpty() && smsBody != null) {
             try {
                 smsService.sendSms(req.getRecipientPhone(), smsBody);
@@ -105,7 +103,7 @@ public class NotificationService {
             }
         }
         
-
+        // Construct a summary report for the calling microservice
         String summaryMessage = "Notification processed. Email: " + (emailSent ? "Sent" : "Failed") + ", SMS: " + (smsSent ? "Sent" : (smsBody == null ? "Skipped" : "Failed"));
 
         return NotificationResponse.builder()

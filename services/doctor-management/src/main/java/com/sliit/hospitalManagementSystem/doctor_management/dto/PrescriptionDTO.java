@@ -4,16 +4,27 @@ import java.time.LocalDate;
 
 public class PrescriptionDTO {
 
+    // Unique identifier for the prescription record
     private Long id;
+    // ID of the doctor who issued the prescription
     private Long doctorId;
+    // ID of the patient receiving the medication
     private Long patientId;
+    // Optional ID of the appointment request that led to this prescription
     private Long appointmentRequestId;
+    // Medical diagnosis recorded by the doctor
     private String diagnosis;
+    // List of prescribed medications
     private String medications;
+    // Instructions on how and when to take the medicine
     private String dosageInstructions;
+    // Any extra guidance or warning for the patient
     private String additionalNotes;
+    // Date the prescription was generated
     private LocalDate prescriptionDate;
+    // Expiration date after which the prescription is invalid
     private LocalDate validUntil;
+    // Flag indicating if this is an electronically signed digital prescription
     private Boolean isDigital;
 
     public PrescriptionDTO() {}

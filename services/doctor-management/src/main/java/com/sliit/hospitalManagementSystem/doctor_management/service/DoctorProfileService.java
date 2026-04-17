@@ -19,6 +19,7 @@ public class DoctorProfileService {
         this.doctorProfileRepository = doctorProfileRepository;
     }
 
+    // Creates a new doctor profile and initializes it for review or immediate activation
     @SuppressWarnings("null")
     public DoctorProfileDTO createProfile(DoctorProfileDTO dto) {
         System.out.println("Creating new profile for userId: " + dto.getUserId() + " with Photo URL: " + dto.getProfilePhotoUrl());
@@ -26,12 +27,14 @@ public class DoctorProfileService {
         return mapToDTO(doctorProfileRepository.save(profile));
     }
 
+    // Fetches a single doctor profile by its internal record ID
     public DoctorProfileDTO getProfileById(@NonNull Long id) {
         return doctorProfileRepository.findById(id)
                 .map(this::mapToDTO)
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found with id: " + id));
     }
 
+    // Retrieves a doctor's profile using the user ID from the central identity system
     @SuppressWarnings("null")
     public DoctorProfileDTO getProfileByUserId(Long userId) {
         DoctorProfile profile = doctorProfileRepository.findByUserId(userId)
@@ -39,18 +42,21 @@ public class DoctorProfileService {
         return mapToDTO(profile);
     }
 
+    // Returns a complete list of all doctor profiles registered in the system
     public List<DoctorProfileDTO> getAllProfiles() {
         return doctorProfileRepository.findAll().stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+    // Filters profiles by a specific medical area (e.g., Cardiology)
     public List<DoctorProfileDTO> getProfilesBySpecialization(String specialization) {
         return doctorProfileRepository.findBySpecialization(specialization).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+    // Returns profiles filtered by status such as PENDING_APPROVAL or ACTIVE
     public List<DoctorProfileDTO> getProfilesByStatus(String status) {
         DoctorStatus doctorStatus = DoctorStatus.valueOf(status.toUpperCase());
         return doctorProfileRepository.findByStatus(doctorStatus).stream()
@@ -58,6 +64,7 @@ public class DoctorProfileService {
                 .collect(Collectors.toList());
     }
 
+    // Administrative function to officially approve a doctor profile for active service
     public DoctorProfileDTO approveDoctor(@NonNull Long id) {
         return doctorProfileRepository.findById(id)
                 .map(existing -> {
@@ -67,12 +74,14 @@ public class DoctorProfileService {
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found with id: " + id));
     }
 
+    // Returns a list of doctors who have enabled virtual video consultations
     public List<DoctorProfileDTO> getTelemedicineDoctors() {
         return doctorProfileRepository.findByIsAvailableForTelemedicine(true).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+    // Updates existing profile data including bio, specialization, and contact info
     public DoctorProfileDTO updateProfile(@NonNull Long id, DoctorProfileDTO dto) {
         System.out.println("Updating profile " + id + " with Photo URL: " + dto.getProfilePhotoUrl());
         return doctorProfileRepository.findById(id)
@@ -99,6 +108,7 @@ public class DoctorProfileService {
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found with id: " + id));
     }
 
+    // Permanently deletes a doctor profile from the repository
     public void deleteProfile(@NonNull Long id) {
         if (!doctorProfileRepository.existsById(id)) {
             throw new RuntimeException("Doctor profile not found with id: " + id);
@@ -106,8 +116,7 @@ public class DoctorProfileService {
         doctorProfileRepository.deleteById(id);
     }
 
-    // --- Mapping helpers ---
-
+    // Converts a DoctorProfile entity into a DTO for front-end or inter-service usage
     private DoctorProfileDTO mapToDTO(@NonNull DoctorProfile profile) {
         return DoctorProfileDTO.builder()
                 .id(profile.getId())
@@ -128,6 +137,7 @@ public class DoctorProfileService {
                 .build();
     }
 
+    // Maps DTO input back into a JPA entity for database persistence
     private DoctorProfile mapToEntity(DoctorProfileDTO dto) {
         return DoctorProfile.builder()
                 .userId(dto.getUserId())

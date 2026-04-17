@@ -17,18 +17,24 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class AiSymptomService {
 
+    // API Key for Gemini AI, loaded from application properties
     @Value("${gemini.api.key}")
     private String apiKey;
 
+    // API Endpoint URL for Gemini AI, loaded from application properties
     @Value("${gemini.api.url}")
     private String apiUrl;
 
+    // WebClient builder for making asynchronous HTTP requests
     private final WebClient.Builder webClientBuilder;
+    // ObjectMapper for JSON serialization and deserialization
     private final ObjectMapper objectMapper;
 
+    // Main method to analyze symptoms using the Gemini AI API
     public SymptomCheckResponse checkSymptoms(SymptomCheckRequest request) {
         System.out.println("[DEBUG] Gemini API Key (masked): " + (apiKey != null && apiKey.length() > 8 ? apiKey.substring(0, 4) + "..." + apiKey.substring(apiKey.length() - 4) : apiKey));
         System.out.println("[DEBUG] Gemini API Endpoint: " + apiUrl);
+        // Fallback response if the API key is missing or invalid
         if ("YOUR_GEMINI_API_KEY".equals(apiKey) || apiKey == null || apiKey.isEmpty()) {
             return SymptomCheckResponse.builder()
                     .diagnosis("Health analysis system is currently offline.")
@@ -39,16 +45,19 @@ public class AiSymptomService {
                     .build();
         }
         
+        // Construct the prompt to be sent to the AI model
         String prompt = buildPrompt(request);
         
         try {
             String maskedKey = (apiKey != null && apiKey.length() > 8) ? apiKey.substring(0, 4) + "..." + apiKey.substring(apiKey.length() - 4) : "INVALID";
             System.out.println("Calling Gemini API: " + apiUrl + " (Key: " + maskedKey + ")");
+            // Prepare the request payload for Gemini API
             Map<String, Object> geminiRequest = new HashMap<>();
             Map<String, Object> content = new HashMap<>();
             content.put("parts", Collections.singletonList(Collections.singletonMap("text", prompt)));
             geminiRequest.put("contents", Collections.singletonList(content));
 
+            // Execute the POST request to the Gemini API
             String responseBody = webClientBuilder.build()
                     .post()
                     .uri(Objects.requireNonNull(apiUrl, "Gemini API URL must be configured"))
@@ -60,10 +69,12 @@ public class AiSymptomService {
                     .bodyToMono(String.class)
                     .block();
 
+            // Parse and return the structured response from the AI
             return parseGeminiResponse(responseBody);
         } catch (Exception e) {
             System.err.println("AI Service Error: " + e.getMessage());
             e.printStackTrace(); // Added to see the full stack trace
+            // Error handling for API connection or unexpected failures
             return SymptomCheckResponse.builder()
                     .diagnosis("AI analysis service is temporarily unavailable.")
                     .clinicalCondition("API Connection Failure")
@@ -74,6 +85,7 @@ public class AiSymptomService {
         }
     }
 
+    // Helper method to construct a medical-context prompt for the AI model
     private String buildPrompt(SymptomCheckRequest request) {
         StringBuilder prompt = new StringBuilder("As a medical assistant AI, analyze the following patient data:\n");
         prompt.append("- Age: ").append(request.getAge()).append("\n");
@@ -83,6 +95,7 @@ public class AiSymptomService {
             prompt.append("- Medical History (Current/Hidden diseases): ").append(request.getMedicalHistory()).append("\n");
         }
         
+        // Instructions for the AI to return data in a specific JSON format
         prompt.append("\nReturn the response in strictly JSON format with exactly these five keys: ")
               .append("'diagnosis' (a short preliminary suggestion using simple, non-medical language that anyone can understand), ")
               .append("'clinicalCondition' (the formal medical/clinical name of the suspected condition), ")
@@ -93,12 +106,14 @@ public class AiSymptomService {
         return prompt.toString();
     }
 
+    // Extracts and cleans the AI's response to build the DTO
     private SymptomCheckResponse parseGeminiResponse(String body) {
         try {
             JsonNode root = objectMapper.readTree(body);
+            // Navigate the nested JSON structure of the Gemini API response
             String rawJson = root.path("candidates").get(0).path("content").path("parts").get(0).path("text").asText();
             
-            // Extract JSON from potential Markdown markers
+            // Strip any Markdown formatting if present to isolate the raw JSON
             int startIndex = rawJson.indexOf("{");
             int endIndex = rawJson.lastIndexOf("}");
             if (startIndex != -1 && endIndex != -1) {
@@ -107,6 +122,7 @@ public class AiSymptomService {
             
             JsonNode responseJson = objectMapper.readTree(rawJson);
             
+            // Map specialties from the JSON array or text node
             List<String> specialties = new ArrayList<>();
             if (responseJson.has("recommendedSpecialties")) {
                 JsonNode specsNode = responseJson.get("recommendedSpecialties");
@@ -117,6 +133,7 @@ public class AiSymptomService {
                 }
             }
 
+            // Map recommendations from the JSON array or text node
             List<String> recommendations = new ArrayList<>();
             if (responseJson.has("recommendations")) {
                 JsonNode recsNode = responseJson.get("recommendations");
@@ -127,6 +144,7 @@ public class AiSymptomService {
                 }
             }
 
+            // Construct and return the final DTO
             return SymptomCheckResponse.builder()
                     .diagnosis(responseJson.path("diagnosis").asText("Assessment complete"))
                     .clinicalCondition(responseJson.path("clinicalCondition").asText("Not specified"))
@@ -136,6 +154,7 @@ public class AiSymptomService {
                     .build();
         } catch (Exception e) {
             System.err.println("Gemini Parsing Error: " + e.getMessage() + " | Body: " + body);
+            // Fallback response in case of parsing failures
             return SymptomCheckResponse.builder()
                     .diagnosis("Partial analysis completed.")
                     .clinicalCondition("Analysis Error")

@@ -7,46 +7,59 @@ import java.time.LocalDateTime;
 @Table(name = "telemedicine_sessions")
 public class TelemedicineSession {
 
+    // Primary key for the telemedicine session record
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Foreign key reference to the participating doctor
     @Column(name = "doctor_id", nullable = false)
     private Long doctorId;
 
+    // Foreign key reference to the participating patient
     @Column(name = "patient_id", nullable = false)
     private Long patientId;
 
+    // Link to the associated appointment request that initiated this session
     @Column(name = "appointment_request_id")
     private Long appointmentRequestId;
 
+    // URL link for the video conference (Zoom, Meet, etc.)
     @Column(name = "session_url")
     private String sessionUrl;
 
+    // Planned start time for the virtual consultation
     @Column(name = "scheduled_start_time", nullable = false)
     private LocalDateTime scheduledStartTime;
 
+    // Planned end time for the virtual consultation
     @Column(name = "scheduled_end_time")
     private LocalDateTime scheduledEndTime;
 
+    // Actual timestamp when the doctor joined or started the session
     @Column(name = "actual_start_time")
     private LocalDateTime actualStartTime;
 
+    // Actual timestamp when the session was officially concluded
     @Column(name = "actual_end_time")
     private LocalDateTime actualEndTime;
 
+    // Current state of the session lifecycle (e.g., SCHEDULED, ACTIVE)
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private SessionStatus status;
 
+    // Doctor's clinical or summary notes from the virtual meeting
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
+    // Internal timestamp recording when the session record was created
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     public TelemedicineSession() {}
 
+    // JPA hook to initialize default values and timestamps before saving
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

@@ -4,16 +4,27 @@ import java.time.LocalDateTime;
 
 public class TelemedicineSessionDTO {
 
+    // Unique ID for the telemedicine session record
     private Long id;
+    // ID of the participating doctor
     private Long doctorId;
+    // ID of the participating patient
     private Long patientId;
+    // ID of the corresponding appointment request
     private Long appointmentRequestId;
+    // Link to the virtual meeting room (e.g., Zoom, Google Meet)
     private String sessionUrl;
+    // Planned starting timestamp for the consultation
     private LocalDateTime scheduledStartTime;
+    // Planned ending timestamp for the consultation
     private LocalDateTime scheduledEndTime;
+    // Actual timestamp when the doctor started the session
     private LocalDateTime actualStartTime;
+    // Actual timestamp when the session was concluded
     private LocalDateTime actualEndTime;
+    // Current lifecycle state (SCHEDULED, ACTIVE, COMPLETED, CANCELLED)
     private String status;
+    // Brief summary or observations recorded during the virtual call
     private String notes;
 
     public TelemedicineSessionDTO() {}

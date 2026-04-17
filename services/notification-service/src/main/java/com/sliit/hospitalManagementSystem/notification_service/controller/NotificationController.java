@@ -24,11 +24,13 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final AppointmentNotificationService appointmentNotificationService;
 
+    // Generic endpoint to send any type of notification (Email/SMS) based on request type
     @PostMapping("/send")
     public ResponseEntity<NotificationResponse> sendNotification(@Valid @RequestBody NotificationRequest request) {
         return ResponseEntity.ok(notificationService.sendNotification(request));
     }
 
+    // Direct endpoint to send a custom email message
     @PostMapping("/email")
     public ResponseEntity<?> sendEmail(@Valid @RequestBody EmailRequest request) {
         try {
@@ -39,6 +41,7 @@ public class NotificationController {
         }
     }
 
+    // Sends a stylized email notification upon successful payment processing
     @PostMapping("/email/payment-success")
     public ResponseEntity<?> sendPaymentSuccessEmail(@RequestBody Map<String, String> request) {
         try {
@@ -60,6 +63,7 @@ public class NotificationController {
         }
     }
 
+    // Sends an email notification if a payment attempt fails
     @PostMapping("/email/payment-failure")
     public ResponseEntity<?> sendPaymentFailureEmail(@RequestBody Map<String, String> request) {
         try {
@@ -80,6 +84,7 @@ public class NotificationController {
         }
     }
 
+    // High-level endpoint to trigger a full appointment confirmation workflow
     @PostMapping("/appointment/confirm")
     public ResponseEntity<?> sendAppointmentConfirmation(@RequestBody Map<String, Object> request) {
         try {
@@ -104,6 +109,7 @@ public class NotificationController {
         }
     }
 
+    // Sends a detailed HTML email confirming all details of a medical appointment
     @PostMapping("/email/appointment-confirmed")
     public ResponseEntity<?> sendAppointmentConfirmedEmail(@RequestBody Map<String, String> request) {
         try {
@@ -137,6 +143,7 @@ public class NotificationController {
         }
     }
 
+    // Sends a brief SMS message confirming an appointment
     @PostMapping("/sms/appointment-confirmed")
     public ResponseEntity<?> sendAppointmentConfirmedSMS(@RequestBody Map<String, String> request) {
         try {
@@ -144,7 +151,7 @@ public class NotificationController {
             String customerName = request.get("customerName");
             String message = request.get("message");
             
-            // For now, just log the SMS (you can integrate actual SMS service later)
+            // Logs the SMS intent as actual SMS provider integration is pending
             System.out.println("SMS to " + phoneNumber + ": " + message);
             
             return ResponseEntity.ok(Map.of("message", "Appointment confirmation SMS sent to " + phoneNumber));
@@ -153,6 +160,7 @@ public class NotificationController {
         }
     }
 
+    // Basic health check endpoint to verify service availability
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Notification Service (Email-only) is UP");

@@ -16,21 +16,26 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    // Handler for unauthorized access attempts
     private final AuthEntryPointJwt unauthorizedHandler;
+    // Filter for validating JWT tokens in incoming requests
     private final AuthTokenFilter authenticationJwtTokenFilter;
 
+    // Defines the security filter chain and authorization policies for HTTP requests
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-            .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        http.csrf(csrf -> csrf.disable()) // Disable CSRF as the service is stateless and uses JWT
+            .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler)) // Register the unauthorized entry point
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Enforce stateless session management
             .authorizeHttpRequests(auth -> 
+                // Define public and protected endpoints
                 auth.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/appointments").permitAll()
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/appointments/availability").permitAll()
                     .requestMatchers("/api/appointments/**").authenticated()
                     .anyRequest().permitAll()
             );
 
+        // Add the JWT authentication filter before the standard username/password filter
         http.addFilterBefore(authenticationJwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();

@@ -16,7 +16,8 @@ import java.util.List;
 
 /**
  * REST controller for managing patient-related operations.
- * Provides endpoints for patient registration, profile management, and document handling.
+ * Provides endpoints for patient registration, profile management, and document
+ * handling.
  */
 @RestController
 @RequestMapping("/api/patients")
@@ -52,12 +53,13 @@ public class PatientController {
      * Updates the profile details for a specific patient.
      * 
      * @param userId the user ID of the patient to update
-     * @param req the updated profile details
+     * @param req    the updated profile details
      * @return a ResponseEntity containing the updated PatientProfileDto
      */
     @PutMapping("/{userId}/profile")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<PatientProfileDto> updateProfile(@PathVariable Long userId, @RequestBody PatientProfileDto req) {
+    public ResponseEntity<PatientProfileDto> updateProfile(@PathVariable Long userId,
+            @RequestBody PatientProfileDto req) {
         return ResponseEntity.ok(patientService.updateProfile(userId, req));
     }
 
@@ -65,12 +67,13 @@ public class PatientController {
      * Uploads a new medical document for a patient.
      * 
      * @param patientId the profile ID of the patient
-     * @param req the medical document details to upload
+     * @param req       the medical document details to upload
      * @return a ResponseEntity containing the saved MedicalDocumentDto
      */
     @PostMapping("/{patientId}/documents")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<MedicalDocumentDto> uploadDocument(@PathVariable Long patientId, @RequestBody MedicalDocumentDto req) {
+    public ResponseEntity<MedicalDocumentDto> uploadDocument(@PathVariable Long patientId,
+            @RequestBody MedicalDocumentDto req) {
         return ResponseEntity.ok(patientService.uploadDocument(patientId, req));
     }
 
@@ -109,6 +112,5 @@ public class PatientController {
     public ResponseEntity<List<PrescriptionDto>> getPrescriptions(@PathVariable Long patientId) {
         return ResponseEntity.ok(patientService.getPatientPrescriptions(patientId));
     }
-
 
 }

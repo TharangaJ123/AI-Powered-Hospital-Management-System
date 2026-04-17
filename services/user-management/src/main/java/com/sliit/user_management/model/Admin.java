@@ -16,5 +16,5 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 public class Admin extends User {
-    // Admins might have extra fields later, for now its simple
+    // Represents an administrator user with full access to the platform
 }
